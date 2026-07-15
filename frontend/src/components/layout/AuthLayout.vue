@@ -33,7 +33,7 @@
           <div
             class="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl shadow-lg shadow-primary-500/30"
           >
-            <img :src="siteLogo || '/logo.png'" alt="Logo" class="h-full w-full object-contain" />
+            <img :src="siteLogo" alt="Logo" class="h-full w-full object-contain" />
           </div>
           <h1 class="text-gradient mb-2 text-3xl font-bold">
             {{ siteName }}
@@ -69,8 +69,8 @@ import { sanitizeUrl } from '@/utils/url'
 
 const appStore = useAppStore()
 
-const siteName = computed(() => appStore.siteName || 'Sub2API')
-const siteLogo = computed(() => sanitizeUrl(appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
+const siteName = computed(() => appStore.siteName.trim() || 'QuotaJet')
+const siteLogo = computed(() => sanitizeUrl(appStore.siteLogo.trim() || '/logo.png', { allowRelative: true, allowDataUrl: true }) || '/logo.png')
 const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || 'Subscription to API Conversion Platform')
 const settingsLoaded = computed(() => appStore.publicSettingsLoaded)
 

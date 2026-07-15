@@ -1764,6 +1764,22 @@ func TestBuildContentModerationAccountDisabledEmailBody_ContainsBanDetails(t *te
 	require.Contains(t, body, "Sub2API &lt;Admin&gt;")
 }
 
+func TestContentModerationSiteName_FallsBackToQuotaJetForUnavailableOrBlankSettings(t *testing.T) {
+	for _, testCase := range []struct {
+		name string
+		svc  *ContentModerationService
+	}{
+		{name: "nil service", svc: nil},
+		{name: "missing repository", svc: &ContentModerationService{}},
+		{name: "missing setting", svc: &ContentModerationService{settingRepo: &contentModerationTestSettingRepo{values: map[string]string{}}}},
+		{name: "blank setting", svc: &ContentModerationService{settingRepo: &contentModerationTestSettingRepo{values: map[string]string{SettingKeySiteName: " \t\n "}}}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			require.Equal(t, "QuotaJet", testCase.svc.siteName(context.Background()))
+		})
+	}
+}
+
 func TestContentModerationUnbanUser_ActivatesUserAndInvalidatesAuthCache(t *testing.T) {
 	userRepo := &contentModerationTestUserRepo{user: &User{ID: 1001, Email: "user@example.com", Status: StatusDisabled}}
 	invalidator := &contentModerationTestAuthCacheInvalidator{}
