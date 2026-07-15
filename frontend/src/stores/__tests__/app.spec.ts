@@ -321,6 +321,21 @@ describe('useAppStore', () => {
   // --- 公开设置 ---
 
   describe('公开设置加载', () => {
+    it('uses QuotaJet brand fallbacks when public settings omit them', async () => {
+      const store = useAppStore()
+      window.__APP_CONFIG__ = {
+        registration_enabled: false,
+        email_verify_enabled: false,
+        site_name: '',
+        site_logo: ''
+      } as PublicSettings
+
+      await store.fetchPublicSettings()
+
+      expect(store.siteName).toBe('QuotaJet')
+      expect(store.siteLogo).toBe('/logo.png')
+    })
+
     it('并发调用复用并等待同一个请求，包括 force 调用', async () => {
       const deferred = createDeferred<PublicSettings>()
       vi.mocked(getPublicSettings).mockReturnValue(deferred.promise)
