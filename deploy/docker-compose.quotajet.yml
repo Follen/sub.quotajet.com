@@ -1,0 +1,9 @@
+services:
+  sub2api:
+    image: quotajet/sub2api:dev
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        COMMIT: ${DEPLOY_COMMIT:-dev}
+
