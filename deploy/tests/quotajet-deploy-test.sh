@@ -5,10 +5,12 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 compose_file="$repo_root/deploy/docker-compose.quotajet.yml"
 deploy_script="$repo_root/deploy/quotajet-deploy.sh"
+brand_sql="$repo_root/deploy/quotajet-brand.sql"
 workflow_file="$repo_root/.github/workflows/deploy-quotajet.yml"
 
 test -f "$compose_file"
 test -f "$deploy_script"
+test -f "$brand_sql"
 test -f "$workflow_file"
 
 grep -q 'context: \.\.' "$compose_file"
@@ -19,6 +21,11 @@ grep -Eq 'set_env[[:space:]]+BIND_HOST[[:space:]]+127\.0\.0\.1' "$deploy_script"
 grep -Eq 'set_env[[:space:]]+SERVER_PORT[[:space:]]+8081' "$deploy_script"
 grep -q 'docker-compose\.local\.yml' "$deploy_script"
 grep -q 'docker-compose\.quotajet\.yml' "$deploy_script"
+grep -q "'site_name', 'QuotaJet'" "$brand_sql"
+grep -q "'site_logo', '/logo.png'" "$brand_sql"
+test "$(grep -Ec "'site_[^']+'" "$brand_sql")" -eq 2
+grep -q 'quotajet-brand.sql' "$deploy_script"
+grep -q 'docker exec -i sub2api-postgres psql' "$deploy_script"
 
 grep -q 'workflow_run:' "$workflow_file"
 grep -q 'head_branch == .main.' "$workflow_file"

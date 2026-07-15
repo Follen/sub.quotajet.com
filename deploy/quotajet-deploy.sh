@@ -51,4 +51,15 @@ export DEPLOY_COMMIT
 DEPLOY_COMMIT="$(git -C "$deploy_dir/.." rev-parse --short HEAD)"
 
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" up -d --build --remove-orphans
+docker exec -i sub2api-postgres psql -U sub2api -d sub2api <"$deploy_dir/quotajet-brand.sql"
+docker restart sub2api >/dev/null
+
+for _ in $(seq 1 30); do
+  if [[ "$(docker inspect --format '{{.State.Health.Status}}' sub2api)" == "healthy" ]]; then
+    break
+  fi
+  sleep 2
+done
+
+test "$(docker inspect --format '{{.State.Health.Status}}' sub2api)" = "healthy"
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" ps
