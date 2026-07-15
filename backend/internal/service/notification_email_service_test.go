@@ -518,12 +518,6 @@ func (s *notificationEmailTestSMTPServer) messageCount() int64 {
 	return s.messages.Load()
 }
 
-func (s *notificationEmailTestSMTPServer) lastMessageBody() string {
-	s.messageMu.Lock()
-	defer s.messageMu.Unlock()
-	return s.lastMessage
-}
-
 func (s *notificationEmailTestSMTPServer) close() {
 	_ = s.listener.Close()
 	s.wg.Wait()
@@ -591,7 +585,7 @@ func (s *notificationEmailTestSMTPServer) handleConn(conn net.Conn) {
 				if strings.TrimRight(dataLine, "\r\n") == "." {
 					break
 				}
-				message.WriteString(dataLine)
+				_, _ = message.WriteString(dataLine)
 			}
 			s.messageMu.Lock()
 			s.lastMessage = message.String()

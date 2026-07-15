@@ -9,6 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func (s *notificationEmailTestSMTPServer) lastMessageBody() string {
+	s.messageMu.Lock()
+	defer s.messageMu.Unlock()
+	return s.lastMessage
+}
+
 func TestSendPendingOAuthVerifyCode_UsesQuotaJetWithoutSettingService(t *testing.T) {
 	ctx := context.Background()
 	smtpServer := startNotificationEmailTestSMTPServer(t)
