@@ -179,6 +179,13 @@ func TestGetSiteName_Configured(t *testing.T) {
 	require.Equal(t, "My Site", s.getSiteName(context.Background()))
 }
 
+func TestGetSiteName_WhitespaceFallsBackToQuotaJet(t *testing.T) {
+	s, repo := newBalanceNotifyServiceForTest()
+	repo.data[SettingKeySiteName] = " \t\n "
+
+	require.Equal(t, "QuotaJet", s.getSiteName(context.Background()))
+}
+
 // ---------- crossedDownward ----------
 
 func TestCrossedDownward_CrossesBelow(t *testing.T) {

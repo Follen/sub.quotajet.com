@@ -74,7 +74,13 @@ postgres_db="${postgres_db:-sub2api}"
 
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" up -d --build --remove-orphans
 wait_for_sub2api_health
-docker exec -i sub2api-postgres psql -U "$postgres_user" -d "$postgres_db" <"$deploy_dir/quotajet-brand.sql"
+docker exec -i sub2api-postgres psql -v ON_ERROR_STOP=1 -U "$postgres_user" -d "$postgres_db" <"$deploy_dir/quotajet-brand.sql"
+site_name="$(docker exec -i sub2api-postgres psql -v ON_ERROR_STOP=1 -U "$postgres_user" -d "$postgres_db" -Atc "SELECT value FROM settings WHERE key = 'site_name'")"
+site_logo="$(docker exec -i sub2api-postgres psql -v ON_ERROR_STOP=1 -U "$postgres_user" -d "$postgres_db" -Atc "SELECT value FROM settings WHERE key = 'site_logo'")"
+if [[ "$site_name" != "QuotaJet" || "$site_logo" != "/logo.png" ]]; then
+  printf 'QuotaJet brand settings were not persisted\n' >&2
+  exit 1
+fi
 docker restart sub2api >/dev/null
 wait_for_sub2api_health
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" ps

@@ -122,6 +122,33 @@ func TestNotificationEmailAuthTemplatesAreListedAndPreviewable(t *testing.T) {
 	require.Contains(t, resetPreview.HTML, "https://example.com/reset?token=abc")
 }
 
+func TestNotificationEmailPreviewUsesQuotaJetForMissingOrWhitespaceSiteName(t *testing.T) {
+	for _, testCase := range []struct {
+		name     string
+		siteName string
+	}{
+		{name: "missing"},
+		{name: "whitespace", siteName: " \t\n "},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := newNotificationEmailMemorySettingRepo()
+			if testCase.siteName != "" {
+				require.NoError(t, repo.Set(context.Background(), SettingKeySiteName, testCase.siteName))
+			}
+			svc := NewNotificationEmailService(repo, nil)
+
+			preview, err := svc.PreviewTemplate(context.Background(), NotificationEmailPreviewInput{
+				Event:  NotificationEmailEventAuthVerifyCode,
+				Locale: "en",
+			})
+
+			require.NoError(t, err)
+			require.Contains(t, preview.Subject, "[QuotaJet]")
+			require.Contains(t, preview.HTML, "QuotaJet")
+		})
+	}
+}
+
 func TestNotificationEmailAdditionalEventsAreListedAndPreviewable(t *testing.T) {
 	ctx := context.Background()
 	svc := NewNotificationEmailService(newNotificationEmailMemorySettingRepo(), nil)

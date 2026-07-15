@@ -12,6 +12,8 @@ import (
 
 type settingBrandRepoStub struct {
 	written map[string]string
+	value   string
+	err     error
 }
 
 func (s *settingBrandRepoStub) Get(context.Context, string) (*Setting, error) {
@@ -19,7 +21,10 @@ func (s *settingBrandRepoStub) Get(context.Context, string) (*Setting, error) {
 }
 
 func (s *settingBrandRepoStub) GetValue(context.Context, string) (string, error) {
-	return "", ErrSettingNotFound
+	if s.err != nil {
+		return "", s.err
+	}
+	return s.value, nil
 }
 
 func (s *settingBrandRepoStub) Set(context.Context, string, string) error {
@@ -53,4 +58,20 @@ func TestSettingService_InitializeDefaultSettings_UsesQuotaJetBrand(t *testing.T
 	require.Equal(t, "QuotaJet", repo.written[SettingKeySiteName])
 	require.Equal(t, "/logo.png", repo.written[SettingKeySiteLogo])
 	require.Equal(t, "true", repo.written[SettingKeyRegistrationEnabled])
+}
+
+func TestSettingService_GetSiteName_FallsBackToQuotaJetForMissingOrWhitespaceSettings(t *testing.T) {
+	for _, testCase := range []struct {
+		name string
+		repo *settingBrandRepoStub
+	}{
+		{name: "missing", repo: &settingBrandRepoStub{err: ErrSettingNotFound}},
+		{name: "whitespace", repo: &settingBrandRepoStub{value: " \t\n "}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			svc := NewSettingService(testCase.repo, &config.Config{})
+
+			require.Equal(t, "QuotaJet", svc.GetSiteName(context.Background()))
+		})
+	}
 }

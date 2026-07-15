@@ -4,7 +4,18 @@ import { nextTick } from 'vue'
 
 import KeyUsageView from '../KeyUsageView.vue'
 
-const { showInfo, showSuccess, showError, fetchPublicSettings } = vi.hoisted(() => ({
+const { appStore, showInfo, showSuccess, showError, fetchPublicSettings } = vi.hoisted(() => ({
+  appStore: {
+    cachedPublicSettings: null as { site_name?: string; site_logo?: string } | null,
+    siteName: 'QuotaJet',
+    siteLogo: '/logo.png',
+    docUrl: '',
+    publicSettingsLoaded: true,
+    fetchPublicSettings: vi.fn(),
+    showInfo: vi.fn(),
+    showSuccess: vi.fn(),
+    showError: vi.fn(),
+  },
   showInfo: vi.fn(),
   showSuccess: vi.fn(),
   showError: vi.fn(),
@@ -84,17 +95,7 @@ vi.mock('vue-i18n', async () => {
 })
 
 vi.mock('@/stores', () => ({
-  useAppStore: () => ({
-    cachedPublicSettings: null,
-    siteName: 'Sub2API',
-    siteLogo: '',
-    docUrl: '',
-    publicSettingsLoaded: true,
-    fetchPublicSettings,
-    showInfo,
-    showSuccess,
-    showError,
-  }),
+  useAppStore: () => appStore,
 }))
 
 describe('KeyUsageView daily detail', () => {
@@ -104,6 +105,9 @@ describe('KeyUsageView daily detail', () => {
     showError.mockReset()
     fetchPublicSettings.mockReset()
     localStorage.clear()
+    appStore.cachedPublicSettings = null
+    appStore.siteName = 'QuotaJet'
+    appStore.siteLogo = '/logo.png'
 
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
@@ -228,6 +232,27 @@ describe('KeyUsageView daily detail', () => {
     const requestUrl = String(vi.mocked(fetch).mock.calls[0][0])
     expect(requestUrl).toContain('start_date=2026-07-13')
     expect(requestUrl).toContain('end_date=2026-07-13')
+
+    wrapper.unmount()
+  })
+
+  it('uses QuotaJet and the bundled logo when cached and store values are whitespace', () => {
+    appStore.cachedPublicSettings = { site_name: ' \t ', site_logo: ' \n ' }
+    appStore.siteName = '  '
+    appStore.siteLogo = '\t'
+
+    const wrapper = mount(KeyUsageView, {
+      global: {
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          LocaleSwitcher: true,
+          Icon: true,
+        },
+      },
+    })
+
+    expect(wrapper.get('header').text()).toContain('QuotaJet')
+    expect(wrapper.get('img[alt="Logo"]').attributes('src')).toBe('/logo.png')
 
     wrapper.unmount()
   })
