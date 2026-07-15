@@ -52,4 +52,3 @@ DEPLOY_COMMIT="$(git -C "$deploy_dir/.." rev-parse --short HEAD)"
 
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" up -d --build --remove-orphans
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" ps
-
