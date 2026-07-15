@@ -49,7 +49,7 @@ func (s *settingBrandRepoStub) Delete(context.Context, string) error {
 }
 
 func TestSettingService_InitializeDefaultSettings_UsesQuotaJetBrand(t *testing.T) {
-	repo := &settingBrandRepoStub{}
+	repo := &settingBrandRepoStub{err: ErrSettingNotFound}
 	svc := NewSettingService(repo, &config.Config{})
 
 	err := svc.InitializeDefaultSettings(context.Background())
