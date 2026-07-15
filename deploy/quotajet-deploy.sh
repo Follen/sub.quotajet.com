@@ -24,6 +24,23 @@ generate_secret() {
   openssl rand -hex 32
 }
 
+read_env_value() {
+  local key="$1"
+
+  sed -n "s/^${key}=//p" "$env_file" | tail -n 1
+}
+
+wait_for_sub2api_health() {
+  for _ in $(seq 1 30); do
+    if [[ "$(docker inspect --format '{{.State.Health.Status}}' sub2api)" == "healthy" ]]; then
+      return
+    fi
+    sleep 2
+  done
+
+  test "$(docker inspect --format '{{.State.Health.Status}}' sub2api)" = "healthy"
+}
+
 command -v docker >/dev/null
 command -v git >/dev/null
 command -v openssl >/dev/null
@@ -50,16 +67,14 @@ mkdir -p "$deploy_dir/data" "$deploy_dir/postgres_data" "$deploy_dir/redis_data"
 export DEPLOY_COMMIT
 DEPLOY_COMMIT="$(git -C "$deploy_dir/.." rev-parse --short HEAD)"
 
+postgres_user="$(read_env_value POSTGRES_USER)"
+postgres_db="$(read_env_value POSTGRES_DB)"
+postgres_user="${postgres_user:-sub2api}"
+postgres_db="${postgres_db:-sub2api}"
+
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" up -d --build --remove-orphans
-docker exec -i sub2api-postgres psql -U sub2api -d sub2api <"$deploy_dir/quotajet-brand.sql"
+wait_for_sub2api_health
+docker exec -i sub2api-postgres psql -U "$postgres_user" -d "$postgres_db" <"$deploy_dir/quotajet-brand.sql"
 docker restart sub2api >/dev/null
-
-for _ in $(seq 1 30); do
-  if [[ "$(docker inspect --format '{{.State.Health.Status}}' sub2api)" == "healthy" ]]; then
-    break
-  fi
-  sleep 2
-done
-
-test "$(docker inspect --format '{{.State.Health.Status}}' sub2api)" = "healthy"
+wait_for_sub2api_health
 docker compose --project-name quotajet-sub2api "${compose_files[@]}" ps
