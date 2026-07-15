@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## Main Site Reference
+
+- When the user says "main site", it means `D:\Code\QuotaJet.com\QuotaJet.com`.
+- Main-site Logo and metadata are the QuotaJet brand source of truth.
+- Copy required assets into this repository; never add runtime or build-time sibling filesystem dependencies.
+
 ## Test Server
 
 - Host: `70.39.198.45`
