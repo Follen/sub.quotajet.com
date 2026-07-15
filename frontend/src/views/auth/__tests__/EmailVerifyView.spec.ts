@@ -160,6 +160,43 @@ describe('EmailVerifyView', () => {
     expect(sendVerifyCodeMock).not.toHaveBeenCalled()
   })
 
+  it('uses QuotaJet without an error when public settings omit site_name', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    getPublicSettingsMock.mockResolvedValue({
+      turnstile_enabled: false,
+      turnstile_site_key: '',
+      registration_email_suffix_whitelist: [],
+    })
+    registerMock.mockResolvedValue({})
+    sessionStorage.setItem(
+      'register_data',
+      JSON.stringify({
+        email: 'fallback@example.com',
+        password: 'secret-123',
+      })
+    )
+
+    const wrapper = mount(EmailVerifyView, {
+      global: {
+        stubs: {
+          AuthLayout: { template: '<div><slot /><slot name="footer" /></div>' },
+          Icon: true,
+          TurnstileWidget: true,
+          transition: false,
+        },
+      },
+    })
+
+    await flushPromises()
+    await wrapper.get('#code').setValue('123456')
+    await wrapper.get('form').trigger('submit.prevent')
+    await flushPromises()
+
+    expect(consoleError).not.toHaveBeenCalled()
+    expect(showSuccessMock).toHaveBeenCalledWith('Account created for QuotaJet')
+    consoleError.mockRestore()
+  })
+
   it('skips the registration email suffix whitelist for pending oauth verification', async () => {
     authStoreState.pendingAuthSession = {
       token: 'pending-token-2',
