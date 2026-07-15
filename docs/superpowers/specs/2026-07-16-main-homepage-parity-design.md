@@ -31,7 +31,7 @@ The target homepage will reproduce these source sections in the same order:
 
 1. Public header with QuotaJet branding, navigation, language switch, theme switch, notifications, and sign-in state.
 2. Industrial-grid hero with the private-gateway label, two-line headline, supporting copy, primary and secondary actions, and three live metrics.
-3. Interactive black liquid-metal Three.js object using the copied HDR environment map.
+3. Interactive black liquid-metal Three.js object using the copied HDR environment map. This is a code-level port of the main-site implementation, not a visual approximation.
 4. Privacy card explaining that request and response content are not stored.
 5. Model-routing card with the same supported-provider presentation.
 6. Cost-visibility card with the same comparison treatment.
@@ -59,6 +59,8 @@ The homepage must match the source on desktop and mobile. Text must not overlap,
 - `HomeFooter.vue`
 
 Shared homepage styles will live in one landing-specific stylesheet imported by `HomeView.vue`. Three.js lifecycle ownership stays inside `RelayMachineVisual.vue`, including renderer disposal, resize handling, pointer interaction, and reduced-motion behavior.
+
+`RelayMachineVisual.vue` must translate the main-site Three.js implementation line by line at the behavioral level: scene graph, geometry construction, material and shader parameters, HDR environment loading, renderer settings, camera framing, lighting, animation timing, pointer response, resize behavior, and cleanup must preserve the source values and algorithms. Only React-specific lifecycle and ref wiring may be adapted to Vue lifecycle APIs. Replacing the object with a simpler mesh, prerecorded media, CSS effect, approximate shader, or newly designed 3D scene is out of scope.
 
 ## Metrics Contract
 
@@ -122,6 +124,7 @@ Frontend coverage will assert:
 - metric fallback and incremental formatting;
 - reduced-motion behavior;
 - Three.js canvas presence and cleanup;
+- parity of the Three.js scene configuration, source parameter values, animation behavior, and pointer interaction;
 - desktop and mobile navigation behavior.
 
 Final verification requires:
