@@ -294,8 +294,8 @@ export const useAppStore = defineStore('app', () => {
       window.__APP_CONFIG__ = { ...config }
     }
     cachedPublicSettings.value = config
-    siteName.value = config.site_name || 'QuotaJet'
-    siteLogo.value = config.site_logo || '/logo.png'
+    siteName.value = config.site_name?.trim() || 'QuotaJet'
+    siteLogo.value = config.site_logo?.trim() || '/logo.png'
     siteVersion.value = config.version || ''
     contactInfo.value = config.contact_info || ''
     apiBaseUrl.value = config.api_base_url || ''

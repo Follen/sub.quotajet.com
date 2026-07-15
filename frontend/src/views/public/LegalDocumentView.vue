@@ -113,8 +113,8 @@ marked.setOptions({
 const documentId = computed(() => String(route.params.documentId || ''))
 const isAdminComplianceDocument = computed(() => documentId.value === 'admin-compliance')
 const documents = computed(() => settings.value?.login_agreement_documents ?? [])
-const siteName = computed(() => settings.value?.site_name || 'Sub2API')
-const siteLogo = computed(() => sanitizeUrl(settings.value?.site_logo || '', {
+const siteName = computed(() => settings.value?.site_name?.trim() || 'QuotaJet')
+const siteLogo = computed(() => sanitizeUrl(settings.value?.site_logo?.trim() || '/logo.png', {
   allowRelative: true,
   allowDataUrl: true,
 }))

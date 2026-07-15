@@ -321,13 +321,13 @@ describe('useAppStore', () => {
   // --- 公开设置 ---
 
   describe('公开设置加载', () => {
-    it('uses QuotaJet brand fallbacks when public settings omit them', async () => {
+    it('uses QuotaJet brand fallbacks when public settings omit or blank them', async () => {
       const store = useAppStore()
       window.__APP_CONFIG__ = {
         registration_enabled: false,
         email_verify_enabled: false,
-        site_name: '',
-        site_logo: ''
+        site_name: '   ',
+        site_logo: '   '
       } as PublicSettings
 
       await store.fetchPublicSettings()
