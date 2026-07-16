@@ -1,0 +1,310 @@
+@keyframes landing-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-usage-pulse {
+  0%, 100% { transform: translate3d(-6px, 0, 0) scale(0.58); opacity: 0.18; }
+  48% { transform: translate3d(0, -2px, 0) scale(1); opacity: 0.92; }
+  68% { transform: translate3d(6px, 1px, 0) scale(0.72); opacity: 0.34; }
+}
+
+@keyframes landing-stability-fill {
+  0% { transform: translateX(-72%); opacity: 0.3; }
+  45%, 72% { opacity: 0.78; }
+  100% { transform: translateX(72%); opacity: 0.25; }
+}
+
+@keyframes landing-stability-packet {
+  0% { transform: translateX(-18px); opacity: 0; }
+  20%, 72% { opacity: 1; }
+  100% { transform: translateX(calc(100% + 18px)); opacity: 0; }
+}
+
+@keyframes landing-price-fill {
+  0% { width: 0; }
+  65%, 100% { width: var(--landing-price-target); }
+}
+
+@keyframes landing-privacy-redact {
+  0% { transform: translateX(-122%); opacity: 0; }
+  18%, 66% { opacity: 1; }
+  72%, 100% { transform: translateX(122%); opacity: 0; }
+}
+
+@keyframes landing-privacy-line {
+  0%, 24% { transform: translateX(0); opacity: 0.64; }
+  56%, 100% { transform: translateX(96px); opacity: 0; }
+}
+
+@keyframes landing-privacy-dot {
+  0%, 36% { transform: translateX(-26px) scale(0.72); opacity: 0; }
+  54%, 82% { opacity: 0.72; }
+  100% { transform: translateX(34px) scale(1); opacity: 0; }
+}
+
+@keyframes landing-logo-float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(var(--landing-model-scale, 1));
+  }
+  28% {
+    transform: translate(-50%, -50%) translate3d(var(--landing-drift-x, 2px), var(--landing-drift-y, -4px), 0) scale(var(--landing-model-scale, 1));
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(calc(-8px + var(--landing-model-lift, 0px))) scale(var(--landing-model-scale, 1));
+  }
+  76% {
+    transform: translate(-50%, -50%) translate3d(var(--landing-drift-x-alt, -3px), var(--landing-drift-y-alt, 2px), 0) scale(var(--landing-model-scale, 1));
+  }
+}
+
+@keyframes landing-core-breathe {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 24px 58px var(--landing-shadow));
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.035);
+    filter: drop-shadow(0 30px 72px var(--landing-shadow));
+  }
+}
+
+@keyframes landing-logo-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.qj-landing {
+  --landing-bg: #f4f3ee;
+  --landing-fg: #171717;
+  --landing-fg-soft: rgb(23 23 23 / 0.62);
+  --landing-fg-muted: rgb(23 23 23 / 0.42);
+  --landing-border: rgb(23 23 23 / 0.15);
+  --landing-border-faint: rgb(23 23 23 / 0.08);
+  --landing-surface: rgb(255 255 255 / 0.5);
+  --landing-surface-soft: rgb(255 255 255 / 0.38);
+  --landing-surface-strong: rgb(255 255 255 / 0.72);
+  --landing-grid: rgb(17 17 17 / 0.075);
+  --landing-glow-soft: rgb(0 0 0 / 0.07);
+  --landing-glow-strong: rgb(31 41 55 / 0.13);
+  --landing-accent: rgb(20 20 20);
+  --landing-accent-contrast: rgb(255 255 255);
+  --landing-shadow: rgb(0 0 0 / 0.16);
+  color: var(--landing-fg);
+  color-scheme: light;
+  letter-spacing: 0;
+  background:
+    radial-gradient(ellipse 80% 48% at 73% 2%, rgb(255 255 255 / 0.72), transparent 62%),
+    radial-gradient(ellipse 70% 46% at 22% 10%, rgb(210 215 214 / 0.34), transparent 66%),
+    var(--landing-bg);
+}
+
+.dark .qj-landing {
+  --landing-bg: #111;
+  --landing-fg: #fff;
+  --landing-fg-soft: rgb(255 255 255 / 0.62);
+  --landing-fg-muted: rgb(255 255 255 / 0.42);
+  --landing-border: rgb(255 255 255 / 0.14);
+  --landing-border-faint: rgb(255 255 255 / 0.08);
+  --landing-surface: rgb(255 255 255 / 0.035);
+  --landing-surface-soft: rgb(255 255 255 / 0.055);
+  --landing-surface-strong: rgb(255 255 255 / 0.09);
+  --landing-grid: rgb(255 255 255 / 0.05);
+  --landing-glow-soft: rgb(255 255 255 / 0.08);
+  --landing-glow-strong: rgb(255 255 255 / 0.11);
+  --landing-accent: rgb(255 255 255);
+  --landing-accent-contrast: rgb(17 17 17);
+  --landing-shadow: rgb(0 0 0 / 0.54);
+  color-scheme: dark;
+  background: var(--landing-bg);
+}
+
+.qj-landing *, .qj-landing *::before, .qj-landing *::after { letter-spacing: 0; }
+.landing-animate-fade-up { animation: landing-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.landing-section-title { color: var(--landing-fg); }
+.landing-section-copy, .landing-muted-label { color: var(--landing-fg-soft); }
+.landing-border-subtle { border: 1px solid var(--landing-border); }
+.landing-surface-soft { color: var(--landing-fg); background: var(--landing-surface-soft); }
+
+[data-landing-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-landing-reveal][data-visible='true'] { opacity: 1; transform: translateY(0); }
+
+.landing-feature-section + .landing-feature-section { margin-top: 4.5rem; }
+
+.landing-agent-pill {
+  color: var(--landing-fg);
+  border: 1px solid var(--landing-border-faint);
+  background: color-mix(in oklch, var(--landing-surface-strong) 76%, transparent);
+  box-shadow: 0 18px 46px var(--landing-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.landing-model-node {
+  --landing-model-lift: 0px;
+  --landing-model-scale: 1;
+  color: var(--landing-fg);
+  animation: landing-logo-float 5.8s ease-in-out infinite;
+  text-shadow: 0 12px 34px var(--landing-shadow);
+  transition: opacity 220ms ease, text-shadow 220ms ease;
+  will-change: transform;
+}
+
+.landing-model-node:hover { --landing-model-lift: -5px; --landing-model-scale: 1.08; }
+.landing-model-icon { filter: drop-shadow(0 12px 24px var(--landing-shadow)); }
+.landing-model-label { color: var(--landing-fg-soft); }
+.landing-model-node:hover .landing-model-label { color: var(--landing-fg); }
+
+.landing-model-core {
+  animation: landing-core-breathe 7s ease-in-out infinite;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  will-change: transform, filter;
+}
+
+.landing-model-core::before {
+  content: '';
+  position: absolute;
+  inset: 2rem;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--landing-glow-strong), transparent 68%);
+  filter: blur(28px);
+  opacity: 0.75;
+}
+
+.landing-model-core-logo {
+  width: 8.5rem;
+  height: auto;
+  filter: drop-shadow(0 20px 52px var(--landing-shadow));
+  transform: translateY(-3px);
+}
+
+.landing-logo-orbit::before, .landing-logo-orbit::after {
+  content: '';
+  position: absolute;
+  inset: 8% 4%;
+  border: 1px solid color-mix(in oklch, var(--landing-fg) 5%, transparent);
+  border-radius: 50%;
+  transform: rotate(-10deg);
+  opacity: 0.22;
+}
+
+.landing-logo-orbit::after { inset: 18%; transform: rotate(16deg); opacity: 0.12; }
+.landing-logo-marquee { mask-image: linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%); }
+.landing-logo-marquee-track { animation: landing-logo-marquee 34s linear infinite; }
+
+.landing-price-fill {
+  width: var(--landing-price-target);
+  background: var(--landing-accent);
+  animation: landing-price-fill 2.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.landing-usage-events {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.42rem;
+  height: 2.25rem;
+  padding-inline: 0.2rem;
+  overflow: hidden;
+}
+
+.landing-usage-events::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0.2rem;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--landing-fg) 18%, transparent), transparent);
+}
+
+.landing-usage-events i {
+  position: relative;
+  width: 0.46rem;
+  height: 0.46rem;
+  margin-inline: auto;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--landing-fg) 78%, transparent);
+  animation: landing-usage-pulse 1.9s ease-in-out infinite;
+  animation-delay: calc(var(--landing-pulse-index) * 80ms);
+}
+
+.landing-stability-label, .landing-stability-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.landing-stability-label { color: var(--landing-fg-soft); }
+.landing-stability-value { color: var(--landing-fg); font-weight: 650; }
+.landing-stability-label i { width: 0.46rem; height: 0.46rem; border-radius: 999px; background: var(--landing-accent); }
+.landing-stability-track { position: relative; height: 3.35rem; overflow: hidden; background: color-mix(in oklch, var(--landing-bg) 86%, var(--landing-fg) 8%); }
+.landing-stability-grid { position: absolute; inset: 0; opacity: 0.45; background: repeating-linear-gradient(90deg, color-mix(in oklch, var(--landing-fg) 10%, transparent) 0 1px, transparent 1px 18px); }
+.landing-stability-fill { position: absolute; inset-block: 0; left: 0; width: 68%; background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--landing-accent) 42%, transparent), transparent); animation: landing-stability-fill 2.9s ease-in-out infinite; animation-delay: calc(var(--landing-stability-index) * 220ms); }
+.landing-stability-packet { position: absolute; top: 50%; left: 0; width: 0.55rem; height: 0.55rem; border-radius: 999px; background: var(--landing-fg); animation: landing-stability-packet 2.9s ease-in-out infinite; animation-delay: calc(var(--landing-stability-index) * 220ms); }
+
+.landing-privacy-stage { color: var(--landing-fg); }
+.landing-privacy-map path { fill: none; stroke: color-mix(in oklch, var(--landing-fg) 24%, transparent); stroke-width: 1.2; stroke-dasharray: 8 14; }
+.landing-privacy-stream { display: grid; gap: 0.65rem; }
+.landing-privacy-stream strong { color: var(--landing-fg-soft); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; }
+.landing-privacy-stream-in span { display: block; height: 1.5px; background: linear-gradient(90deg, color-mix(in oklch, var(--landing-fg) 76%, transparent), transparent); opacity: 0.82; animation: landing-privacy-line 3.2s ease-in-out infinite; }
+
+.landing-privacy-core {
+  width: 12rem;
+  height: 5.75rem;
+  overflow: hidden;
+  border-inline: 1px solid color-mix(in oklch, var(--landing-fg) 22%, transparent);
+  color: var(--landing-fg);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: 650;
+  background: radial-gradient(circle, var(--landing-surface-strong), transparent 70%), color-mix(in oklch, var(--landing-bg) 74%, var(--landing-fg) 6%);
+}
+
+.landing-privacy-core i { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--landing-bg) 86%, white 14%) 46% 54%, transparent); animation: landing-privacy-redact 3.2s ease-in-out infinite; }
+.landing-privacy-stream-out { grid-template-columns: repeat(5, 0.42rem); gap: 0.62rem; }
+.landing-privacy-stream-out strong { grid-column: 1 / -1; }
+.landing-privacy-stream-out span { width: 0.42rem; height: 0.42rem; border-radius: 999px; background: currentColor; opacity: 0; animation: landing-privacy-dot 3.2s ease-in-out infinite; }
+
+.landing-metal-stage { --qj-metal-x: 0; --qj-metal-y: 0; cursor: grab; perspective: 900px; touch-action: none; user-select: none; }
+.landing-metal-stage[data-dragging='true'] { cursor: grabbing; }
+.landing-metal-canvas { pointer-events: none; transform: translate(0, 0) translate(-50%, -50%); will-change: transform; }
+.landing-metal-shadow { transform: translateX(calc(var(--qj-metal-x) * -32px)) translateY(calc(var(--qj-metal-y) * 18px)) scaleX(calc(1 + var(--qj-metal-y) * 0.18)); transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+@media (min-width: 768px) {
+  .landing-feature-section + .landing-feature-section { margin-top: 8rem; }
+}
+
+@media (max-width: 767px) {
+  .landing-stability-track { height: 2.65rem; }
+  .landing-logo-orbit .landing-model-core { width: 6.5rem; height: 6.5rem; }
+  .landing-logo-orbit .landing-model-node { gap: 0.35rem; }
+  .landing-logo-orbit .landing-model-icon { width: 1.85rem; height: 1.85rem; }
+  .landing-logo-orbit .landing-model-label { font-size: 0.74rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-animate-fade-up,
+  .landing-price-fill,
+  .landing-model-node,
+  .landing-model-core,
+  .landing-logo-marquee-track,
+  .landing-usage-events i,
+  .landing-stability-fill,
+  .landing-stability-packet,
+  .landing-privacy-stream-in span,
+  .landing-privacy-core i,
+  .landing-privacy-stream-out span {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  [data-landing-reveal] { opacity: 1; transform: none; transition: none; }
+  .landing-metal-shadow { transform: none; transition: none; }
+}
