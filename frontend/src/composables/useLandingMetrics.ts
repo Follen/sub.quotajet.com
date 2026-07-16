@@ -21,6 +21,7 @@ export function useLandingMetrics() {
   const serverMetrics = ref<LandingMetrics | null>(null)
   const tick = ref(0)
   let timer: number | undefined
+  let requestGeneration = 0
 
   const elapsed = computed(() => {
     const generatedAt = serverMetrics.value?.generated_at ?? 0
@@ -41,17 +42,22 @@ export function useLandingMetrics() {
   })
 
   async function start() {
+    const generation = ++requestGeneration
     if (timer !== undefined) window.clearInterval(timer)
     timer = window.setInterval(() => { tick.value += 1 }, 1000)
     try {
-      serverMetrics.value = await getLandingMetrics()
+      const metrics = await getLandingMetrics()
+      if (generation !== requestGeneration) return
+      serverMetrics.value = metrics
       tick.value = 0
     } catch {
+      if (generation !== requestGeneration) return
       serverMetrics.value = null
     }
   }
 
   function stop() {
+    requestGeneration += 1
     if (timer !== undefined) window.clearInterval(timer)
     timer = undefined
   }

@@ -6,6 +6,16 @@ vi.mock('@/api/landing', () => ({
   getLandingMetrics: vi.fn()
 }))
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+  return { promise, resolve, reject }
+}
+
 describe('useLandingMetrics', () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -53,5 +63,36 @@ describe('useLandingMetrics', () => {
     stop()
     vi.advanceTimersByTime(1000)
     expect(display.value.requests).toBe('48,219,050')
+  })
+
+  it('keeps the latest response when starts overlap', async () => {
+    const first = deferred<Awaited<ReturnType<typeof getLandingMetrics>>>()
+    const second = deferred<Awaited<ReturnType<typeof getLandingMetrics>>>()
+    vi.mocked(getLandingMetrics)
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise)
+
+    const { display, start, stop } = useLandingMetrics()
+    const firstStart = start()
+    const secondStart = start()
+
+    second.resolve({
+      total_requests: 60000000,
+      total_users: 21000,
+      stable_uptime_seconds: 172800,
+      generated_at: Math.floor(Date.now() / 1000),
+    })
+    await secondStart
+    expect(display.value.requests).toBe('60,000,000')
+
+    first.resolve({
+      total_requests: 50000000,
+      total_users: 20000,
+      stable_uptime_seconds: 86400,
+      generated_at: Math.floor(Date.now() / 1000),
+    })
+    await firstStart
+    expect(display.value.requests).toBe('60,000,000')
+    stop()
   })
 })
