@@ -5,7 +5,10 @@ export function useLandingReveal(root: Ref<HTMLElement | null>) {
 
   onMounted(() => {
     const nodes = root.value?.querySelectorAll<HTMLElement>('[data-landing-reveal]') ?? []
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || typeof IntersectionObserver === 'undefined'
+    ) {
       nodes.forEach((node) => { node.dataset.visible = 'true' })
       return
     }

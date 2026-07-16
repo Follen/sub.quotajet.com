@@ -141,6 +141,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { LandingBrandIconName } from './homeContent'
 
 interface IconPath {
@@ -294,6 +295,7 @@ const iconData: Record<LandingBrandIconName, IconData> = {
   },
 }
 
-const { name, size } = props
-const iconInfo = iconData[name]
+const name = computed(() => props.name)
+const size = computed(() => props.size)
+const iconInfo = computed(() => iconData[props.name])
 </script>

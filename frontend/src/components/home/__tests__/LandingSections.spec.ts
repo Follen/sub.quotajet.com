@@ -108,6 +108,16 @@ describe('landing section contracts', () => {
     expect(wrapper.find('[data-icon-fallback]').exists()).toBe(false)
   })
 
+  it('updates the rendered brand icon when props change', async () => {
+    const wrapper = mount(HomeBrandIcon, { props: { name: 'OpenAI.Color', size: 28 } })
+    const openAIPath = wrapper.get('path').attributes('d')
+
+    await wrapper.setProps({ name: 'Claude.Color', size: 40 })
+
+    expect(wrapper.get('svg').attributes('width')).toBe('40')
+    expect(wrapper.get('path').attributes('d')).not.toBe(openAIPath)
+  })
+
   it('preserves the four source visual compositions', () => {
     const privacy = mount(PrivacyFeature, { props: { isAuthenticated: false }, global })
     const models = mount(ModelRoutingFeature, { props: { isAuthenticated: false }, global })
@@ -152,6 +162,33 @@ describe('landing section contracts', () => {
 })
 
 describe('useLandingReveal', () => {
+  it('reveals all nodes when IntersectionObserver is unavailable', async () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
+    const originalObserver = globalThis.IntersectionObserver
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: undefined,
+    })
+    const component = defineComponent({
+      setup() {
+        const root = ref<HTMLElement | null>(null)
+        useLandingReveal(root)
+        return { root }
+      },
+      template: '<main ref="root"><section data-landing-reveal /><section data-landing-reveal /></main>',
+    })
+
+    const wrapper = mount(component)
+    await nextTick()
+
+    expect(wrapper.findAll('[data-landing-reveal]').every((node) => node.attributes('data-visible') === 'true')).toBe(true)
+    wrapper.unmount()
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: originalObserver,
+    })
+  })
+
   it('shows all reveal nodes immediately under reduced motion', async () => {
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList)
     const component = defineComponent({

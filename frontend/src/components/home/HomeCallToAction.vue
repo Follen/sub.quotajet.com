@@ -6,7 +6,7 @@
   >
     <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-64 bg-[radial-gradient(ellipse_at_50%_100%,var(--landing-glow-soft),transparent_68%)]"></div>
     <div class="relative mx-auto max-w-7xl">
-      <div class="grid gap-8 border-t border-[var(--landing-border)] pt-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:pt-14">
+      <div class="landing-cta-grid grid gap-8 pt-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:pt-14">
         <div>
           <div class="landing-muted-label mb-5 font-mono text-[11px] uppercase opacity-70">
             {{ t('landing.cta.eyebrow') }}
