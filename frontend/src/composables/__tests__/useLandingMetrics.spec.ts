@@ -35,6 +35,23 @@ describe('useLandingMetrics', () => {
     await start()
     expect(display.value.requests).toBe('50,000,130')
     expect(display.value.uptime).toBe('1d 0h 00m')
+    vi.advanceTimersByTime(60_000)
+    expect(display.value.requests).toBe('50,000,910')
+    expect(display.value.uptime).toBe('1d 0h 01m')
     stop()
+  })
+
+  it('keeps only one interval when started repeatedly and stops ticking after cleanup', async () => {
+    vi.mocked(getLandingMetrics).mockRejectedValue(new Error('offline'))
+    const { display, start, stop } = useLandingMetrics()
+    await start()
+    await start()
+
+    vi.advanceTimersByTime(1000)
+    expect(display.value.requests).toBe('48,219,050')
+
+    stop()
+    vi.advanceTimersByTime(1000)
+    expect(display.value.requests).toBe('48,219,050')
   })
 })

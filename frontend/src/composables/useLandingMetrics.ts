@@ -24,9 +24,11 @@ export function useLandingMetrics() {
 
   const elapsed = computed(() => {
     const generatedAt = serverMetrics.value?.generated_at ?? 0
-    return generatedAt > 0
-      ? Math.max(0, Math.floor(Date.now() / 1000) - generatedAt)
-      : tick.value
+    if (generatedAt > 0) {
+      tick.value
+      return Math.max(0, Math.floor(Date.now() / 1000) - generatedAt)
+    }
+    return tick.value
   })
 
   const display = computed<LandingMetricDisplay>(() => {
@@ -39,6 +41,7 @@ export function useLandingMetrics() {
   })
 
   async function start() {
+    if (timer !== undefined) window.clearInterval(timer)
     timer = window.setInterval(() => { tick.value += 1 }, 1000)
     try {
       serverMetrics.value = await getLandingMetrics()
