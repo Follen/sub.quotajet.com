@@ -151,6 +151,11 @@ function initializeScene(
   scene.add(rim)
 
   new RGBELoader().load('/assets/empty_warehouse_01_1k.hdr', (texture) => {
+    if (disposed) {
+      texture.dispose()
+      return
+    }
+
     environment = pmremGenerator.fromEquirectangular(texture).texture
     scene.environment = environment
     texture.dispose()
@@ -291,12 +296,16 @@ onBeforeUnmount(() => {
     ref="stageRef"
     class="landing-metal-stage relative min-h-[360px] overflow-visible sm:min-h-[440px] lg:min-h-[560px]"
   >
-    <div class="absolute inset-0 landing-metal-radial" />
+    <div
+      class="landing-metal-radial absolute inset-0 bg-[radial-gradient(circle_at_56%_40%,var(--landing-glow-soft),transparent_36%)]"
+    />
     <canvas
       ref="canvasRef"
       aria-hidden="true"
-      class="landing-metal-canvas absolute left-0 top-0"
+      class="landing-metal-canvas absolute top-0 left-0 h-[min(92vw,420px)] w-[min(92vw,420px)] sm:h-[520px] sm:w-[520px] lg:h-[600px] lg:w-[600px]"
     />
-    <div class="landing-metal-shadow absolute" />
+    <div
+      class="landing-metal-shadow absolute right-[12%] bottom-8 left-[12%] h-10 bg-[var(--landing-shadow)] blur-3xl sm:right-[4%] sm:bottom-12 sm:left-[28%] sm:h-12 lg:right-[-8%] lg:bottom-14 lg:left-[44%] lg:h-14"
+    />
   </div>
 </template>
