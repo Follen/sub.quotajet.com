@@ -17,8 +17,8 @@ func TestBuildLandingMetricsAtEpoch(t *testing.T) {
 
 func TestBuildLandingMetricsUsesFiveMinuteBuckets(t *testing.T) {
 	metrics := buildLandingMetrics(time.Unix(landingMetricsEpochUnix+600, 0).UTC())
-	require.Equal(t, int64(48219037+600*13+23+24), metrics.TotalRequests)
-	require.Equal(t, int64(18287+600/72+1+2), metrics.TotalUsers)
+	require.Equal(t, int64(48219037+600*13+23+26), metrics.TotalRequests)
+	require.Equal(t, int64(18287+600/72+1+4), metrics.TotalUsers)
 	require.Equal(t, int64(8553900+600), metrics.StableUptimeSeconds)
 }
 

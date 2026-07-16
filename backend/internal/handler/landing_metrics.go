@@ -48,5 +48,5 @@ func bucketedGrowth(bucket, modulus, minimum int64) int64 {
 	cycles := bucket / modulus
 	remainder := bucket % modulus
 	return cycles*(modulus*minimum+(modulus-1)*modulus/2) +
-		remainder*minimum + remainder*(remainder-1)/2
+		remainder*minimum + remainder*(remainder+1)/2
 }
