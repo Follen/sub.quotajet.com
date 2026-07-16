@@ -6,7 +6,11 @@ FRONTEND_CRITICAL_VITEST := \
 	src/views/user/__tests__/PaymentView.spec.ts \
 	src/views/user/__tests__/PaymentResultView.spec.ts \
 	src/components/user/profile/__tests__/ProfileInfoCard.spec.ts \
-	src/views/admin/__tests__/SettingsView.spec.ts
+	src/views/admin/__tests__/SettingsView.spec.ts \
+	src/views/__tests__/HomeView.spec.ts \
+	src/composables/__tests__/useLandingMetrics.spec.ts \
+	src/components/home/__tests__/RelayMachineVisual.spec.ts \
+	src/components/home/__tests__/LandingSections.spec.ts
 
 # 一键编译前后端
 build: build-backend build-frontend
