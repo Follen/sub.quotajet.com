@@ -1,4 +1,148 @@
 export default {
+  landing: {
+    hero: {
+      badge: '私密 AI 模型网关',
+      titleLead: '私密入口。',
+      titleHighlight: '不存内容。',
+      description: '用一把 Key、一个 Base URL 接入 GPT、Claude、Gemini、DeepSeek、Qwen 等模型。QuotaJet 只做路由，不存储请求内容和响应内容。',
+      primaryAction: '先创建一把 Key',
+      secondaryAction: '查看模型和价格',
+      metrics: {
+        requests: '总请求数',
+        users: '总用户数',
+        uptime: '稳定运行时间'
+      },
+      visual: {
+        input: '请求内容经过私密入口',
+        storage: '只保留路由和用量',
+        keys: 'KEYS',
+        usage: 'USAGE',
+        logs: 'NO CONTENT'
+      }
+    },
+    sections: {
+      privacy: {
+        eyebrow: 'PRIVACY',
+        title: '你的请求内容，不应该变成平台日志',
+        description: 'QuotaJet 不存储请求内容和响应内容。工具统一走一个受控入口，减少 API Key 散落在 Agent、脚本和业务流程里的风险。',
+        chips: {
+          access: '受控入口',
+          keys: '减少 Key 暴露',
+          audit: '不存内容日志'
+        },
+        action: '进入控制台'
+      },
+      pricing: {
+        eyebrow: 'PRICING',
+        title: '别等调用失控后才看成本',
+        description: '余额、用量、模型价格放在同一个控制台里。AI IDE、Agent、脚本和业务 API 高频调用时，也能及时知道钱花在哪里。',
+        chips: {
+          ratio: '3% 到 15%',
+          transparent: '用量可见',
+          control: '成本更好控制'
+        },
+        action: '查看价格'
+      },
+      stability: {
+        eyebrow: 'RELIABILITY',
+        title: '一条线路出问题，调用别停在原地',
+        description: '线路选择、故障切换和用量可见性，帮 Agent、Bot、API 和个人项目扛住日常调用，而不是上游一抖就全部中断。',
+        chips: {
+          routes: '线路兜底',
+          fast: '用量可见',
+          dailyUse: '长期调用'
+        },
+        action: '打开控制台'
+      },
+      models: {
+        eyebrow: 'ONE KEY',
+        title: '换模型，不用每个工具都重配',
+        description: '把工具统一指向一个 OpenAI 兼容 Base URL，就能从同一套配置调用 Claude、Gemini、DeepSeek、Qwen、Grok、GLM、Moonshot、Mistral 等模型。',
+        chips: {
+          oneKey: '一把 Key',
+          multiModel: '一个 Base URL',
+          migration: '切模型更快'
+        },
+        action: '开始接入'
+      }
+    },
+    cta: {
+      eyebrow: '先试一个',
+      title: '先用一把 Key 跑通。',
+      description: '把 Base URL 设置为 https://quotajet.com，先发一个小请求。确认能用，再慢慢迁移其他工具。',
+      primaryAction: '创建 Key',
+      secondaryAction: '查看接入指南'
+    },
+    visual: {
+      status: '运行中',
+      privacy: {
+        label: '私密路由',
+        server: {
+          label: '服务地址',
+          value: 'quotajet.com'
+        },
+        callback: {
+          label: '回调域名',
+          value: 'quotajet.com'
+        },
+        exposure: {
+          label: 'Key 暴露',
+          value: '更少'
+        },
+        content: {
+          label: '内容日志',
+          value: '不记录'
+        },
+        none: '不存储',
+        input: '请求 + 响应',
+        output: '路由 + 用量'
+      },
+      pricing: {
+        label: '成本区间',
+        official: '官方 API',
+        quotajet: 'QuotaJet',
+        visibility: '用量可见',
+        clear: '清晰',
+        caption: '路由成本更低，用量仍然可见。'
+      },
+      stability: {
+        label: '调用状态',
+        route: {
+          label: '线路自动切换',
+          value: '就绪'
+        },
+        response: {
+          label: '响应不断流',
+          value: '稳定'
+        },
+        daily: {
+          label: '用量持续可见',
+          value: '实时'
+        }
+      },
+      models: {
+        label: '统一配置',
+        hub: '一把 Key'
+      }
+    },
+    agents: {
+      title: '直接接入你已经在用的工作流',
+      description: '编程 Agent、AI IDE、聊天应用、自动化工具和本地模型客户端，都可以共用同一个 Base URL 和同一把 Key。'
+    },
+    nav: {
+      models: '模型',
+      docs: '文档',
+      about: '关于',
+      status: '状态',
+      login: '登录',
+      dashboard: '控制台'
+    },
+    footer: {
+      agreement: '用户协议',
+      privacy: '隐私政策',
+      copyright: '保留所有权利。'
+    }
+  },
   batchImageGuide: {
     title: '图片批量生成',
     description: '一次提交多条提示词，任务完成后可统一下载图片结果'

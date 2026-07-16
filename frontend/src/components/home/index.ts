@@ -1,6 +1,8 @@
 export { default as CostVisibilityFeature } from './CostVisibilityFeature.vue'
 export { default as HomeBrandIcon } from './HomeBrandIcon.vue'
 export { default as HomeCallToAction } from './HomeCallToAction.vue'
+export { default as HomeFooter } from './HomeFooter.vue'
+export { default as HomeHeader } from './HomeHeader.vue'
 export { default as HomeHero } from './HomeHero.vue'
 export { default as HomeMetrics } from './HomeMetrics.vue'
 export { default as ModelRoutingFeature } from './ModelRoutingFeature.vue'

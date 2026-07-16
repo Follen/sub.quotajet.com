@@ -1,4 +1,148 @@
 export default {
+  landing: {
+    hero: {
+      badge: 'PRIVATE AI MODEL GATEWAY',
+      titleLead: 'Private gateway.',
+      titleHighlight: 'No content logs.',
+      description: 'Use one key and one Base URL for GPT, Claude, Gemini, DeepSeek, Qwen, and more. QuotaJet routes requests without storing request or response content.',
+      primaryAction: 'Start with one key',
+      secondaryAction: 'See models and pricing',
+      metrics: {
+        requests: 'Total requests',
+        users: 'Total users',
+        uptime: 'Stable uptime'
+      },
+      visual: {
+        input: 'Request content passes through',
+        storage: 'Only route and usage are kept',
+        keys: 'KEYS',
+        usage: 'USAGE',
+        logs: 'NO CONTENT'
+      }
+    },
+    sections: {
+      privacy: {
+        eyebrow: 'PRIVACY',
+        title: 'Your request content should not become platform logs',
+        description: 'QuotaJet does not store request or response content. Your tools send requests through one controlled gateway, so fewer API keys end up scattered across agents, scripts, and workflows.',
+        chips: {
+          access: 'Controlled gateway',
+          keys: 'Less key exposure',
+          audit: 'No content logs'
+        },
+        action: 'Open console'
+      },
+      pricing: {
+        eyebrow: 'PRICING',
+        title: 'See the cost before usage runs away',
+        description: 'Balance, usage, and model pricing stay in one place, so high-frequency AI IDEs, agents, scripts, and business APIs are easier to watch before they get expensive.',
+        chips: {
+          ratio: '3% to 15%',
+          transparent: 'Usage visible',
+          control: 'Spend easier to control'
+        },
+        action: 'View pricing'
+      },
+      stability: {
+        eyebrow: 'RELIABILITY',
+        title: 'Keep model calls running when one route fails',
+        description: 'Route selection, fallback, and usage visibility help agents, bots, APIs, and personal projects keep working through daily traffic instead of stopping at the first upstream issue.',
+        chips: {
+          routes: 'Route fallback',
+          fast: 'Visible usage',
+          dailyUse: 'Daily workloads'
+        },
+        action: 'Open console'
+      },
+      models: {
+        eyebrow: 'ONE KEY',
+        title: 'Switch models without rewiring every tool',
+        description: 'Point your tools at one OpenAI-compatible Base URL, then call Claude, Gemini, DeepSeek, Qwen, Grok, GLM, Moonshot, Mistral, and more from the same setup.',
+        chips: {
+          oneKey: 'One key',
+          multiModel: 'One Base URL',
+          migration: 'Switch models faster'
+        },
+        action: 'Create a key'
+      }
+    },
+    cta: {
+      eyebrow: 'TRY IT FIRST',
+      title: 'Start with one key.',
+      description: 'Set the Base URL to https://quotajet.com, send one small request, and move more tools only after the first call works.',
+      primaryAction: 'Create a key',
+      secondaryAction: 'Setup guide'
+    },
+    visual: {
+      status: 'active',
+      privacy: {
+        label: 'Private routing',
+        server: {
+          label: 'Server address',
+          value: 'quotajet.com'
+        },
+        callback: {
+          label: 'Callback domain',
+          value: 'quotajet.com'
+        },
+        exposure: {
+          label: 'Key exposure',
+          value: 'reduced'
+        },
+        content: {
+          label: 'Content logs',
+          value: 'none'
+        },
+        none: 'not stored',
+        input: 'request + response',
+        output: 'route + usage'
+      },
+      pricing: {
+        label: 'Cost range',
+        official: 'Official API',
+        quotajet: 'QuotaJet',
+        visibility: 'Usage visibility',
+        clear: 'clear',
+        caption: 'Lower route costs, visible usage.'
+      },
+      stability: {
+        label: 'Service state',
+        route: {
+          label: 'Auto route switch',
+          value: 'ready'
+        },
+        response: {
+          label: 'Response continuity',
+          value: 'steady'
+        },
+        daily: {
+          label: 'Usage visibility',
+          value: 'live'
+        }
+      },
+      models: {
+        label: 'Unified config',
+        hub: 'One key'
+      }
+    },
+    agents: {
+      title: 'Works with the tools already in your workflow',
+      description: 'Use the same Base URL and key across coding agents, AI IDEs, chat apps, automation tools, and local model clients.'
+    },
+    nav: {
+      models: 'Models',
+      docs: 'Docs',
+      about: 'About',
+      status: 'Status',
+      login: 'Sign in',
+      dashboard: 'Console'
+    },
+    footer: {
+      agreement: 'User Agreement',
+      privacy: 'Privacy Policy',
+      copyright: 'All rights reserved.'
+    }
+  },
   batchImageGuide: {
     title: 'Batch Image Generation',
     description: 'Submit multiple prompts in one job and download the generated images when complete'
