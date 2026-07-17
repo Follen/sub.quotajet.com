@@ -8,8 +8,12 @@
     :aria-checked="modelValue"
   >
     <span
-      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-      :class="[modelValue ? 'translate-x-5' : 'translate-x-0']"
+      class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
+      :class="[
+        modelValue
+          ? 'translate-x-5 bg-primary-50'
+          : 'translate-x-0 bg-white dark:bg-dark-100'
+      ]"
     />
   </button>
 </template>

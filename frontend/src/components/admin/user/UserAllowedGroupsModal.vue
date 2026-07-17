@@ -48,7 +48,7 @@
                       class="peer sr-only"
                     />
                     <div class="h-5 w-5 rounded-md border-2 border-gray-300 transition-all peer-checked:border-primary-500 peer-checked:bg-primary-500 dark:border-dark-500 peer-checked:dark:border-primary-500">
-                      <svg v-if="config.isSelected" class="h-full w-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                      <svg v-if="config.isSelected" class="h-full w-full text-primary-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -68,7 +68,7 @@
                       <PlatformIcon :platform="config.platform" size="xs" />
                       <span>{{ config.platform }}</span>
                     </span>
-                    <span class="text-gray-300 dark:text-dark-500">•</span>
+                    <span class="text-gray-300 dark:text-content-muted">•</span>
                     <span class="text-gray-500 dark:text-gray-400">
                       {{ t('admin.users.defaultRate') }}: <span class="font-medium text-gray-700 dark:text-gray-300">{{ config.defaultRate }}x</span>
                     </span>
@@ -126,7 +126,7 @@
                       <PlatformIcon :platform="config.platform" size="xs" />
                       <span>{{ config.platform }}</span>
                     </span>
-                    <span class="text-gray-300 dark:text-dark-500">•</span>
+                    <span class="text-gray-300 dark:text-content-muted">•</span>
                     <span class="text-gray-500 dark:text-gray-400">
                       {{ t('admin.users.defaultRate') }}: <span class="font-medium text-gray-700 dark:text-gray-300">{{ config.defaultRate }}x</span>
                     </span>

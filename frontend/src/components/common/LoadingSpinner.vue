@@ -42,7 +42,7 @@ const colorClass = computed(() => {
     primary: 'text-primary-500',
     secondary: 'text-gray-500 dark:text-dark-400',
     white: 'text-white',
-    gray: 'text-gray-400 dark:text-dark-500'
+    gray: 'text-gray-400 dark:text-content-muted'
   }
   return colors[props.color]
 })

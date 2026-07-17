@@ -53,4 +53,3 @@ The existing blue-gray `gradient-dark` and onboarding dark background must use t
 - Run frontend lint, typecheck, critical Vitest suite, and production build.
 - Visually verify light and dark modes on the homepage, login page, user dashboard, and admin dashboard.
 - Confirm no remaining global dark background uses the former `#020617`, `#0f172a`, or `#1e293b` blue-gray values outside intentionally colored semantic content.
-

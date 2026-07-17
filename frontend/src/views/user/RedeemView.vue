@@ -29,7 +29,7 @@
               </label>
               <div class="relative mt-1">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                  <Icon name="gift" size="md" class="text-gray-400 dark:text-dark-500" />
+                  <Icon name="gift" size="md" class="text-gray-400 dark:text-content-muted" />
                 </div>
                 <input
                   id="code"
@@ -164,21 +164,21 @@
 
       <!-- Information Card -->
       <div
-        class="card border-primary-200 bg-primary-50 dark:border-primary-800/50 dark:bg-primary-900/20"
+        class="card border-blue-200 bg-blue-50 dark:border-blue-800/50 dark:bg-blue-900/20"
       >
         <div class="p-6">
           <div class="flex items-start gap-4">
             <div
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30"
             >
-              <Icon name="infoCircle" size="md" class="text-primary-600 dark:text-primary-400" />
+              <Icon name="infoCircle" size="md" class="text-blue-600 dark:text-blue-400" />
             </div>
             <div class="flex-1">
-              <h3 class="text-sm font-semibold text-primary-800 dark:text-primary-300">
+              <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">
                 {{ t('redeem.aboutCodes') }}
               </h3>
               <ul
-                class="mt-2 list-inside list-disc space-y-1 text-sm text-primary-700 dark:text-primary-400"
+                class="mt-2 list-inside list-disc space-y-1 text-sm text-blue-700 dark:text-blue-400"
               >
                 <li>{{ t('redeem.codeRule1') }}</li>
                 <li>{{ t('redeem.codeRule2') }}</li>
@@ -186,7 +186,7 @@
                   {{ t('redeem.codeRule3') }}
                   <span
                     v-if="contactInfo"
-                    class="ml-1.5 inline-flex items-center rounded-md bg-primary-200/50 px-2 py-0.5 text-xs font-medium text-primary-800 dark:bg-primary-800/40 dark:text-primary-200"
+                    class="ml-1.5 inline-flex items-center rounded-md bg-blue-200/50 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-800/40 dark:text-blue-200"
                   >
                     {{ contactInfo }}
                   </span>
@@ -305,11 +305,11 @@
                 </p>
                 <p
                   v-if="!isAdminAdjustment(item.type)"
-                  class="font-mono text-xs text-gray-400 dark:text-dark-500"
+                  class="font-mono text-xs text-gray-400 dark:text-content-muted"
                 >
                   {{ item.code.slice(0, 8) }}...
                 </p>
-                <p v-else class="text-xs text-gray-400 dark:text-dark-500">
+                <p v-else class="text-xs text-gray-400 dark:text-content-muted">
                   {{ t('redeem.adminAdjustment') }}
                 </p>
                 <!-- Display notes for admin adjustments -->
@@ -329,7 +329,7 @@
             <div
               class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-dark-800"
             >
-              <Icon name="clock" size="xl" class="text-gray-400 dark:text-dark-500" />
+              <Icon name="clock" size="xl" class="text-gray-400 dark:text-content-muted" />
             </div>
             <p class="text-sm text-gray-500 dark:text-dark-400">
               {{ t('redeem.historyWillAppear') }}

@@ -149,7 +149,7 @@
           <template #cell-counts="{ row }">
             <div class="flex items-center justify-center gap-2 text-sm tabular-nums">
               <span class="text-emerald-600 dark:text-emerald-300">{{ displayJob(row).success_count }}</span>
-              <span class="text-gray-300 dark:text-dark-500">/</span>
+              <span class="text-gray-300 dark:text-content-muted">/</span>
               <span :class="displayJob(row).fail_count > 0 ? 'text-red-600 dark:text-red-300' : 'text-gray-400 dark:text-gray-500'">{{ displayJob(row).fail_count }}</span>
               <span class="text-xs text-gray-400 dark:text-gray-500">共 {{ displayJob(row).item_count }}</span>
             </div>
@@ -181,7 +181,7 @@
               <button
                 type="button"
                 class="batch-row-action flex flex-col items-center gap-0.5 rounded-lg p-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30"
-                :class="canDownload(row) ? 'text-gray-500 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400' : 'text-gray-300 dark:text-dark-500'"
+                :class="canDownload(row) ? 'text-gray-500 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400' : 'text-gray-300 dark:text-content-muted'"
                 :disabled="!canDownload(row) || downloading"
                 title="下载 ZIP"
                 @click="downloadJob(row)"
@@ -210,7 +210,7 @@
 
           <template #empty>
             <div class="flex min-h-[260px] flex-col items-center justify-center py-6 md:min-h-[300px]">
-              <Icon name="sparkles" size="xl" class="mb-4 h-12 w-12 text-gray-400 dark:text-dark-500" />
+              <Icon name="sparkles" size="xl" class="mb-4 h-12 w-12 text-gray-400 dark:text-content-muted" />
               <p class="text-lg font-medium text-gray-900 dark:text-gray-100">暂无批量任务</p>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 点击右上角创建批量任务。
@@ -340,7 +340,7 @@
               <p class="text-xs text-gray-500 dark:text-gray-400">{{ hasChildJobs(currentJob.id) ? '汇总结果' : '结果' }}</p>
               <p class="mt-1 flex items-center justify-center gap-2 font-medium tabular-nums">
               <span class="text-emerald-600 dark:text-emerald-300">{{ (currentDisplayJob || currentJob).success_count }}</span>
-              <span class="text-gray-300 dark:text-dark-500">/</span>
+              <span class="text-gray-300 dark:text-content-muted">/</span>
               <span :class="(currentDisplayJob || currentJob).fail_count > 0 ? 'text-red-600 dark:text-red-300' : 'text-gray-400 dark:text-gray-500'">{{ (currentDisplayJob || currentJob).fail_count }}</span>
             </p>
             </div>

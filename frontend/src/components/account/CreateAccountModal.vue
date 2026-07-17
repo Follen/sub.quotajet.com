@@ -12,7 +12,7 @@
           <div
             :class="[
               'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold',
-              step >= 1 ? 'bg-primary-500 text-white' : 'bg-gray-200 text-gray-500 dark:bg-dark-600'
+              step >= 1 ? 'bg-primary-500 text-primary-50' : 'bg-gray-200 text-gray-500 dark:bg-dark-600'
             ]"
           >
             1
@@ -26,7 +26,7 @@
           <div
             :class="[
               'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold',
-              step >= 2 ? 'bg-primary-500 text-white' : 'bg-gray-200 text-gray-500 dark:bg-dark-600'
+              step >= 2 ? 'bg-primary-500 text-primary-50' : 'bg-gray-200 text-gray-500 dark:bg-dark-600'
             ]"
           >
             2
@@ -2513,7 +2513,7 @@
                 :class="[
                   'px-3 py-1.5 text-sm rounded-md border transition-colors',
                   userMsgQueueMode === opt.value
-                    ? 'bg-primary-600 text-white border-primary-600'
+                    ? 'bg-primary-600 text-primary-50 border-primary-600'
                     : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-500 hover:bg-gray-50 dark:hover:bg-dark-600'
                 ]">
                 {{ opt.label }}
@@ -2848,8 +2848,10 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                openAILongContextBillingEnabled ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                openAILongContextBillingEnabled
+                  ? 'translate-x-5 bg-primary-50'
+                  : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>

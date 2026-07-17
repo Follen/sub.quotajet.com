@@ -22,7 +22,7 @@
 .driver-active-element {
   position: relative !important;
   z-index: 99999999 !important;
-  outline: 4px solid rgba(20, 184, 166, 0.2) !important;
+  outline: 4px solid oklch(var(--qj-primary-500) / 20%) !important;
   border-radius: 4px !important;
 }
 
@@ -43,7 +43,7 @@
 
 .dark .driver-popover.theme-tour-popover {
   background-color: oklch(0.285 0 0) !important;
-  border-color: #334155 !important;
+  border-color: oklch(1 0 0 / 10%) !important;
   color: #f3f4f6 !important;
 }
 
@@ -84,7 +84,7 @@
   justify-content: center !important;
 }
 .theme-tour-popover .driver-popover-close-btn:hover { background-color: #f3f4f6 !important; color: #4b5563 !important; }
-.dark .theme-tour-popover .driver-popover-close-btn:hover { background-color: #334155 !important; }
+.dark .theme-tour-popover .driver-popover-close-btn:hover { background-color: oklch(var(--qj-surface-accent)) !important; }
 
 /* 4. Body Content */
 .theme-tour-popover .driver-popover-description {
@@ -97,7 +97,7 @@
   line-height: 1.6 !important;
   background-color: transparent !important;
 }
-.dark .theme-tour-popover .driver-popover-description { color: #cbd5e1 !important; }
+.dark .theme-tour-popover .driver-popover-description { color: oklch(var(--qj-content-muted)) !important; }
 
 /* 5. Footer Area - Flex Row with Left/Right Containers */
 .theme-tour-popover .driver-popover-footer {
@@ -110,7 +110,7 @@
   margin: 0 !important;
 }
 .dark .theme-tour-popover .driver-popover-footer {
-  background-color: oklch(0.235 0 0) !important;
+  background-color: oklch(var(--qj-surface-canvas)) !important;
   border-top-color: oklch(1 0 0 / 10%) !important;
 }
 
@@ -147,7 +147,7 @@
   border-left: 1px solid #e5e7eb !important;
   height: 20px !important;
 }
-.dark .footer-shortcuts { border-left-color: #334155 !important; }
+.dark .footer-shortcuts { border-left-color: oklch(1 0 0 / 10%) !important; }
 
 .shortcut-item {
   display: flex !important;
@@ -157,7 +157,7 @@
   color: #6b7280 !important;
   white-space: nowrap !important;
 }
-.dark .shortcut-item { color: #94a3b8 !important; }
+.dark .shortcut-item { color: oklch(var(--qj-content-muted)) !important; }
 
 .shortcut-item kbd {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace !important;
@@ -174,9 +174,9 @@
   display: inline-block !important;
 }
 .dark .shortcut-item kbd {
-  background-color: oklch(0.285 0 0) !important;
-  border-color: #475569 !important;
-  color: #cbd5e1 !important;
+  background-color: oklch(var(--qj-surface-card)) !important;
+  border-color: oklch(1 0 0 / 17%) !important;
+  color: oklch(var(--qj-content-muted)) !important;
 }
 
 /* Nav Buttons */
@@ -196,11 +196,11 @@
 }
 
 .theme-tour-popover .driver-popover-next-btn {
-  background-color: #14b8a6 !important;
-  color: #ffffff !important;
+  background-color: oklch(var(--qj-primary-500)) !important;
+  color: oklch(var(--qj-primary-50)) !important;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
-.theme-tour-popover .driver-popover-next-btn:hover { background-color: #0d9488 !important; }
+.theme-tour-popover .driver-popover-next-btn:hover { background-color: oklch(var(--qj-primary-600)) !important; }
 
 .theme-tour-popover .driver-popover-prev-btn {
   background-color: white !important;
@@ -210,9 +210,9 @@
 }
 .theme-tour-popover .driver-popover-prev-btn:hover { background-color: #f9fafb !important; color: #374151 !important; }
 .dark .theme-tour-popover .driver-popover-prev-btn {
-  background-color: oklch(0.285 0 0) !important;
-  border-color: #475569 !important;
-  color: #9ca3af !important;
+  background-color: oklch(var(--qj-surface-card)) !important;
+  border-color: oklch(1 0 0 / 17%) !important;
+  color: oklch(var(--qj-content-muted)) !important;
 }
 
 /* Arrows */

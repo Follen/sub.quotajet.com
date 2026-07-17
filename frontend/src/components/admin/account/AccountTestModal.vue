@@ -214,7 +214,7 @@
                 ? 'bg-green-500 text-white hover:bg-green-600'
                 : status === 'error'
                   ? 'bg-orange-500 text-white hover:bg-orange-600'
-                  : 'bg-primary-500 text-white hover:bg-primary-600'
+                  : 'bg-primary-500 text-primary-50 hover:bg-primary-600'
           ]"
         >
           <Icon

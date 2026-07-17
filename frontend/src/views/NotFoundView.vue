@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 dark:bg-dark-950"
+    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface-canvas px-4"
   >
     <!-- Background Decoration -->
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
@@ -64,7 +64,7 @@
       </div>
 
       <!-- Help Link -->
-      <p class="mt-8 text-sm text-gray-400 dark:text-dark-500">
+      <p class="mt-8 text-sm text-gray-400 dark:text-content-muted">
         Need help?
         <a
           href="#"

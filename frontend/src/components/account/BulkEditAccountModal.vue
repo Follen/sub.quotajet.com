@@ -1167,7 +1167,7 @@
               :class="[
                 'px-3 py-1.5 text-sm rounded-md border transition-colors',
                 userMsgQueueMode === opt.value
-                  ? 'bg-primary-600 text-white border-primary-600'
+                  ? 'bg-primary-600 text-primary-50 border-primary-600'
                   : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-500 hover:bg-gray-50 dark:hover:bg-dark-600'
               ]">
               {{ opt.label }}

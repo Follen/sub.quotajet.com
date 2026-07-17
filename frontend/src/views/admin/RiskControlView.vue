@@ -481,7 +481,7 @@
                       <button
                         type="button"
                         class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-                        :class="configForm.api_keys_mode === 'append' ? 'bg-primary-500 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700'"
+                        :class="configForm.api_keys_mode === 'append' ? 'bg-primary-500 text-primary-50 shadow-sm' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700'"
                         :disabled="configForm.clear_api_key"
                         @click="setAPIKeysMode('append')"
                       >
@@ -595,7 +595,7 @@
                   </div>
 
                   <div v-if="apiKeyRows.length === 0" class="flex min-h-32 flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-white px-4 py-6 text-center dark:border-dark-700 dark:bg-dark-800">
-                    <Icon name="infoCircle" size="lg" class="text-gray-300 dark:text-dark-500" />
+                    <Icon name="infoCircle" size="lg" class="text-gray-300 dark:text-content-muted" />
                     <p class="mt-2 text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('admin.riskControl.apiKeyHealthEmpty') }}</p>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.riskControl.apiKeyHealthEmptyHint') }}</p>
                   </div>
@@ -741,7 +741,7 @@
                   </span>
                   <span
                     class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border"
-                    :class="isGroupSelected(group.id) ? 'border-primary-500 bg-primary-500 text-white' : 'border-gray-300 text-transparent dark:border-dark-500'"
+                    :class="isGroupSelected(group.id) ? 'border-primary-500 bg-primary-500 text-primary-50' : 'border-gray-300 text-transparent dark:border-dark-500'"
                   >
                     <Icon name="check" size="xs" :stroke-width="2" />
                   </span>
@@ -777,7 +777,7 @@
                     <span
                       class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border"
                       :class="configForm.model_filter_type === option.value
-                        ? 'border-primary-500 bg-primary-500 text-white'
+                        ? 'border-primary-500 bg-primary-500 text-primary-50'
                         : 'border-gray-300 text-transparent dark:border-dark-500'"
                     >
                       <Icon name="check" size="xs" :stroke-width="2" />
@@ -993,7 +993,7 @@
                     <span
                       class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border"
                       :class="configForm.keyword_blocking_mode === option.value
-                        ? 'border-primary-500 bg-primary-500 text-white'
+                        ? 'border-primary-500 bg-primary-500 text-primary-50'
                         : 'border-gray-300 text-transparent dark:border-dark-500'"
                     >
                       <Icon name="check" size="xs" :stroke-width="2" />
@@ -1334,9 +1334,9 @@ type KeywordNoticeView = {
 const keywordNoticeTones = {
   info: {
     icon: 'infoCircle' as const,
-    toneClass: 'border-primary-100 bg-primary-50/60 dark:border-primary-900/40 dark:bg-primary-900/10',
-    iconClass: 'mt-0.5 flex-shrink-0 text-primary-500 dark:text-primary-300',
-    titleClass: 'text-primary-700 dark:text-primary-200',
+    toneClass: 'border-blue-100 bg-blue-50/60 dark:border-blue-900/40 dark:bg-blue-900/10',
+    iconClass: 'mt-0.5 flex-shrink-0 text-blue-500 dark:text-blue-300',
+    titleClass: 'text-blue-700 dark:text-blue-200',
   },
   warning: {
     icon: 'exclamationTriangle' as const,

@@ -38,12 +38,22 @@ export default {
           200: 'oklch(0.9 0 0 / <alpha-value>)',
           300: 'oklch(0.78 0 0 / <alpha-value>)',
           400: 'oklch(0.68 0 0 / <alpha-value>)',
-          500: 'oklch(0.44 0 0 / <alpha-value>)',
+          500: 'oklch(0.365 0 0 / <alpha-value>)',
           600: 'oklch(0.335 0 0 / <alpha-value>)',
           700: 'oklch(0.305 0 0 / <alpha-value>)',
           800: 'oklch(0.285 0 0 / <alpha-value>)',
           900: 'oklch(0.235 0 0 / <alpha-value>)',
           950: 'oklch(0.225 0 0 / <alpha-value>)'
+        },
+        surface: {
+          canvas: 'oklch(var(--qj-surface-canvas) / <alpha-value>)',
+          sidebar: 'oklch(var(--qj-surface-sidebar) / <alpha-value>)',
+          card: 'oklch(var(--qj-surface-card) / <alpha-value>)',
+          popover: 'oklch(var(--qj-surface-popover) / <alpha-value>)',
+          accent: 'oklch(var(--qj-surface-accent) / <alpha-value>)'
+        },
+        content: {
+          muted: 'oklch(var(--qj-content-muted) / <alpha-value>)'
         }
       },
       fontFamily: {

@@ -4,6 +4,15 @@
 
 @layer base {
   :root {
+    --qj-surface-canvas: 0.985 0 0;
+    --qj-surface-sidebar: 0.96 0 0;
+    --qj-surface-card: 1 0 0;
+    --qj-surface-popover: 1 0 0;
+    --qj-surface-accent: 0.935 0 0;
+    --qj-content-muted: 0.49 0 0;
+    --qj-skeleton-base: 0.955 0 0;
+    --qj-skeleton-highlight: 0.985 0 0;
+    --qj-auth-grid-line: 0 0 0 / 3%;
     --qj-primary-50: 0.985 0 0;
     --qj-primary-100: 0.955 0 0;
     --qj-primary-200: 0.895 0 0;
@@ -18,6 +27,15 @@
   }
 
   .dark {
+    --qj-surface-canvas: 0.235 0 0;
+    --qj-surface-sidebar: 0.225 0 0;
+    --qj-surface-card: 0.285 0 0;
+    --qj-surface-popover: 0.305 0 0;
+    --qj-surface-accent: 0.365 0 0;
+    --qj-content-muted: 0.78 0 0;
+    --qj-skeleton-base: 0.335 0 0;
+    --qj-skeleton-highlight: 0.44 0 0;
+    --qj-auth-grid-line: 1 0 0 / 4%;
     --qj-primary-50: 0.155 0 0;
     --qj-primary-100: 0.965 0 0;
     --qj-primary-200: 0.9 0 0;
@@ -40,13 +58,7 @@
   }
 
   body {
-    @apply text-gray-900 dark:text-gray-100;
-    background-color: oklch(0.985 0 0);
-    @apply min-h-screen;
-  }
-
-  .dark body {
-    background-color: oklch(0.235 0 0);
+    @apply min-h-screen bg-surface-canvas text-gray-900 dark:text-gray-100;
   }
 
   /* 自定义滚动条 - 仅针对 Firefox，避免 Chrome 取消 webkit 的全局定制 */
@@ -114,8 +126,11 @@
     @apply hover:shadow-lg hover:shadow-black/15;
   }
 
-  .dark :is(.bg-primary-500.text-white, .bg-primary-600.text-white, .bg-primary-700.text-white) {
-    color: oklch(0.155 0 0);
+  .auth-grid {
+    background-image:
+      linear-gradient(oklch(var(--qj-auth-grid-line)) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(var(--qj-auth-grid-line)) 1px, transparent 1px);
+    background-size: 64px 64px;
   }
 
   .btn-secondary {
@@ -557,13 +572,13 @@
   }
 
   .toast-info {
-    @apply border-l-primary-500;
+    @apply border-l-blue-500;
   }
 
   /* ============ 侧边栏 ============ */
   .sidebar {
     @apply fixed inset-y-0 left-0 z-40;
-    @apply w-64 bg-white dark:bg-dark-900;
+    @apply w-64 bg-surface-sidebar;
     @apply border-r border-gray-200 dark:border-dark-800;
     @apply flex flex-col;
     @apply transition-transform duration-300;
@@ -608,7 +623,7 @@
   .sidebar-section-title {
     @apply mb-2 px-3;
     @apply text-xs font-semibold uppercase tracking-wider;
-    @apply text-gray-400 dark:text-dark-500;
+    @apply text-gray-400 dark:text-content-muted;
   }
 
   /* ============ 页面头部 ============ */
@@ -705,7 +720,7 @@
   }
 
   .switch-active .switch-thumb {
-    @apply translate-x-5;
+    @apply translate-x-5 bg-primary-50;
   }
 
   /* ============ 代码块 ============ */

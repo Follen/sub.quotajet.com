@@ -12,8 +12,8 @@
       ]"
     >
       <span :class="[
-        'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200',
-        checked ? 'translate-x-4' : 'translate-x-0',
+        'pointer-events-none inline-block h-4 w-4 rounded-full shadow-sm transition-transform duration-200',
+        checked ? 'translate-x-4 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100',
       ]" />
     </button>
   </label>
