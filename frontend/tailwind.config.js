@@ -5,19 +5,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 主色调 - Teal/Cyan 青色系
         primary: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
-          950: '#042f2e'
+          50: 'oklch(var(--qj-primary-50) / <alpha-value>)',
+          100: 'oklch(var(--qj-primary-100) / <alpha-value>)',
+          200: 'oklch(var(--qj-primary-200) / <alpha-value>)',
+          300: 'oklch(var(--qj-primary-300) / <alpha-value>)',
+          400: 'oklch(var(--qj-primary-400) / <alpha-value>)',
+          500: 'oklch(var(--qj-primary-500) / <alpha-value>)',
+          600: 'oklch(var(--qj-primary-600) / <alpha-value>)',
+          700: 'oklch(var(--qj-primary-700) / <alpha-value>)',
+          800: 'oklch(var(--qj-primary-800) / <alpha-value>)',
+          900: 'oklch(var(--qj-primary-900) / <alpha-value>)',
+          950: 'oklch(var(--qj-primary-950) / <alpha-value>)'
         },
         // 辅助色 - 深蓝灰
         accent: {
@@ -29,23 +28,27 @@ export default {
           500: '#64748b',
           600: '#475569',
           700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617'
+          800: 'oklch(0.285 0 0)',
+          900: 'oklch(0.235 0 0)',
+          950: 'oklch(0.225 0 0)'
         },
-        // 深色模式背景
+        // Source neutral dark surface scale:
+        // 700: 'oklch(0.305 0 0)'
+        // 800: 'oklch(0.285 0 0)'
+        // 900: 'oklch(0.235 0 0)'
+        // 950: 'oklch(0.225 0 0)'
         dark: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617'
+          50: 'oklch(var(--qj-dark-50, 0.985 0 0) / <alpha-value>)',
+          100: 'oklch(var(--qj-dark-100, 0.965 0 0) / <alpha-value>)',
+          200: 'oklch(var(--qj-dark-200, 0.9 0 0) / <alpha-value>)',
+          300: 'oklch(var(--qj-dark-300, 0.78 0 0) / <alpha-value>)',
+          400: 'oklch(var(--qj-dark-400, 0.68 0 0) / <alpha-value>)',
+          500: 'oklch(var(--qj-dark-500, 0.44 0 0) / <alpha-value>)',
+          600: 'oklch(var(--qj-dark-600, 0.335 0 0) / <alpha-value>)',
+          700: 'oklch(var(--qj-dark-700, 0.305 0 0) / <alpha-value>)',
+          800: 'oklch(var(--qj-dark-800, 0.285 0 0) / <alpha-value>)',
+          900: 'oklch(var(--qj-dark-900, 0.235 0 0) / <alpha-value>)',
+          950: 'oklch(var(--qj-dark-950, 0.225 0 0) / <alpha-value>)'
         }
       },
       fontFamily: {
@@ -76,7 +79,7 @@ export default {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-primary': 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
-        'gradient-dark': 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+        'gradient-dark': 'linear-gradient(135deg, oklch(0.285 0 0) 0%, oklch(0.235 0 0) 100%)',
         'gradient-glass':
           'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
         'mesh-gradient':
