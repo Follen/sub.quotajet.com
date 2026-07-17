@@ -40,6 +40,21 @@ const settingsSource = readFrontendFile('src/views/admin/SettingsView.vue')
 const redeemSource = readFrontendFile('src/views/user/RedeemView.vue')
 const riskControlSource = readFrontendFile('src/views/admin/RiskControlView.vue')
 const platformColorsSource = readFrontendFile('src/utils/platformColors.ts')
+const helpTooltipSource = readFrontendFile('src/components/common/HelpTooltip.vue')
+const endpointPopoverSource = readFrontendFile('src/components/keys/EndpointPopover.vue')
+const accountStatusIndicatorSource = readFrontendFile('src/components/account/AccountStatusIndicator.vue')
+const accountUsageCellSource = readFrontendFile('src/components/account/AccountUsageCell.vue')
+const groupsSource = readFrontendFile('src/views/admin/GroupsView.vue')
+const usageTableSource = readFrontendFile('src/components/admin/usage/UsageTable.vue')
+const opsDashboardHeaderSource = readFrontendFile('src/views/admin/ops/components/OpsDashboardHeader.vue')
+const dataTableSource = readFrontendFile('src/components/common/DataTable.vue')
+const tooltipModalSources = [createAccountSource, editAccountSource]
+const opsChartSources = [
+  readFrontendFile('src/views/admin/ops/components/OpsErrorDistributionChart.vue'),
+  readFrontendFile('src/views/admin/ops/components/OpsErrorTrendChart.vue'),
+  readFrontendFile('src/views/admin/ops/components/OpsSwitchRateTrendChart.vue'),
+  readFrontendFile('src/views/admin/ops/components/OpsThroughputTrendChart.vue')
+]
 
 const colors = tailwindConfig.theme.extend.colors as Record<string, Record<string, string>>
 const primaryScale = colors.primary
@@ -217,6 +232,52 @@ describe('source-aligned global theme', () => {
         'background-color: oklch(var(--qj-surface-popover) / var(--tw-bg-opacity, 1))'
       )
     }
+  })
+
+  it('uses the neutral popover role for custom dark tooltips', () => {
+    const customTooltipSources = [
+      helpTooltipSource,
+      endpointPopoverSource,
+      accountStatusIndicatorSource,
+      accountUsageCellSource,
+      groupsSource,
+      usageTableSource,
+      opsDashboardHeaderSource,
+      ...tooltipModalSources
+    ]
+    const combinedTooltipSource = customTooltipSources.join('\n')
+
+    for (const source of customTooltipSources) {
+      expect(source).toContain('dark:bg-surface-popover')
+    }
+    for (const legacyClass of [
+      'dark:bg-gray-800 dark:ring-white/10',
+      'group-hover:opacity-100 dark:bg-gray-700',
+      'dark:border-gray-600 dark:bg-gray-800',
+      'dark:border-slate-700 dark:bg-slate-900',
+      'text-white shadow-lg dark:bg-gray-800',
+      'rotate-45 bg-gray-900 dark:bg-gray-800',
+      'rounded bg-gray-800 p-2 dark:bg-gray-700'
+    ]) {
+      expect(combinedTooltipSource).not.toContain(legacyClass)
+    }
+    expect(combinedTooltipSource).not.toMatch(/dark:border-[trb]-(?:gray|slate)-(?:700|800|900)/)
+
+    for (const source of opsChartSources) {
+      expect(source).toContain("backgroundColor: isDarkMode.value ? 'oklch(0.305 0 0)' : '#ffffff'")
+      expect(source).not.toContain('#1f2937')
+    }
+  })
+
+  it('keeps sticky data table surfaces on the shared neutral theme roles', () => {
+    expect(dataTableSource).toContain('background-color: oklch(var(--qj-surface-card));')
+    expect(dataTableSource).toContain('background-color: oklch(var(--qj-surface-canvas));')
+    expect(dataTableSource).not.toContain('background-color: rgb(31 41 55);')
+    expect(dataTableSource).not.toContain('background-color: rgb(17 24 39);')
+  })
+
+  it('rejects legacy blue-gray utility backgrounds throughout dark mode', () => {
+    expect(applicationSource).not.toMatch(/dark:[^\s"'`]*bg-(?:gray|slate)-/)
   })
 
   it('keeps generic primary buttons theme-aware outside shared button components', () => {

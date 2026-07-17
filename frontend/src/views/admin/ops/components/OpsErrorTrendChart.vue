@@ -119,7 +119,7 @@ const options = computed(() => {
         labels: { color: c.text, usePointStyle: true, boxWidth: 6, font: { size: 10 } }
       },
       tooltip: {
-        backgroundColor: isDarkMode.value ? '#1f2937' : '#ffffff',
+        backgroundColor: isDarkMode.value ? 'oklch(0.305 0 0)' : '#ffffff',
         titleColor: isDarkMode.value ? '#f3f4f6' : '#111827',
         bodyColor: isDarkMode.value ? '#d1d5db' : '#4b5563',
         borderColor: c.grid,
