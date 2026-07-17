@@ -109,9 +109,7 @@
     @apply hover:shadow-lg hover:shadow-black/15;
   }
 
-  .dark :is(button, a, [role='button']).bg-primary-500.text-white,
-  .dark :is(button, a, [role='button']).bg-primary-600.text-white,
-  .dark :is(button, a, [role='button']).bg-primary-700.text-white {
+  .dark :is(.bg-primary-500.text-white, .bg-primary-600.text-white, .bg-primary-700.text-white) {
     color: oklch(0.155 0 0);
   }
 

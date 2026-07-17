@@ -32,23 +32,18 @@ export default {
           900: 'oklch(0.235 0 0)',
           950: 'oklch(0.225 0 0)'
         },
-        // Source neutral dark surface scale:
-        // 700: 'oklch(0.305 0 0)'
-        // 800: 'oklch(0.285 0 0)'
-        // 900: 'oklch(0.235 0 0)'
-        // 950: 'oklch(0.225 0 0)'
         dark: {
-          50: 'oklch(var(--qj-dark-50, 0.985 0 0) / <alpha-value>)',
-          100: 'oklch(var(--qj-dark-100, 0.965 0 0) / <alpha-value>)',
-          200: 'oklch(var(--qj-dark-200, 0.9 0 0) / <alpha-value>)',
-          300: 'oklch(var(--qj-dark-300, 0.78 0 0) / <alpha-value>)',
-          400: 'oklch(var(--qj-dark-400, 0.68 0 0) / <alpha-value>)',
-          500: 'oklch(var(--qj-dark-500, 0.44 0 0) / <alpha-value>)',
-          600: 'oklch(var(--qj-dark-600, 0.335 0 0) / <alpha-value>)',
-          700: 'oklch(var(--qj-dark-700, 0.305 0 0) / <alpha-value>)',
-          800: 'oklch(var(--qj-dark-800, 0.285 0 0) / <alpha-value>)',
-          900: 'oklch(var(--qj-dark-900, 0.235 0 0) / <alpha-value>)',
-          950: 'oklch(var(--qj-dark-950, 0.225 0 0) / <alpha-value>)'
+          50: 'oklch(0.985 0 0 / <alpha-value>)',
+          100: 'oklch(0.965 0 0 / <alpha-value>)',
+          200: 'oklch(0.9 0 0 / <alpha-value>)',
+          300: 'oklch(0.78 0 0 / <alpha-value>)',
+          400: 'oklch(0.68 0 0 / <alpha-value>)',
+          500: 'oklch(0.44 0 0 / <alpha-value>)',
+          600: 'oklch(0.335 0 0 / <alpha-value>)',
+          700: 'oklch(0.305 0 0 / <alpha-value>)',
+          800: 'oklch(0.285 0 0 / <alpha-value>)',
+          900: 'oklch(0.235 0 0 / <alpha-value>)',
+          950: 'oklch(0.225 0 0 / <alpha-value>)'
         }
       },
       fontFamily: {
