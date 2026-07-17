@@ -209,7 +209,7 @@
           :class="[
             'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all',
             status === 'connecting' || !selectedModelId
-              ? 'cursor-not-allowed bg-primary-400 text-white'
+              ? 'cursor-not-allowed bg-primary-400 text-primary-50'
               : status === 'success'
                 ? 'bg-green-500 text-white hover:bg-green-600'
                 : status === 'error'

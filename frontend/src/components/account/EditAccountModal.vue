@@ -278,8 +278,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  poolModeEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  poolModeEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -342,8 +342,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  customErrorCodesEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  customErrorCodesEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -443,8 +443,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  headerOverrideEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  headerOverrideEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -1062,8 +1062,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  poolModeEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  poolModeEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -1243,8 +1243,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                tempUnschedEnabled ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                tempUnschedEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1396,8 +1396,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                interceptWarmupRequests ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                interceptWarmupRequests ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1470,8 +1470,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                openaiPassthroughEnabled ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                openaiPassthroughEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1637,8 +1637,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                anthropicPassthroughEnabled ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                anthropicPassthroughEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1842,8 +1842,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                codexCLIOnlyEnabled ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                codexCLIOnlyEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1868,8 +1868,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                codexCLIOnlyAppServerEnabled ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                codexCLIOnlyAppServerEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1972,8 +1972,8 @@
           >
             <span
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                autoPauseOnExpired ? 'translate-x-5' : 'translate-x-0'
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                autoPauseOnExpired ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
               ]"
             />
           </button>
@@ -1998,8 +1998,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  autoPause5hDisabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  autoPause5hDisabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2034,8 +2034,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  autoPause7dDisabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  autoPause7dDisabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2089,8 +2089,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  windowCostEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  windowCostEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2149,8 +2149,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  sessionLimitEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  sessionLimitEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2206,8 +2206,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  rpmLimitEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  rpmLimitEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2319,8 +2319,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  tlsFingerprintEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  tlsFingerprintEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2354,8 +2354,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  sessionIdMaskingEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  sessionIdMaskingEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2381,8 +2381,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  cacheTTLOverrideEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  cacheTTLOverrideEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -2421,8 +2421,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  customBaseUrlEnabled ? 'translate-x-5' : 'translate-x-0'
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  customBaseUrlEnabled ? 'translate-x-5 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>

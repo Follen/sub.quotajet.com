@@ -170,8 +170,8 @@
                 >
                   <span
                     :class="[
-                      'pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                      rule.enabled ? 'translate-x-3' : 'translate-x-0'
+                      'pointer-events-none inline-block h-3 w-3 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                      rule.enabled ? 'translate-x-3 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                     ]"
                   />
                 </button>

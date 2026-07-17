@@ -521,8 +521,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  formData.use_custom_key ? 'translate-x-4' : 'translate-x-0'
+                  'pointer-events-none inline-block h-4 w-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  formData.use_custom_key ? 'translate-x-4 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -563,8 +563,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  formData.enable_ip_restriction ? 'translate-x-4' : 'translate-x-0'
+                  'pointer-events-none inline-block h-4 w-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  formData.enable_ip_restriction ? 'translate-x-4 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -611,8 +611,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  formData.enable_quota ? 'translate-x-4' : 'translate-x-0'
+                  'pointer-events-none inline-block h-4 w-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  formData.enable_quota ? 'translate-x-4 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -675,8 +675,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  formData.enable_rate_limit ? 'translate-x-4' : 'translate-x-0'
+                  'pointer-events-none inline-block h-4 w-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  formData.enable_rate_limit ? 'translate-x-4 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>
@@ -849,8 +849,8 @@
             >
               <span
                 :class="[
-                  'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  formData.enable_expiration ? 'translate-x-4' : 'translate-x-0'
+                  'pointer-events-none inline-block h-4 w-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out',
+                  formData.enable_expiration ? 'translate-x-4 bg-primary-50' : 'translate-x-0 bg-white dark:bg-dark-100'
                 ]"
               />
             </button>

@@ -639,8 +639,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  createForm.is_exclusive ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  createForm.is_exclusive ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -738,8 +738,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  createModelsListState.enabled ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  createModelsListState.enabled ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -1230,8 +1230,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  createForm.mcp_xml_inject ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  createForm.mcp_xml_inject ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -1290,10 +1290,10 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
                   createForm.claude_code_only
-                    ? 'translate-x-6'
-                    : 'translate-x-1',
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -1384,11 +1384,11 @@
               "
             >
               <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
                 :class="
                   createForm.allow_messages_dispatch
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100'
                 "
               />
             </button>
@@ -1623,11 +1623,11 @@
               "
             >
               <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
                 :class="
                   createForm.require_oauth_only
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100'
                 "
               />
             </button>
@@ -1660,11 +1660,11 @@
               "
             >
               <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
                 :class="
                   createForm.require_privacy_set
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100'
                 "
               />
             </button>
@@ -1739,10 +1739,10 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
                   createForm.model_routing_enabled
-                    ? 'translate-x-6'
-                    : 'translate-x-1',
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -2148,8 +2148,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  editForm.is_exclusive ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  editForm.is_exclusive ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -2252,8 +2252,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  editModelsListState.enabled ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  editModelsListState.enabled ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -2744,8 +2744,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  editForm.mcp_xml_inject ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  editForm.mcp_xml_inject ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -2802,8 +2802,8 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-                  editForm.claude_code_only ? 'translate-x-6' : 'translate-x-1',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
+                  editForm.claude_code_only ? 'translate-x-6 bg-primary-50' : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
@@ -2894,11 +2894,11 @@
               "
             >
               <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
                 :class="
                   editForm.allow_messages_dispatch
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100'
                 "
               />
             </button>
@@ -3133,11 +3133,11 @@
               "
             >
               <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
                 :class="
                   editForm.require_oauth_only
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100'
                 "
               />
             </button>
@@ -3170,11 +3170,11 @@
               "
             >
               <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
                 :class="
                   editForm.require_privacy_set
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100'
                 "
               />
             </button>
@@ -3248,10 +3248,10 @@
             >
               <span
                 :class="[
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  'inline-block h-4 w-4 transform rounded-full shadow transition-transform',
                   editForm.model_routing_enabled
-                    ? 'translate-x-6'
-                    : 'translate-x-1',
+                    ? 'translate-x-6 bg-primary-50'
+                    : 'translate-x-1 bg-white dark:bg-dark-100',
                 ]"
               />
             </button>
