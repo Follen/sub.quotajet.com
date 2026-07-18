@@ -18,11 +18,15 @@ const marketplace: PublicModelMarketplace = {
       models: [
         { name: 'gpt-4.1', providers: [] },
         { name: 'gpt-5', providers: [] },
+        { name: 'shared-model', providers: [] },
       ],
     },
     {
       name: 'Anthropic',
-      models: [{ name: 'claude-sonnet-4', providers: [] }],
+      models: [
+        { name: 'claude-sonnet-4', providers: [] },
+        { name: 'shared-model', providers: [] },
+      ],
     },
   ],
 }
@@ -85,5 +89,35 @@ describe('ModelMarketplaceShell', () => {
     })
 
     expect(wrapper.get('[data-testid="marketplace-empty"]').text()).toContain('modelMarketplace.empty.title')
+  })
+
+  it('normalizes a missing or invalid model query to the visible model', async () => {
+    await router.push('/models?ref=marketplace')
+    const wrapper = mount(ModelMarketplaceShell, {
+      props: { marketplace },
+      global: { plugins: [router] },
+    })
+
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('gpt-4.1')
+    expect(router.currentRoute.value.query).toMatchObject({
+      model: 'gpt-4.1',
+      platform: 'OpenAI',
+      ref: 'marketplace',
+    })
+  })
+
+  it('uses the platform query to distinguish duplicate model names', async () => {
+    await router.push('/models?platform=Anthropic&model=shared-model')
+    const wrapper = mount(ModelMarketplaceShell, {
+      props: { marketplace },
+      global: { plugins: [router] },
+    })
+
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="marketplace-platform-Anthropic"]').attributes('aria-selected')).toBe('true')
+    expect(wrapper.find('[data-testid="marketplace-model-claude-sonnet-4"]').exists()).toBe(true)
   })
 })

@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -125,17 +125,43 @@ const selectedModelName = computed(() => {
   const value = route.query.model
   return typeof value === 'string' ? value : ''
 })
+const selectedPlatformName = computed(() => {
+  const value = route.query.platform
+  return typeof value === 'string' ? value : ''
+})
+const selectedPlatformFromQuery = computed(() =>
+  platforms.value.find((platform) => platform.name === selectedPlatformName.value),
+)
 const selectedModelPlatform = computed(() =>
-  platforms.value.find((platform) =>
+  selectedPlatformFromQuery.value?.models.some((model) => model.name === selectedModelName.value)
+    ? selectedPlatformFromQuery.value
+    : platforms.value.find((platform) =>
     platform.models.some((model) => model.name === selectedModelName.value),
   ),
 )
 const activePlatform = computed(() => {
   if (selectedModelPlatform.value) return selectedModelPlatform.value
+  if (selectedPlatformFromQuery.value) return selectedPlatformFromQuery.value
   return platforms.value.find((platform) => platform.name === activePlatformName.value) ?? platforms.value[0]
 })
 const selectedModel = computed<PublicMarketplaceModel | undefined>(() =>
   activePlatform.value?.models.find((model) => model.name === selectedModelName.value) ?? activePlatform.value?.models[0],
+)
+
+watch(
+  () => [activePlatform.value?.name, selectedModel.value?.name],
+  ([platformName, modelName]) => {
+    if (!platformName || !modelName) return
+    if (platformName === selectedPlatformName.value && modelName === selectedModelName.value) return
+    void router.replace({
+      query: {
+        ...route.query,
+        platform: platformName,
+        model: modelName,
+      },
+    })
+  },
+  { immediate: true },
 )
 
 async function selectPlatform(platformName: string): Promise<void> {
@@ -148,9 +174,11 @@ async function selectPlatform(platformName: string): Promise<void> {
 }
 
 async function selectModel(modelName: string): Promise<void> {
+  const platformName = activePlatform.value?.name
   await router.replace({
     query: {
       ...route.query,
+      ...(platformName ? { platform: platformName } : {}),
       model: modelName,
     },
   })
