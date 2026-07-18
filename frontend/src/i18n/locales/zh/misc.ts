@@ -1,4 +1,6 @@
 export default {
+  Home: '首页',
+  Console: '控制台',
   'Models & pricing': '模型与定价',
   'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.': '探索精选 AI 模型，比较价格与能力，为不同场景选择合适的模型。',
   'This site currently has {{count}} models enabled': '本站当前已启用模型，总计 {{count}} 个',

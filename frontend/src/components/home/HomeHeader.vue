@@ -190,8 +190,8 @@ const props = defineProps<{
 const { t } = useI18n()
 const safeDocUrl = computed(() => sanitizeUrl(props.docUrl))
 const navigation = computed(() => props.publicCatalog ? [
-  { labelKey: 'landing.nav.home', href: '/home', external: false },
-  { labelKey: 'landing.nav.console', href: '/dashboard', external: false },
+  { labelKey: 'Home', href: '/home', external: false },
+  { labelKey: 'Console', href: '/dashboard', external: false },
   { labelKey: 'landing.nav.models', href: '/pricing', external: false },
   { labelKey: 'landing.nav.docs', href: safeDocUrl.value || '#', external: Boolean(safeDocUrl.value) },
   { labelKey: 'landing.nav.status', href: 'https://status.quotajet.com/', external: true },

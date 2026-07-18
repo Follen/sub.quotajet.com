@@ -1,4 +1,6 @@
 export default {
+  Home: 'Home',
+  Console: 'Console',
   'Models & pricing': 'Models & pricing',
   'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.': 'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.',
   'This site currently has {{count}} models enabled': 'This site currently has {{count}} models enabled',
