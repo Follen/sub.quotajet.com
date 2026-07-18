@@ -84,21 +84,21 @@ export interface PublicMarketplacePlatform {
   models: PublicMarketplaceModel[]
 }
 
-export interface PublicModelMarketplace {
+export interface PublicPricingCatalogue {
   version: string
   generated_at: string
   platforms: PublicMarketplacePlatform[]
 }
 
-export async function getModelMarketplace(
+export async function getPricing(
   options?: { signal?: AbortSignal },
-): Promise<PublicModelMarketplace> {
-  const { data } = await apiClient.get<PublicModelMarketplace>('/pricing', {
+): Promise<PublicPricingCatalogue> {
+  const { data } = await apiClient.get<PublicPricingCatalogue>('/pricing', {
     signal: options?.signal,
   })
   return data
 }
 
-export const modelMarketplaceAPI = { getModelMarketplace }
+export const pricingAPI = { getPricing }
 
-export default modelMarketplaceAPI
+export default pricingAPI

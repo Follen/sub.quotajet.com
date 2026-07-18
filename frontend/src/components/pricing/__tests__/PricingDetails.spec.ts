@@ -14,12 +14,12 @@ vi.mock('@/composables/useClipboard', () => ({
   useClipboard: () => ({ copied: { value: false }, copyToClipboard }),
 }))
 
-import ModelMarketplaceShell from '../ModelMarketplaceShell.vue'
-import MarketplaceQuickStart from '../MarketplaceQuickStart.vue'
-import MarketplacePricingPanel from '../MarketplacePricingPanel.vue'
-import type { PublicModelMarketplace } from '@/api/modelMarketplace'
+import PricingShell from '../PricingShell.vue'
+import PricingQuickStart from '../PricingQuickStart.vue'
+import PricingPanel from '../PricingPanel.vue'
+import type { PublicPricingCatalogue } from '@/api/pricing'
 
-const marketplace: PublicModelMarketplace = {
+const marketplace: PublicPricingCatalogue = {
   version: 'v1',
   generated_at: '2026-07-18T00:00:00Z',
   platforms: [
@@ -174,7 +174,7 @@ describe('Marketplace details', () => {
   })
 
   function mountMarketplace() {
-    return mount(ModelMarketplaceShell, {
+    return mount(PricingShell, {
       props: {
         marketplace,
         apiOrigin: 'https://api.example.com',
@@ -221,7 +221,7 @@ describe('Marketplace details', () => {
   })
 
   it('renders group media overrides when channel pricing is absent', () => {
-    const wrapper = mount(MarketplacePricingPanel, {
+    const wrapper = mount(PricingPanel, {
       props: {
         groupPrice: {
           name: 'image-only',
@@ -239,7 +239,7 @@ describe('Marketplace details', () => {
   })
 
   it('renders token, per-request, image, and video prices together', () => {
-    const wrapper = mount(MarketplacePricingPanel, {
+    const wrapper = mount(PricingPanel, {
       props: {
         groupPrice: {
           name: 'grok-mixed',
@@ -274,7 +274,7 @@ describe('Marketplace details', () => {
   })
 
   it('does not publish gated media pricing for a disabled group', () => {
-    const wrapper = mount(MarketplacePricingPanel, {
+    const wrapper = mount(PricingPanel, {
       props: {
         groupPrice: {
           name: 'gated-media',
@@ -346,7 +346,7 @@ describe('Marketplace details', () => {
 
   it('serializes arbitrary model names safely for JSON and POSIX shell input', async () => {
     const modelName = `gpt'"\\\n$(echo unsafe)`
-    const wrapper = mount(MarketplaceQuickStart, {
+    const wrapper = mount(PricingQuickStart, {
       props: { apiOrigin: 'https://api.example.com', modelName },
       global: { plugins: [router] },
     })
@@ -362,7 +362,7 @@ describe('Marketplace details', () => {
   })
 
   it('validates and shell-quotes an adversarial API origin', () => {
-    const wrapper = mount(MarketplaceQuickStart, {
+    const wrapper = mount(PricingQuickStart, {
       props: {
         apiOrigin: `javascript:alert(1)'; echo injected; #`,
         modelName: 'gpt-4.1',
@@ -378,7 +378,7 @@ describe('Marketplace details', () => {
   })
 
   it('resolves a relative API base against the current origin', () => {
-    const wrapper = mount(MarketplaceQuickStart, {
+    const wrapper = mount(PricingQuickStart, {
       props: { apiOrigin: '/api/v1', modelName: 'gpt-4.1' },
       global: { plugins: [router] },
     })

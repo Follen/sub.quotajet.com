@@ -10,10 +10,10 @@ vi.mock('@/composables/useClipboard', () => ({
   useClipboard: () => ({ copied: { value: false }, copyToClipboard: vi.fn().mockResolvedValue(true) }),
 }))
 
-import ModelMarketplaceShell from '../ModelMarketplaceShell.vue'
-import type { PublicModelMarketplace } from '@/api/modelMarketplace'
+import PricingShell from '../PricingShell.vue'
+import type { PublicPricingCatalogue } from '@/api/pricing'
 
-const marketplace: PublicModelMarketplace = {
+const marketplace: PublicPricingCatalogue = {
   version: 'v1',
   generated_at: '2026-07-18T00:00:00Z',
   platforms: [
@@ -45,7 +45,7 @@ function createTestRouter() {
   })
 }
 
-describe('ModelMarketplaceShell', () => {
+describe('PricingShell', () => {
   let router: ReturnType<typeof createTestRouter>
 
   beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('renders public platform tabs from the marketplace response', () => {
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: { marketplace },
       global: { plugins: [router] },
     })
@@ -65,7 +65,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('switches models and keeps the selected model in the URL query', async () => {
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: { marketplace },
       global: { plugins: [router] },
     })
@@ -84,7 +84,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('shows the public empty state when no models are available', () => {
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: {
         marketplace: {
           version: 'v1',
@@ -100,7 +100,7 @@ describe('ModelMarketplaceShell', () => {
 
   it('normalizes a missing or invalid model query to the visible model', async () => {
     await router.push('/pricing?ref=marketplace')
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: { marketplace },
       global: { plugins: [router] },
     })
@@ -117,7 +117,7 @@ describe('ModelMarketplaceShell', () => {
 
   it('uses the platform query to distinguish duplicate model names', async () => {
     await router.push('/pricing?platform=Anthropic&model=shared-model')
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: { marketplace },
       global: { plugins: [router] },
     })
@@ -129,7 +129,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('passes the target platform when switching to a duplicate first model', async () => {
-    const duplicateFirstMarketplace: PublicModelMarketplace = {
+    const duplicateFirstMarketplace: PublicPricingCatalogue = {
       ...marketplace,
       platforms: [
         {
@@ -143,7 +143,7 @@ describe('ModelMarketplaceShell', () => {
       ],
     }
     await router.push('/pricing?platform=OpenAI&model=shared-first')
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: { marketplace: duplicateFirstMarketplace },
       global: { plugins: [router] },
     })
@@ -160,7 +160,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('filters the model list by a case-insensitive search query', async () => {
-    const wrapper = mount(ModelMarketplaceShell, {
+    const wrapper = mount(PricingShell, {
       props: { marketplace },
       global: { plugins: [router] },
     })

@@ -34,7 +34,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { useClipboard } from '@/composables/useClipboard'
-import { normalizeMarketplaceApiOrigin, shellQuote } from './marketplaceQuickStart'
+import { normalizeMarketplaceApiOrigin, shellQuote } from './pricingQuickStart'
 
 const props = defineProps<{
   apiOrigin: string

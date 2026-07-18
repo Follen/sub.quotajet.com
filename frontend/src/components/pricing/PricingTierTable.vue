@@ -30,8 +30,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { PublicMarketplaceTierInterval } from '@/api/modelMarketplace'
-import { formatMarketplacePrice } from './marketplaceFormatters'
+import type { PublicMarketplaceTierInterval } from '@/api/pricing'
+import { formatMarketplacePrice } from './pricingFormatters'
 
 interface PriceEntry {
   label: string

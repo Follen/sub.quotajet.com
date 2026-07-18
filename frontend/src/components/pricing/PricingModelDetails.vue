@@ -30,7 +30,7 @@
         <p v-if="provider.description" class="mt-1 text-sm text-slate-400">{{ provider.description }}</p>
         <div class="mt-4 space-y-3">
           <div v-for="groupPrice in provider.group_prices" :key="`${provider.name}-${groupPrice.name}`" :data-testid="`marketplace-group-${groupPrice.name}`">
-            <MarketplacePricingPanel :group-price="groupPrice" />
+            <PricingPanel :group-price="groupPrice" />
           </div>
         </div>
       </article>
@@ -47,7 +47,7 @@
       <template v-for="provider in model.providers" :key="provider.name">
         <div v-for="groupPrice in provider.group_prices" :key="`${provider.name}-${groupPrice.name}`">
           <p class="mb-2 font-mono text-xs text-slate-500">{{ provider.name }}</p>
-          <MarketplacePricingPanel :group-price="groupPrice" />
+          <PricingPanel :group-price="groupPrice" />
         </div>
       </template>
     </div>
@@ -62,8 +62,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import type { PublicMarketplaceModel } from '@/api/modelMarketplace'
-import MarketplacePricingPanel from './MarketplacePricingPanel.vue'
+import type { PublicMarketplaceModel } from '@/api/pricing'
+import PricingPanel from './PricingPanel.vue'
 
 type DetailSection = 'providers' | 'pricing' | 'performance' | 'uptime' | 'benchmarks' | 'apps' | 'activity'
 

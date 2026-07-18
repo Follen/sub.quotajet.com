@@ -8,11 +8,11 @@ vi.mock('../client', () => ({
   apiClient: { get },
 }))
 
-import { getModelMarketplace } from '../modelMarketplace'
+import { getPricing } from '../pricing'
 
 describe('pricing catalogue API', () => {
   it('uses the public pricing endpoint', async () => {
-    await getModelMarketplace()
+    await getPricing()
     expect(get).toHaveBeenCalledWith('/pricing', { signal: undefined })
   })
 })

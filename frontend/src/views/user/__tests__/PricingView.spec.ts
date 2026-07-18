@@ -6,8 +6,8 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('@/api/modelMarketplace', () => ({
-  getModelMarketplace: vi.fn().mockResolvedValue({ version: 'v1', generated_at: '', platforms: [] }),
+vi.mock('@/api/pricing', () => ({
+  getPricing: vi.fn().mockResolvedValue({ version: 'v1', generated_at: '', platforms: [] }),
 }))
 
 vi.mock('@/stores/app', () => ({
@@ -18,21 +18,21 @@ vi.mock('@/composables/useClipboard', () => ({
   useClipboard: () => ({ copied: { value: false }, copyToClipboard: vi.fn() }),
 }))
 
-import ModelMarketplaceView from '../ModelMarketplaceView.vue'
+import PricingView from '../PricingView.vue'
 
-describe('ModelMarketplaceView', () => {
+describe('PricingView', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('renders as a standalone public page without the application sidebar shell', () => {
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/pricing', component: ModelMarketplaceView }],
+      routes: [{ path: '/pricing', component: PricingView }],
     })
 
-    const wrapper = mount(ModelMarketplaceView, {
+    const wrapper = mount(PricingView, {
       global: {
         plugins: [router],
-        stubs: { ModelMarketplaceShell: true },
+        stubs: { PricingShell: true },
       },
     })
 

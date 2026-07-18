@@ -48,7 +48,7 @@
 
         <div v-if="section.intervals.length > 0" class="mt-4 space-y-2">
           <p class="text-xs font-medium text-slate-400">{{ t('modelMarketplace.tiers.title') }}</p>
-          <MarketplaceTierTable :intervals="section.intervals" :rate-multiplier="section.multiplier" :billing-mode="section.billingMode" />
+          <PricingTierTable :intervals="section.intervals" :rate-multiplier="section.multiplier" :billing-mode="section.billingMode" />
         </div>
       </article>
     </div>
@@ -65,9 +65,9 @@ import type {
   PublicMarketplacePrice,
   PublicMarketplaceTierInterval,
   PublicMarketplaceVideoPrices,
-} from '@/api/modelMarketplace'
-import MarketplaceTierTable from './MarketplaceTierTable.vue'
-import { formatMarketplacePrice } from './marketplaceFormatters'
+} from '@/api/pricing'
+import PricingTierTable from './PricingTierTable.vue'
+import { formatMarketplacePrice } from './pricingFormatters'
 
 type PricingMode = 'token' | 'per_request' | 'image' | 'video'
 

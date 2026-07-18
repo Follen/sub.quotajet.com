@@ -107,9 +107,9 @@
             {{ t('modelMarketplace.providerCount', { count: selectedModel.providers.length }) }}
           </p>
           <div class="mt-6 grid gap-6 xl:grid-cols-[10.5rem_minmax(0,1fr)_minmax(18rem,22rem)]">
-            <MarketplaceDetailNav v-model="activeSection" />
-            <MarketplaceModelDetails :model="selectedModel" :active-section="activeSection" />
-            <MarketplaceQuickStart :api-origin="apiOrigin" :model-name="selectedModel.name" />
+            <PricingDetailNav v-model="activeSection" />
+            <PricingModelDetails :model="selectedModel" :active-section="activeSection" />
+            <PricingQuickStart :api-origin="apiOrigin" :model-name="selectedModel.name" />
           </div>
         </article>
       </div>
@@ -125,15 +125,15 @@ import { useRoute, useRouter } from 'vue-router'
 import type {
   PublicMarketplaceModel,
   PublicMarketplacePlatform,
-  PublicModelMarketplace,
-} from '@/api/modelMarketplace'
+  PublicPricingCatalogue,
+} from '@/api/pricing'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import MarketplaceDetailNav from './MarketplaceDetailNav.vue'
-import MarketplaceModelDetails from './MarketplaceModelDetails.vue'
-import MarketplaceQuickStart from './MarketplaceQuickStart.vue'
+import PricingDetailNav from './PricingDetailNav.vue'
+import PricingModelDetails from './PricingModelDetails.vue'
+import PricingQuickStart from './PricingQuickStart.vue'
 
 interface Props {
-  marketplace?: PublicModelMarketplace | null
+  marketplace?: PublicPricingCatalogue | null
   loading?: boolean
   errorMessage?: string
   apiOrigin?: string
