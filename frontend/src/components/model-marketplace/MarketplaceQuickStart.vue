@@ -48,11 +48,16 @@ const apiBase = computed(() => {
   const root = origin.replace(/\/v1$/, '')
   return `${root}/v1`
 })
+const requestBody = computed(() => JSON.stringify({
+  model: props.modelName,
+  messages: [{ role: 'user', content: 'Hello' }],
+}, null, 2))
 const requestExample = computed(() => `curl ${apiBase.value}/chat/completions \\
   -H "Authorization: Bearer $YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{
-    "model": "${props.modelName}",
-    "messages": [{ "role": "user", "content": "Hello" }]
-  }'`)
+  -d ${shellQuote(requestBody.value)}`)
+
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, "'\"'\"'")}'`
+}
 </script>

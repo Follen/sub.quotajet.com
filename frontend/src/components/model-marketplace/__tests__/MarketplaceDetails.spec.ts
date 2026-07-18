@@ -13,6 +13,7 @@ vi.mock('@/composables/useClipboard', () => ({
 }))
 
 import ModelMarketplaceShell from '../ModelMarketplaceShell.vue'
+import MarketplaceQuickStart from '../MarketplaceQuickStart.vue'
 import type { PublicModelMarketplace } from '@/api/modelMarketplace'
 
 const marketplace: PublicModelMarketplace = {
@@ -34,8 +35,8 @@ const marketplace: PublicModelMarketplace = {
                   rate_multiplier: 1.5,
                   price: {
                     billing_mode: 'token',
-                    input_price: 0.5,
-                    output_price: 2,
+                    input_price: 0.0000005,
+                    output_price: 0.000002,
                     cache_write_price: null,
                     cache_read_price: 0.125,
                     image_output_price: null,
@@ -47,23 +48,55 @@ const marketplace: PublicModelMarketplace = {
                         min_tokens: 0,
                         max_tokens: 128000,
                         tier_label: 'Standard context',
-                        input_price: 0.5,
-                        output_price: 2,
+                        input_price: 0.0000005,
+                        output_price: 0.000002,
                         cache_write_price: null,
                         cache_read_price: 0.125,
                         per_request_price: null,
                       },
                       {
-                        min_tokens: 128001,
+                        min_tokens: 128000,
                         max_tokens: null,
                         tier_label: 'Long context',
-                        input_price: 1,
-                        output_price: 4,
+                        input_price: 0.000001,
+                        output_price: 0.000004,
                         cache_write_price: null,
                         cache_read_price: 0.25,
                         per_request_price: null,
                       },
                     ],
+                  },
+                },
+                {
+                  name: 'per-request',
+                  rate_multiplier: 1,
+                  price: {
+                    billing_mode: 'per_request',
+                    input_price: null,
+                    output_price: null,
+                    cache_write_price: null,
+                    cache_read_price: null,
+                    image_output_price: null,
+                    per_request_price: 0.03,
+                    fallback: false,
+                    display_only: false,
+                    intervals: [],
+                  },
+                },
+                {
+                  name: 'image',
+                  rate_multiplier: 1,
+                  price: {
+                    billing_mode: 'image',
+                    input_price: null,
+                    output_price: null,
+                    cache_write_price: null,
+                    cache_read_price: null,
+                    image_output_price: 0.04,
+                    per_request_price: null,
+                    fallback: false,
+                    display_only: false,
+                    intervals: [],
                   },
                 },
               ],
@@ -110,16 +143,23 @@ describe('Marketplace details', () => {
 
     expect(wrapper.get('[data-testid="marketplace-provider-OpenAI Direct"]').text()).toContain('OpenAI Direct')
     expect(wrapper.get('[data-testid="marketplace-group-standard"]').text()).toContain('standard')
-    expect(wrapper.get('[data-testid="marketplace-base-price"]').text()).toContain('0.5')
-    expect(wrapper.get('[data-testid="marketplace-effective-price"]').text()).toContain('0.75')
+    const standard = wrapper.get('[data-testid="marketplace-group-standard"]')
+    expect(standard.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.5 / 1M tokens')
+    expect(standard.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.75 / 1M tokens')
+  })
+
+  it('does not scale per-request or image prices', () => {
+    const wrapper = mountMarketplace()
+
+    expect(wrapper.get('[data-testid="marketplace-group-per-request"]').get('[data-testid="marketplace-base-price"]').text()).toContain('$0.03')
+    expect(wrapper.get('[data-testid="marketplace-group-image"]').get('[data-testid="marketplace-base-price"]').text()).toContain('$0.04')
   })
 
   it('renders inclusive tier intervals and tier prices', () => {
     const wrapper = mountMarketplace()
 
-    expect(wrapper.get('[data-testid="marketplace-tier-0"]').text()).toContain('128000')
-    expect(wrapper.get('[data-testid="marketplace-tier-1"]').text()).toContain('128001')
-    expect(wrapper.get('[data-testid="marketplace-tier-1"]').text()).toContain('∞')
+    expect(wrapper.get('[data-testid="marketplace-tier-0"]').text()).toContain('(0, 128000]')
+    expect(wrapper.get('[data-testid="marketplace-tier-1"]').text()).toContain('(128000, ∞)')
   })
 
   it('keeps unsupported metric sections visible with an honest empty state', async () => {
@@ -151,5 +191,22 @@ describe('Marketplace details', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-testid="marketplace-create-api-key"]').attributes('href')).toBe('/keys')
+  })
+
+  it('serializes arbitrary model names safely for JSON and POSIX shell input', async () => {
+    const modelName = `gpt'"\\\n$(echo unsafe)`
+    const wrapper = mount(MarketplaceQuickStart, {
+      props: { apiOrigin: 'https://api.example.com', modelName },
+      global: { plugins: [router] },
+    })
+    const code = wrapper.get('[data-testid="marketplace-quick-start-code"]').text()
+    const requestBody = code.slice(code.lastIndexOf('-d ') + 3)
+    const decodedBody = requestBody.slice(1, -1).replace(/'"'"'/g, "'")
+
+    expect(JSON.parse(decodedBody)).toMatchObject({ model: modelName })
+    expect(requestBody).toContain("'\"'\"'")
+
+    await wrapper.get('[data-testid="marketplace-copy-quick-start"]').trigger('click')
+    expect(copyToClipboard).toHaveBeenCalledWith(code, 'modelMarketplace.quickStart.copied')
   })
 })

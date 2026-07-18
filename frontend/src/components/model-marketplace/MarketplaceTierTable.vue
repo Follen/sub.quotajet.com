@@ -15,10 +15,10 @@
             {{ tierInterval(tier) }}
           </td>
           <td class="px-3 py-2 align-top">
-            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatPrice(entry.value) }}</p>
+            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value, billingMode) }}</p>
           </td>
           <td class="px-3 py-2 align-top text-lime-300">
-            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatPrice(entry.value * rateMultiplier) }}</p>
+            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value * rateMultiplier, billingMode) }}</p>
           </td>
         </tr>
       </tbody>
@@ -30,6 +30,7 @@
 import { useI18n } from 'vue-i18n'
 
 import type { PublicMarketplaceTierInterval } from '@/api/modelMarketplace'
+import { formatMarketplacePrice } from './marketplaceFormatters'
 
 interface PriceEntry {
   label: string
@@ -39,6 +40,7 @@ interface PriceEntry {
 defineProps<{
   intervals: PublicMarketplaceTierInterval[]
   rateMultiplier: number
+  billingMode: string
 }>()
 
 const { t } = useI18n()
@@ -55,11 +57,7 @@ function tierEntries(tier: PublicMarketplaceTierInterval): PriceEntry[] {
 
 function tierInterval(tier: PublicMarketplaceTierInterval): string {
   return tier.max_tokens === null
-    ? `${tier.min_tokens}–∞ ${t('modelMarketplace.tiers.tokens')}`
-    : `${tier.min_tokens}–${tier.max_tokens} ${t('modelMarketplace.tiers.tokens')}`
-}
-
-function formatPrice(value: number): string {
-  return `$${value.toLocaleString('en-US', { maximumFractionDigits: 12 })}`
+    ? `(${tier.min_tokens}, ∞) ${t('modelMarketplace.tiers.tokens')}`
+    : `(${tier.min_tokens}, ${tier.max_tokens}] ${t('modelMarketplace.tiers.tokens')}`
 }
 </script>

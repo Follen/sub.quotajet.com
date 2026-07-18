@@ -19,20 +19,20 @@
         <div data-testid="marketplace-base-price" class="rounded border border-slate-800 bg-slate-900/70 p-3">
           <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">{{ t('modelMarketplace.prices.base') }}</p>
           <p v-for="entry in priceEntries" :key="entry.label" class="mt-2 text-sm text-slate-200">
-            <span class="text-slate-500">{{ entry.label }}</span> {{ formatPrice(entry.value) }}
+            <span class="text-slate-500">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value, price.billing_mode) }}
           </p>
         </div>
         <div data-testid="marketplace-effective-price" class="rounded border border-lime-400/20 bg-lime-400/[0.06] p-3">
           <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-lime-300">{{ t('modelMarketplace.prices.effective') }}</p>
           <p v-for="entry in priceEntries" :key="entry.label" class="mt-2 text-sm text-lime-100">
-            <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatPrice(entry.value * groupPrice.rate_multiplier) }}
+            <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * groupPrice.rate_multiplier, price.billing_mode) }}
           </p>
         </div>
       </div>
 
       <div v-if="price.intervals.length > 0" class="mt-4 space-y-2">
         <p class="text-xs font-medium text-slate-400">{{ t('modelMarketplace.tiers.title') }}</p>
-        <MarketplaceTierTable :intervals="price.intervals" :rate-multiplier="groupPrice.rate_multiplier" />
+        <MarketplaceTierTable :intervals="price.intervals" :rate-multiplier="groupPrice.rate_multiplier" :billing-mode="price.billing_mode" />
       </div>
     </template>
   </section>
@@ -44,6 +44,7 @@ import { useI18n } from 'vue-i18n'
 
 import type { PublicMarketplaceGroupPrice, PublicMarketplacePrice } from '@/api/modelMarketplace'
 import MarketplaceTierTable from './MarketplaceTierTable.vue'
+import { formatMarketplacePrice } from './marketplaceFormatters'
 
 interface PriceEntry {
   label: string
@@ -67,7 +68,4 @@ const priceEntries = computed<PriceEntry[]>(() => {
   return entries
 })
 
-function formatPrice(value: number): string {
-  return `$${value.toLocaleString('en-US', { maximumFractionDigits: 12 })}`
-}
 </script>
