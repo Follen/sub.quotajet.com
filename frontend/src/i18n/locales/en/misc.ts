@@ -607,6 +607,7 @@ export default {
   },
 
   modelMarketplace: {
+    backToModels: 'Back to models',
     eyebrow: 'Model marketplace',
     title: 'Explore models',
     description: 'Browse the public models and providers available on this platform.',

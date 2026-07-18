@@ -35,7 +35,7 @@
 
     <template v-else>
       <div class="grid gap-4 xl:grid-cols-[330px_minmax(0,1fr)]">
-        <aside class="h-fit rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 xl:sticky xl:top-4">
+        <aside v-if="!modelId" class="h-fit rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 xl:sticky xl:top-4">
           <div class="mb-3 flex items-center justify-between">
             <p class="text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.platforms') }}</p>
             <button v-if="activePlatformName" type="button" class="text-xs text-[var(--landing-fg-soft)] hover:text-[var(--landing-fg)]" @click="activePlatformName = ''">{{ t('modelMarketplace.search.clear') }}</button>
@@ -105,12 +105,12 @@
           </div>
         </aside>
 
-        <main class="min-w-0 space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+        <main class="min-w-0 space-y-4" :class="modelId ? 'xl:col-span-2' : ''">
+          <div v-if="!modelId" class="flex flex-wrap items-center justify-between gap-3">
             <p class="text-sm text-[var(--landing-fg-soft)]"><span class="font-medium text-[var(--landing-fg)]">{{ visibleModels.length }}</span> {{ t('modelMarketplace.models') }}</p>
             <span class="rounded-md border border-[var(--landing-border)] px-2.5 py-1.5 text-xs text-[var(--landing-fg-soft)]">{{ activePlatform?.name }}</span>
           </div>
-          <div class="grid gap-4 md:grid-cols-2">
+          <div v-if="!modelId" class="grid gap-4 md:grid-cols-2">
             <button v-for="model in visibleModels" :key="model.name" type="button" class="group rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 text-left transition hover:-translate-y-0.5 hover:bg-[var(--landing-surface-strong)]" @click="selectModel(model.name, activePlatform?.name)">
               <div class="flex items-start gap-3"><div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--landing-surface-strong)] font-mono text-sm">{{ model.name.charAt(0).toUpperCase() }}</div><div class="min-w-0"><h2 class="truncate font-mono text-sm font-medium text-[var(--landing-fg)]">{{ model.name }}</h2><p class="mt-0.5 text-xs text-[var(--landing-fg-soft)]">{{ model.providers.length }} {{ t('modelMarketplace.providers') }}</p></div></div>
               <div class="mt-4 border-y border-[var(--landing-border)] py-3"><div class="grid grid-cols-2 gap-3"><div><p class="text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.prices.input') }}</p><p class="mt-1 text-sm font-semibold text-[var(--landing-fg)]">{{ modelInputPrice(model) }}</p></div><div><p class="text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.prices.output') }}</p><p class="mt-1 text-sm font-semibold text-[var(--landing-fg)]">{{ modelOutputPrice(model) }}</p></div></div></div>
@@ -118,6 +118,7 @@
             </button>
           </div>
         <article v-if="selectedModel" class="rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-[var(--landing-fg)] lg:p-7">
+          <RouterLink v-if="modelId" to="/pricing" class="mb-5 inline-flex items-center gap-2 text-sm text-[var(--landing-fg-soft)] hover:text-[var(--landing-fg)]">← {{ t('modelMarketplace.backToModels') }}</RouterLink>
           <p class="text-sm text-slate-500">{{ activePlatform?.name }}</p>
           <h2 class="mt-1 break-all font-mono text-xl font-semibold text-white">
             {{ selectedModel.name }}
@@ -162,6 +163,7 @@ interface Props {
   loading?: boolean
   errorMessage?: string
   apiOrigin?: string
+  modelId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -169,6 +171,7 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   errorMessage: '',
   apiOrigin: '',
+  modelId: '',
 })
 
 const emit = defineEmits<{ retry: [] }>()
@@ -182,6 +185,7 @@ const modelSearch = ref('')
 const platforms = computed<PublicMarketplacePlatform[]>(() => props.marketplace?.platforms ?? [])
 const totalModelCount = computed(() => platforms.value.reduce((count, platform) => count + platform.models.length, 0))
 const selectedModelName = computed(() => {
+  if (props.modelId) return props.modelId
   const value = route.query.model
   return typeof value === 'string' ? value : ''
 })
@@ -271,6 +275,14 @@ async function selectPlatform(platformName: string): Promise<void> {
 
 async function selectModel(modelName: string, targetPlatformName?: string): Promise<void> {
   const platformName = targetPlatformName ?? activePlatform.value?.name
+  if (!props.modelId) {
+    await router.push({
+      name: 'PricingModel',
+      params: { modelId: modelName },
+      query: platformName ? { platform: platformName } : {},
+    })
+    return
+  }
   await router.replace({
     query: {
       ...route.query,

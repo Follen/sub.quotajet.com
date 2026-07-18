@@ -6,6 +6,7 @@
       :loading="loading"
       :error-message="errorMessage"
       :api-origin="apiOrigin"
+      :model-id="modelId"
       @retry="loadMarketplace"
     />
   </div>
@@ -24,6 +25,7 @@ import { extractApiErrorMessage } from '@/utils/apiError'
 import { sanitizeUrl } from '@/utils/url'
 
 const { t } = useI18n()
+const props = defineProps<{ modelId?: string }>()
 const appStore = useAppStore()
 const authStore = useAuthStore()
 const marketplace = ref<PublicPricingCatalogue | null>(null)
@@ -31,6 +33,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const apiOrigin = computed(() => appStore.apiBaseUrl || window.location.origin)
 const safeDocUrl = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.doc_url || appStore.docUrl || ''))
+const modelId = computed(() => props.modelId ? decodeURIComponent(props.modelId) : '')
 
 async function loadMarketplace(): Promise<void> {
   loading.value = true

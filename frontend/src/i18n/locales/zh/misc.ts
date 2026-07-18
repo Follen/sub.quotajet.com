@@ -631,6 +631,7 @@ export default {
   },
 
   modelMarketplace: {
+    backToModels: '返回模型列表',
     eyebrow: '模型广场',
     title: '探索模型',
     description: '浏览此平台公开可用的模型和服务商。',

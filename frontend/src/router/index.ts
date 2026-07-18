@@ -188,6 +188,18 @@ const routes: RouteRecordRaw[] = [
       descriptionKey: 'modelMarketplace.description'
     }
   },
+  {
+    path: `${MODEL_MARKETPLACE_PATH}/:modelId`,
+    name: 'PricingModel',
+    component: () => import('@/views/user/PricingView.vue'),
+    props: true,
+    meta: {
+      requiresAuth: false,
+      title: 'Model Details',
+      titleKey: 'modelMarketplace.title',
+      descriptionKey: 'modelMarketplace.description'
+    }
+  },
 
   // ==================== User Routes ====================
   {
