@@ -6,10 +6,10 @@
         <p class="mt-1 text-xs text-slate-500">
           {{ t('modelMarketplace.prices.groupMultiplier', { multiplier: groupPrice.rate_multiplier }) }}
         </p>
-        <p v-if="price?.billing_mode === 'image' && groupPrice.image_rate_multiplier !== null && groupPrice.image_rate_multiplier !== undefined" class="mt-1 text-xs text-slate-500">
+        <p v-if="billingMode === 'image' && groupPrice.image_rate_multiplier !== null && groupPrice.image_rate_multiplier !== undefined" class="mt-1 text-xs text-slate-500">
           {{ t('modelMarketplace.prices.modeMultiplier', { mode: t('modelMarketplace.prices.imageOutput'), multiplier: groupPrice.image_rate_multiplier }) }}
         </p>
-        <p v-else-if="price?.billing_mode === 'video' && groupPrice.video_rate_multiplier !== null && groupPrice.video_rate_multiplier !== undefined" class="mt-1 text-xs text-slate-500">
+        <p v-else-if="billingMode === 'video' && groupPrice.video_rate_multiplier !== null && groupPrice.video_rate_multiplier !== undefined" class="mt-1 text-xs text-slate-500">
           {{ t('modelMarketplace.prices.modeMultiplier', { mode: t('modelMarketplace.prices.videoOutput'), multiplier: groupPrice.video_rate_multiplier }) }}
         </p>
       </div>
@@ -18,28 +18,30 @@
       </span>
     </div>
 
-    <p v-if="!price" class="mt-3 text-sm text-slate-500">{{ t('modelMarketplace.prices.unavailable') }}</p>
+    <p v-if="!hasPublishedPricing" class="mt-3 text-sm text-slate-500">{{ t('modelMarketplace.prices.unavailable') }}</p>
 
     <template v-else>
       <div class="mt-4 grid gap-3 sm:grid-cols-2">
         <div data-testid="marketplace-base-price" class="rounded border border-slate-800 bg-slate-900/70 p-3">
           <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">{{ t('modelMarketplace.prices.base') }}</p>
+          <p v-if="hasMediaOverride" class="mt-2 text-[11px] leading-5 text-lime-200/80">{{ t('modelMarketplace.prices.groupOverride') }}</p>
+          <p v-if="partialMediaOverride" class="mt-1 text-[11px] leading-5 text-amber-200/80">{{ t('modelMarketplace.prices.partialOverride') }}</p>
           <p v-for="entry in priceEntries" :key="entry.label" class="mt-2 text-sm text-slate-200">
-            <span class="text-slate-500">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value, price.billing_mode, t('modelMarketplace.prices.perMillionTokens')) }}
+            <span class="text-slate-500">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}
           </p>
         </div>
         <div data-testid="marketplace-effective-price" class="rounded border border-lime-400/20 bg-lime-400/[0.06] p-3">
           <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-lime-300">{{ t('modelMarketplace.prices.effective') }}</p>
           <p v-for="entry in priceEntries" :key="entry.label" class="mt-2 text-sm text-lime-100">
-            <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * effectiveMultiplier, price.billing_mode, t('modelMarketplace.prices.perMillionTokens')) }}
+            <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * effectiveMultiplier, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}
           </p>
           <p class="mt-3 text-[11px] leading-5 text-lime-200/70">{{ t('modelMarketplace.prices.effectiveDisclaimer') }}</p>
         </div>
       </div>
 
-      <div v-if="price.intervals.length > 0" class="mt-4 space-y-2">
+      <div v-if="price && price.intervals.length > 0" class="mt-4 space-y-2">
         <p class="text-xs font-medium text-slate-400">{{ t('modelMarketplace.tiers.title') }}</p>
-        <MarketplaceTierTable :intervals="price.intervals" :rate-multiplier="effectiveMultiplier" :billing-mode="price.billing_mode" />
+        <MarketplaceTierTable :intervals="price.intervals" :rate-multiplier="effectiveMultiplier" :billing-mode="billingMode" />
       </div>
     </template>
   </section>
@@ -49,7 +51,12 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { PublicMarketplaceGroupPrice, PublicMarketplacePrice } from '@/api/modelMarketplace'
+import type {
+  PublicMarketplaceGroupPrice,
+  PublicMarketplaceImagePrices,
+  PublicMarketplacePrice,
+  PublicMarketplaceVideoPrices,
+} from '@/api/modelMarketplace'
 import MarketplaceTierTable from './MarketplaceTierTable.vue'
 import { formatMarketplacePrice } from './marketplaceFormatters'
 
@@ -61,18 +68,67 @@ interface PriceEntry {
 const props = defineProps<{ groupPrice: PublicMarketplaceGroupPrice }>()
 const { t } = useI18n()
 const price = computed(() => props.groupPrice.price)
+const imagePrices = computed(() => props.groupPrice.image_prices ?? null)
+const videoPrices = computed(() => props.groupPrice.video_prices ?? null)
+
+function hasImagePriceOverride(prices: PublicMarketplaceImagePrices | null): boolean {
+  return prices !== null && [prices.price_1k, prices.price_2k, prices.price_4k].some((value) => value !== null && value !== undefined)
+}
+
+function hasVideoPriceOverride(prices: PublicMarketplaceVideoPrices | null): boolean {
+  return prices !== null && [prices.price_480p, prices.price_720p, prices.price_1080p].some((value) => value !== null && value !== undefined)
+}
+
+const hasImageOverride = computed(() => hasImagePriceOverride(imagePrices.value))
+const hasVideoOverride = computed(() => hasVideoPriceOverride(videoPrices.value))
+const billingMode = computed(() => {
+  const configuredMode = price.value?.billing_mode
+  if (configuredMode === 'image' && hasImageOverride.value) return 'image'
+  if (configuredMode === 'video' && hasVideoOverride.value) return 'video'
+  if (hasImageOverride.value) return 'image'
+  if (hasVideoOverride.value) return 'video'
+  return configuredMode || 'token'
+})
 const effectiveMultiplier = computed(() => {
-  const billingMode = price.value?.billing_mode
-  if (billingMode === 'image') {
+  if (billingMode.value === 'image') {
     return props.groupPrice.image_rate_multiplier ?? props.groupPrice.rate_multiplier
   }
-  if (billingMode === 'video') {
+  if (billingMode.value === 'video') {
     return props.groupPrice.video_rate_multiplier ?? props.groupPrice.rate_multiplier
   }
   return props.groupPrice.rate_multiplier
 })
+const mediaOverrideEntries = computed<PriceEntry[]>(() => {
+  if (billingMode.value === 'image' && imagePrices.value) {
+    const entries: PriceEntry[] = []
+    if (imagePrices.value.price_1k !== null && imagePrices.value.price_1k !== undefined) entries.push({ label: t('modelMarketplace.prices.image1K'), value: imagePrices.value.price_1k })
+    if (imagePrices.value.price_2k !== null && imagePrices.value.price_2k !== undefined) entries.push({ label: t('modelMarketplace.prices.image2K'), value: imagePrices.value.price_2k })
+    if (imagePrices.value.price_4k !== null && imagePrices.value.price_4k !== undefined) entries.push({ label: t('modelMarketplace.prices.image4K'), value: imagePrices.value.price_4k })
+    return entries
+  }
+  if (billingMode.value === 'video' && videoPrices.value) {
+    const entries: PriceEntry[] = []
+    if (videoPrices.value.price_480p !== null && videoPrices.value.price_480p !== undefined) entries.push({ label: t('modelMarketplace.prices.video480P'), value: videoPrices.value.price_480p })
+    if (videoPrices.value.price_720p !== null && videoPrices.value.price_720p !== undefined) entries.push({ label: t('modelMarketplace.prices.video720P'), value: videoPrices.value.price_720p })
+    if (videoPrices.value.price_1080p !== null && videoPrices.value.price_1080p !== undefined) entries.push({ label: t('modelMarketplace.prices.video1080P'), value: videoPrices.value.price_1080p })
+    return entries
+  }
+  return []
+})
+const hasMediaOverride = computed(() => mediaOverrideEntries.value.length > 0)
+const partialMediaOverride = computed(() => {
+  if (billingMode.value === 'image' && hasImageOverride.value && imagePrices.value) {
+    return [imagePrices.value.price_1k, imagePrices.value.price_2k, imagePrices.value.price_4k].some((value) => value === null || value === undefined)
+  }
+  if (billingMode.value === 'video' && hasVideoOverride.value && videoPrices.value) {
+    return [videoPrices.value.price_480p, videoPrices.value.price_720p, videoPrices.value.price_1080p].some((value) => value === null || value === undefined)
+  }
+  return false
+})
+const hasPublishedPricing = computed(() => Boolean(price.value) || hasMediaOverride.value)
 const priceEntries = computed<PriceEntry[]>(() => {
   const configuredPrice: PublicMarketplacePrice | null = price.value
+	if (mediaOverrideEntries.value.length > 0) return mediaOverrideEntries.value
   if (!configuredPrice) return []
 
   const entries: PriceEntry[] = []

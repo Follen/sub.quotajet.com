@@ -620,7 +620,7 @@ export default {
       empty: 'No models match this search.'
     },
     endpoints: {
-      title: 'Supported inbound endpoints'
+      title: 'Platform-default inbound endpoints'
     },
     capabilities: {
       title: 'Published capabilities',
@@ -643,8 +643,16 @@ export default {
       cacheRead: 'Cache read',
       imageOutput: 'Image output',
       videoOutput: 'Video output',
+      image1K: '1K',
+      image2K: '2K',
+      image4K: '4K',
+      video480P: '480p',
+      video720P: '720p',
+      video1080P: '1080p',
       perRequest: 'Per request',
       modeMultiplier: '{mode} multiplier: ×{multiplier}',
+      groupOverride: 'Public group override',
+      partialOverride: 'Only configured tiers are shown; other tiers may use the channel fallback.',
       perMillionTokens: '1M tokens'
     },
     tiers: {

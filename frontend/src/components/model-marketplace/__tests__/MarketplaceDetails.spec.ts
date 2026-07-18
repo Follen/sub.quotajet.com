@@ -14,6 +14,7 @@ vi.mock('@/composables/useClipboard', () => ({
 
 import ModelMarketplaceShell from '../ModelMarketplaceShell.vue'
 import MarketplaceQuickStart from '../MarketplaceQuickStart.vue'
+import MarketplacePricingPanel from '../MarketplacePricingPanel.vue'
 import type { PublicModelMarketplace } from '@/api/modelMarketplace'
 
 const marketplace: PublicModelMarketplace = {
@@ -25,7 +26,7 @@ const marketplace: PublicModelMarketplace = {
       models: [
         {
           name: 'gpt-4.1',
-          supported_inbound_endpoints: ['/v1/chat/completions', '/v1/responses'],
+          platform_default_inbound_endpoints: ['/v1/chat/completions', '/v1/responses'],
           capabilities: {
             providers: true,
             pricing: true,
@@ -115,6 +116,11 @@ const marketplace: PublicModelMarketplace = {
                   name: 'image',
                   rate_multiplier: 1.5,
                   image_rate_multiplier: 0.5,
+                  image_prices: {
+                    price_1k: 0.11,
+                    price_2k: 0.22,
+                    price_4k: 0.33,
+                  },
                   price: {
                     billing_mode: 'image',
                     input_price: null,
@@ -180,7 +186,7 @@ describe('Marketplace details', () => {
   it('renders published endpoint and capability metadata without inventing metrics', () => {
     const wrapper = mountMarketplace()
 
-    expect(wrapper.get('[data-testid="marketplace-supported-endpoints"]').text()).toContain('/v1/responses')
+    expect(wrapper.get('[data-testid="marketplace-platform-default-endpoints"]').text()).toContain('/v1/responses')
     expect(wrapper.get('[data-testid="marketplace-capabilities"]').text()).toContain('modelMarketplace.capabilities.imageGeneration')
     expect(wrapper.find('[data-testid="marketplace-section-empty-benchmarks"]').exists()).toBe(false)
   })
@@ -198,9 +204,28 @@ describe('Marketplace details', () => {
 
     expect(wrapper.get('[data-testid="marketplace-group-per-request"]').get('[data-testid="marketplace-base-price"]').text()).toContain('$0.03')
     const imageGroup = wrapper.get('[data-testid="marketplace-group-image"]')
-    expect(imageGroup.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.04')
-    expect(imageGroup.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.02')
+    expect(imageGroup.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.11')
+    expect(imageGroup.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.055')
+    expect(imageGroup.text()).toContain('modelMarketplace.prices.groupOverride')
     expect(imageGroup.text()).toContain('modelMarketplace.prices.effectiveDisclaimer')
+  })
+
+  it('renders group media overrides when channel pricing is absent', () => {
+    const wrapper = mount(MarketplacePricingPanel, {
+      props: {
+        groupPrice: {
+          name: 'image-only',
+          rate_multiplier: 1.5,
+          image_rate_multiplier: 0.5,
+          image_prices: { price_1k: 0.11, price_2k: 0.22, price_4k: 0.33 },
+          price: null,
+        },
+      },
+    })
+
+    expect(wrapper.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.11')
+    expect(wrapper.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.055')
+    expect(wrapper.text()).toContain('modelMarketplace.prices.groupOverride')
   })
 
   it('renders inclusive tier intervals and tier prices', () => {
@@ -272,5 +297,16 @@ describe('Marketplace details', () => {
     expect(code).not.toContain('echo injected')
     expect(code).toContain("curl '")
     expect(code).toContain("/v1/chat/completions'")
+  })
+
+  it('resolves a relative API base against the current origin', () => {
+    const wrapper = mount(MarketplaceQuickStart, {
+      props: { apiOrigin: '/api/v1', modelName: 'gpt-4.1' },
+      global: { plugins: [router] },
+    })
+
+    expect(wrapper.get('[data-testid="marketplace-quick-start-code"]').text()).toContain(
+      "curl 'http://localhost:3000/api/v1/chat/completions'",
+    )
   })
 })

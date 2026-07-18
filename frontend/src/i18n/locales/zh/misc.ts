@@ -644,7 +644,7 @@ export default {
       empty: '没有匹配的模型。'
     },
     endpoints: {
-      title: '支持的入站端点'
+      title: '平台默认入站端点'
     },
     capabilities: {
       title: '已发布能力',
@@ -667,8 +667,16 @@ export default {
       cacheRead: '缓存读取',
       imageOutput: '图像输出',
       videoOutput: '视频输出',
+      image1K: '1K',
+      image2K: '2K',
+      image4K: '4K',
+      video480P: '480p',
+      video720P: '720p',
+      video1080P: '1080p',
       perRequest: '每次请求',
       modeMultiplier: '{mode}倍率：×{multiplier}',
+      groupOverride: '公开分组覆盖价',
+      partialOverride: '仅显示已配置的档位；其他档位可能使用渠道回退价格。',
       perMillionTokens: '每 100 万 tokens'
     },
     tiers: {

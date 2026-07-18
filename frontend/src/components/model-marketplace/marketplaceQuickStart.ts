@@ -4,12 +4,37 @@
  * current site origin supplied by the caller.
  */
 export function normalizeMarketplaceApiOrigin(value: string, fallbackOrigin = ''): string {
-  return parseMarketplaceApiOrigin(value) || parseMarketplaceApiOrigin(fallbackOrigin)
+  const fallback = parseMarketplaceApiOrigin(fallbackOrigin)
+  return parseMarketplaceApiOrigin(value, fallback) || fallback
 }
 
-function parseMarketplaceApiOrigin(value: string): string {
+function parseMarketplaceApiOrigin(value: string, fallbackOrigin = ''): string {
   const candidate = value.trim()
   if (!candidate || hasControlCharacter(candidate)) return ''
+
+  if (candidate.startsWith('/')) {
+    // A protocol-relative URL is still an external origin. Backslash is
+    // rejected in this position too because URL parsing normalizes /\\evil
+    // into a protocol-relative host in browsers.
+    if (candidate.startsWith('//') || candidate.startsWith('/\\')) return ''
+    if (!fallbackOrigin) return ''
+
+    let fallback: URL
+    try {
+      fallback = new URL(fallbackOrigin)
+    } catch {
+      return ''
+    }
+
+    let relative: URL
+    try {
+      relative = new URL(candidate, fallback)
+    } catch {
+      return ''
+    }
+    if (relative.origin !== fallback.origin) return ''
+    return normalizeParsedMarketplaceApiOrigin(relative)
+  }
 
   let parsed: URL
   try {
@@ -17,6 +42,11 @@ function parseMarketplaceApiOrigin(value: string): string {
   } catch {
     return ''
   }
+
+  return normalizeParsedMarketplaceApiOrigin(parsed)
+}
+
+function normalizeParsedMarketplaceApiOrigin(parsed: URL): string {
 
   if (!['http:', 'https:'].includes(parsed.protocol.toLowerCase())) return ''
   if (!parsed.hostname || parsed.username || parsed.password) return ''

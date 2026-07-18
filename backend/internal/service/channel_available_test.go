@@ -113,6 +113,8 @@ func TestListAvailable_InactiveGroupIDSilentlyDropped(t *testing.T) {
 }
 
 func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
+	image1K, image2K, image4K := 0.11, 0.22, 0.33
+	video480P, video720P, video1080P := 0.04, 0.07, 0.12
 	channels := []Channel{{
 		ID:       1,
 		Name:     "public-media",
@@ -127,8 +129,14 @@ func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
 			RateMultiplier:       1.5,
 			ImageRateIndependent: true,
 			ImageRateMultiplier:  0.5,
+			ImagePrice1K:         &image1K,
+			ImagePrice2K:         &image2K,
+			ImagePrice4K:         &image4K,
 			VideoRateIndependent: true,
 			VideoRateMultiplier:  0.75,
+			VideoPrice480P:       &video480P,
+			VideoPrice720P:       &video720P,
+			VideoPrice1080P:      &video1080P,
 		}},
 	}
 
@@ -141,6 +149,18 @@ func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
 	require.InDelta(t, 0.5, group.ImageRateMultiplier, 0)
 	require.True(t, group.VideoRateIndependent)
 	require.InDelta(t, 0.75, group.VideoRateMultiplier, 0)
+	require.NotNil(t, group.ImagePrice1K)
+	require.InDelta(t, image1K, *group.ImagePrice1K, 0)
+	require.NotNil(t, group.ImagePrice2K)
+	require.InDelta(t, image2K, *group.ImagePrice2K, 0)
+	require.NotNil(t, group.ImagePrice4K)
+	require.InDelta(t, image4K, *group.ImagePrice4K, 0)
+	require.NotNil(t, group.VideoPrice480P)
+	require.InDelta(t, video480P, *group.VideoPrice480P, 0)
+	require.NotNil(t, group.VideoPrice720P)
+	require.InDelta(t, video720P, *group.VideoPrice720P, 0)
+	require.NotNil(t, group.VideoPrice1080P)
+	require.InDelta(t, video1080P, *group.VideoPrice1080P, 0)
 }
 
 func TestListAvailable_SortedByName(t *testing.T) {

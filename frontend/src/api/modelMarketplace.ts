@@ -31,7 +31,23 @@ export interface PublicMarketplaceGroupPrice {
   image_rate_multiplier?: number | null
   /** Present only when the group uses an independent video multiplier. */
   video_rate_multiplier?: number | null
+  /** Present when the public group overrides image prices by size. */
+  image_prices?: PublicMarketplaceImagePrices | null
+  /** Present when the public group overrides video prices by resolution. */
+  video_prices?: PublicMarketplaceVideoPrices | null
   price: PublicMarketplacePrice | null
+}
+
+export interface PublicMarketplaceImagePrices {
+  price_1k?: number | null
+  price_2k?: number | null
+  price_4k?: number | null
+}
+
+export interface PublicMarketplaceVideoPrices {
+  price_480p?: number | null
+  price_720p?: number | null
+  price_1080p?: number | null
 }
 
 export interface PublicMarketplaceProvider {
@@ -43,7 +59,7 @@ export interface PublicMarketplaceProvider {
 export interface PublicMarketplaceModel {
   name: string
   providers: PublicMarketplaceProvider[]
-  supported_inbound_endpoints?: string[]
+  platform_default_inbound_endpoints?: string[]
   capabilities?: PublicMarketplaceCapabilities | null
 }
 

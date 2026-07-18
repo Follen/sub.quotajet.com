@@ -177,6 +177,74 @@ func TestBuildPublicModelMarketplaceExposesIndependentImageDefaultWithoutUserRat
 	require.False(t, hasUserRate)
 }
 
+func TestBuildPublicModelMarketplacePreservesIndependentMediaPriceOverrides(t *testing.T) {
+	image1K, image2K, image4K := 0.11, 0.22, 0.33
+	video480P, video720P, video1080P := 0.04, 0.07, 0.0
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{
+		{
+			Name:   "image-provider",
+			Status: StatusActive,
+			Groups: []AvailableGroupRef{{
+				Name: "public", Platform: "openai",
+				ImagePrice1K: &image1K, ImagePrice2K: &image2K, ImagePrice4K: &image4K,
+			}},
+			SupportedModels: []SupportedModel{{
+				Name: "image-model", Platform: "openai",
+				Pricing: &ChannelModelPricing{BillingMode: BillingModeImage},
+			}},
+		},
+		{
+			Name:   "video-provider",
+			Status: StatusActive,
+			Groups: []AvailableGroupRef{{
+				Name: "public", Platform: "grok",
+				VideoPrice480P: &video480P, VideoPrice720P: &video720P, VideoPrice1080P: &video1080P,
+			}},
+			SupportedModels: []SupportedModel{{
+				Name: "video-model", Platform: "grok",
+				Pricing: &ChannelModelPricing{BillingMode: BillingModeVideo},
+			}},
+		},
+	}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+
+	imageGroup := result.Platforms[1].Models[0].Providers[0].GroupPrices[0]
+	require.NotNil(t, imageGroup.ImagePrices)
+	require.InDelta(t, image1K, *imageGroup.ImagePrices.Price1K, 0)
+	require.InDelta(t, image2K, *imageGroup.ImagePrices.Price2K, 0)
+	require.InDelta(t, image4K, *imageGroup.ImagePrices.Price4K, 0)
+
+	videoGroup := result.Platforms[0].Models[0].Providers[0].GroupPrices[0]
+	require.NotNil(t, videoGroup.VideoPrices)
+	require.InDelta(t, video480P, *videoGroup.VideoPrices.Price480P, 0)
+	require.InDelta(t, video720P, *videoGroup.VideoPrices.Price720P, 0)
+	require.NotNil(t, videoGroup.VideoPrices.Price1080P)
+	require.InDelta(t, video1080P, *videoGroup.VideoPrices.Price1080P, 0)
+}
+
+func TestBuildPublicModelMarketplacePublishesMediaOverrideCapabilityWithoutChannelPrice(t *testing.T) {
+	image1K := 0.11
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
+		Name:            "image-provider",
+		Status:          StatusActive,
+		Groups:          []AvailableGroupRef{{Name: "public", Platform: PlatformOpenAI, ImagePrice1K: &image1K}},
+		SupportedModels: []SupportedModel{{Name: "image-model", Platform: PlatformOpenAI}},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	model := result.Platforms[0].Models[0]
+	group := model.Providers[0].GroupPrices[0]
+	require.Nil(t, group.Price)
+	require.NotNil(t, group.ImagePrices)
+	require.NotNil(t, model.Capabilities)
+	require.True(t, model.Capabilities.Pricing)
+	require.True(t, model.Capabilities.ImageGeneration)
+	require.Contains(t, model.PlatformDefaultInboundEndpoints, "/v1/images/generations")
+}
+
 func TestBuildPublicModelMarketplacePublishesEndpointAndCapabilityMetadata(t *testing.T) {
 	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
 		Name:   "provider",
@@ -192,7 +260,7 @@ func TestBuildPublicModelMarketplacePublishesEndpointAndCapabilityMetadata(t *te
 	result, err := marketplace.Build(context.Background())
 	require.NoError(t, err)
 	model := result.Platforms[0].Models[0]
-	require.Equal(t, []string{"/v1/chat/completions", "/v1/responses", "/v1/embeddings"}, model.SupportedInboundEndpoints)
+	require.Equal(t, []string{"/v1/chat/completions", "/v1/responses", "/v1/embeddings"}, model.PlatformDefaultInboundEndpoints)
 	require.NotNil(t, model.Capabilities)
 	require.True(t, model.Capabilities.Providers)
 	require.True(t, model.Capabilities.Pricing)

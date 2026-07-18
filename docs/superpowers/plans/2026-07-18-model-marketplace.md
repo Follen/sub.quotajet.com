@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a public OpenRouter-inspired model marketplace in the `sub2api` Vue frontend, backed by a safe public aggregation API that exposes only public channels, groups, models, prices, public default multipliers, inbound endpoint types, and capability flags.
+**Goal:** Build a public OpenRouter-inspired model marketplace in the `sub2api` Vue frontend, backed by a safe public aggregation API that exposes only public channels, groups, models, prices, public default multipliers, platform-default inbound endpoint routes, and capability flags.
 
 **Architecture:** Add a service-level public marketplace aggregator and a dedicated unauthenticated route. Aggregate `ChannelService.ListAvailable` data after filtering inactive/exclusive groups, preserve `ChannelModelPricing.Intervals`, and return explicit public DTOs. Add a Vue marketplace view with horizontal platform tabs, model selection, detail navigation, pricing/tier panels, and Quick Start code using the existing OpenAI-compatible endpoint.
 

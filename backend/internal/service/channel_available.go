@@ -21,8 +21,14 @@ type AvailableGroupRef struct {
 	RateMultiplier       float64
 	ImageRateIndependent bool
 	ImageRateMultiplier  float64
+	ImagePrice1K         *float64
+	ImagePrice2K         *float64
+	ImagePrice4K         *float64
 	VideoRateIndependent bool
 	VideoRateMultiplier  float64
+	VideoPrice480P       *float64
+	VideoPrice720P       *float64
+	VideoPrice1080P      *float64
 	PeakRateEnabled      bool
 	PeakStart            string
 	PeakEnd              string
@@ -75,8 +81,14 @@ func (s *ChannelService) ListAvailable(ctx context.Context) ([]AvailableChannel,
 			RateMultiplier:       g.RateMultiplier,
 			ImageRateIndependent: g.ImageRateIndependent,
 			ImageRateMultiplier:  g.ImageRateMultiplier,
+			ImagePrice1K:         g.ImagePrice1K,
+			ImagePrice2K:         g.ImagePrice2K,
+			ImagePrice4K:         g.ImagePrice4K,
 			VideoRateIndependent: g.VideoRateIndependent,
 			VideoRateMultiplier:  g.VideoRateMultiplier,
+			VideoPrice480P:       g.VideoPrice480P,
+			VideoPrice720P:       g.VideoPrice720P,
+			VideoPrice1080P:      g.VideoPrice1080P,
 			PeakRateEnabled:      g.PeakRateEnabled,
 			PeakStart:            g.PeakStart,
 			PeakEnd:              g.PeakEnd,

@@ -1,10 +1,10 @@
 <template>
   <section class="min-w-0">
-    <div v-if="model.supported_inbound_endpoints?.length || model.capabilities" class="mb-5 space-y-3 rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-      <div v-if="model.supported_inbound_endpoints?.length" data-testid="marketplace-supported-endpoints">
+    <div v-if="model.platform_default_inbound_endpoints?.length || model.capabilities" class="mb-5 space-y-3 rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+      <div v-if="model.platform_default_inbound_endpoints?.length" data-testid="marketplace-platform-default-endpoints">
         <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ t('modelMarketplace.endpoints.title') }}</p>
         <div class="mt-2 flex flex-wrap gap-2">
-          <span v-for="endpoint in model.supported_inbound_endpoints" :key="endpoint" class="rounded border border-slate-700 px-2 py-1 font-mono text-[11px] text-slate-300">
+          <span v-for="endpoint in model.platform_default_inbound_endpoints" :key="endpoint" class="rounded border border-slate-700 px-2 py-1 font-mono text-[11px] text-slate-300">
             {{ endpoint }}
           </span>
         </div>

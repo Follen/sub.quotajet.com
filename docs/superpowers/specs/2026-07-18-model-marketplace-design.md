@@ -31,7 +31,7 @@ The endpoint returns only active channels and non-exclusive (`is_exclusive = fal
 
 - platform and model identity;
 - vendor/provider metadata when available;
-- supported inbound endpoint types;
+- platform-default inbound endpoint routes (routing defaults, not live upstream capability probes);
 - public provider/channel associations;
 - group name and public rate multiplier;
 - base prices plus public group-default estimates for token, cache, image, video, and per-request modes;
