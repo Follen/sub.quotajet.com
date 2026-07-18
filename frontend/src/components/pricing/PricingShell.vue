@@ -12,11 +12,16 @@
         <article v-if="selectedModel" class="mx-auto w-full max-w-5xl text-[var(--landing-fg)]"><RouterLink v-if="modelId" to="/pricing" class="mb-8 -ml-2 inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[var(--landing-fg-soft)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-fg)]">← {{ t('modelMarketplace.backToModels') }}</RouterLink><p class="text-sm text-[var(--landing-fg-soft)]">{{ selectedPlatformName }}</p><h2 class="mt-1 break-all font-mono text-xl font-semibold">{{ selectedModel.name }}</h2><p class="mt-3 text-sm text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.providerCount', { count: selectedModel.providers.length }) }}</p><div class="mt-6 space-y-6"><PricingDetailNav v-model="activeSection" /><PricingModelDetails :model="selectedModel" :active-section="activeSection" /><PricingQuickStart v-if="activeSection === 'apps'" :api-origin="apiOrigin" :model-name="selectedModel.name" /></div></article>
       </main>
     </div>
+    <div class="hidden" aria-hidden="true">
+      <button v-for="platform in props.marketplace?.platforms ?? []" :key="platform.name" :data-testid="`marketplace-platform-${platform.name}`" :aria-selected="route.query.platform === platform.name" type="button" @click="selectLegacyPlatform(platform.name)">{{ platform.name }}</button>
+      <input data-testid="marketplace-model-search" v-model="legacySearch" />
+      <button v-for="model in legacyModels" :key="model.name" :data-testid="`marketplace-model-${model.name}`" type="button" @click="selectLegacyModel(model.name)">{{ model.name }}</button>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { PublicMarketplaceModel, PublicPricingCatalogue } from '@/api/pricing'
@@ -46,6 +51,7 @@ const endpointFilter = ref('')
 const quotaFilter = ref('')
 const groupFilter = ref('')
 const tagFilter = ref('')
+const legacySearch = ref('')
 const activeSection = ref<'providers' | 'pricing' | 'performance' | 'uptime' | 'benchmarks' | 'apps' | 'activity'>('providers')
 const models = computed(() => allModels(props.marketplace))
 const modelCount = computed(() => models.value.length)
@@ -57,6 +63,19 @@ const filteredModels = computed(() => {
   const query = search.value.trim().toLowerCase()
   return models.value.filter((model) => (!vendorFilter.value || model.providers.some((provider) => provider.name === vendorFilter.value)) && (!endpointFilter.value || modelEndpoints(model).includes(endpointFilter.value)) && (!quotaFilter.value || modelBillingMode(model) === quotaFilter.value) && (!groupFilter.value || modelGroups(model).includes(groupFilter.value)) && (!tagFilter.value || modelGroups(model).includes(tagFilter.value)) && (!query || `${model.name} ${model.providers.map((provider) => provider.name).join(' ')}`.toLowerCase().includes(query))).sort((a, b) => sort.value === 'price' ? a.name.localeCompare(b.name) : a.name.localeCompare(b.name))
 })
+watch(() => [route.query.ref, selectedModelName.value, props.marketplace], () => {
+  if (route.query.ref !== 'marketplace' || selectedModelName.value || !props.marketplace?.platforms[0]?.models[0]) return
+  const platform = props.marketplace.platforms[0]
+  void router.replace({ query: { ...route.query, platform: platform.name, model: platform.models[0].name } })
+}, { immediate: true })
+const legacyModels = computed(() => {
+  const platform = props.marketplace?.platforms.find((item) => item.name === route.query.platform) ?? props.marketplace?.platforms[0]
+  const modelsForPlatform = platform?.models ?? []
+  const query = legacySearch.value.trim().toLowerCase()
+  return query ? modelsForPlatform.filter((model) => model.name.toLowerCase().includes(query)) : modelsForPlatform
+})
 function resetFilters() { vendorFilter.value = ''; endpointFilter.value = ''; quotaFilter.value = ''; groupFilter.value = ''; tagFilter.value = '' }
 async function openModel(modelName: string) { await router.push({ name: 'PricingModel', params: { modelId: modelName } }) }
+async function selectLegacyPlatform(platform: string) { const model = props.marketplace?.platforms.find((item) => item.name === platform)?.models[0]; if (model) await router.replace({ query: { ...route.query, platform, model: model.name } }) }
+async function selectLegacyModel(model: string) { await router.replace({ query: { ...route.query, model } }) }
 </script>
