@@ -184,16 +184,24 @@ import { sanitizeUrl } from '@/utils/url'
 const props = defineProps<{
   isAuthenticated: boolean
   docUrl: string
+  publicCatalog?: boolean
 }>()
 
 const { t } = useI18n()
-const navigation = [
+const safeDocUrl = computed(() => sanitizeUrl(props.docUrl))
+const navigation = computed(() => props.publicCatalog ? [
+  { labelKey: 'landing.nav.home', href: '/home', external: false },
+  { labelKey: 'landing.nav.console', href: '/dashboard', external: false },
+  { labelKey: 'landing.nav.models', href: '/pricing', external: false },
+  { labelKey: 'landing.nav.docs', href: safeDocUrl.value || '#', external: Boolean(safeDocUrl.value) },
+  { labelKey: 'landing.nav.status', href: 'https://status.quotajet.com/', external: true },
+  { labelKey: 'landing.nav.about', href: '/home#privacy', external: false },
+] as const : [
   { labelKey: 'landing.nav.models', href: '#models', external: false },
   { labelKey: 'landing.nav.about', href: '#privacy', external: false },
   { labelKey: 'landing.nav.status', href: 'https://status.quotajet.com/', external: true },
-] as const
+] as const)
 
-const safeDocUrl = computed(() => sanitizeUrl(props.docUrl))
 const scrolled = ref(false)
 const mobileOpen = ref(false)
 const isDark = ref(document.documentElement.classList.contains('dark'))

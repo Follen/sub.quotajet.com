@@ -21,6 +21,15 @@ export default {
   'Filter': 'Filter',
   'Standard': 'Standard',
   'Recharge': 'Recharge',
+  'Providers': 'Providers',
+  'Endpoints': 'Endpoints',
+  'Capabilities': 'Capabilities',
+  'Overview': 'Overview',
+  'Available public providers': 'Available public providers',
+  'Public group-default prices': 'Public group-default prices',
+  'Pricing': 'Pricing',
+  'Available': 'Available',
+  'Not configured': 'Not configured',
 
   // Subscription Progress (Header component)
   subscriptionProgress: {

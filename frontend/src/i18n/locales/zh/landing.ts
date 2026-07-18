@@ -130,6 +130,8 @@ export default {
       description: '编程 Agent、AI IDE、聊天应用、自动化工具和本地模型客户端，都可以共用同一个 Base URL 和同一把 Key。'
     },
     nav: {
+      home: '首页',
+      console: '控制台',
       models: '模型',
       docs: '文档',
       about: '关于',

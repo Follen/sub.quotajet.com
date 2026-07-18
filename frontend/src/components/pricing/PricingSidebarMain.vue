@@ -6,8 +6,8 @@
     </div>
     <div class="space-y-1">
       <section v-for="section in sections" :key="section.title" class="border-b border-[var(--landing-border)] pb-3 last:border-b-0">
-        <button type="button" class="flex w-full items-center justify-between py-2.5 text-left text-sm font-medium text-[var(--landing-fg)]" @click="toggle(section.title)">{{ section.title }} <span class="text-[var(--landing-fg-soft)]">{{ openSections.has(section.title) ? '⌃' : '⌄' }}</span></button>
-        <div v-if="openSections.has(section.title)" class="flex flex-wrap gap-1.5">
+        <button type="button" class="flex w-full items-center justify-between py-2.5 text-left text-sm font-medium text-[var(--landing-fg)]" @click="toggle(section.key)">{{ section.title }} <span class="text-[var(--landing-fg-soft)]">{{ openSections.has(section.key) ? '⌃' : '⌄' }}</span></button>
+        <div v-if="openSections.has(section.key)" class="flex flex-wrap gap-1.5">
           <button v-for="option in section.options" :key="option.value" type="button" class="inline-flex min-h-6 max-w-full items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors" :class="isActive(section.key, option.value) ? 'border-[var(--landing-fg)]/30 bg-[var(--landing-surface-strong)] text-[var(--landing-fg)]' : 'border-[var(--landing-border)] text-[var(--landing-fg-soft)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-fg)]'" @click="select(section.key, option.value)">{{ option.label }}<span v-if="option.count != null" class="rounded-md bg-[var(--landing-surface-strong)] px-1.5 py-0.5 tabular-nums">{{ option.count }}</span></button>
         </div>
       </section>
@@ -29,7 +29,7 @@ interface Props { models: PublicMarketplaceModel[]; vendors: PricingVendorOption
 const props = defineProps<Props>()
 const emit = defineEmits<{ 'update:vendor': [value: string]; 'update:endpoint': [value: string]; 'update:quota': [value: string]; 'update:group': [value: string]; 'update:tag': [value: string]; reset: [] }>()
 const { t } = useI18n()
-const openSections = ref(new Set(['All Vendors', 'Endpoint Type', 'Pricing Type', 'Groups', 'Model Tags']))
+const openSections = ref(new Set<FilterKey>(['vendor', 'endpoint', 'quota', 'group', 'tag']))
 const unique = (values: string[]) => [...new Set(values)].sort()
 const endpointValues = computed(() => unique(props.models.flatMap(modelEndpoints)))
 const groupValues = computed(() => unique(props.models.flatMap(modelGroups)))
@@ -42,7 +42,7 @@ const sections = computed<FilterSection[]>(() => [
   { title: t('Model Tags'), key: 'tag' as const, options: [{ value: '', label: t('All Tags'), count: props.models.length }, ...tagValues.value.map((value) => ({ value, label: value }))] },
 ])
 const hasFilters = computed(() => Boolean(props.vendor || props.endpoint || props.quota || props.group || props.tag))
-function toggle(title: string) { const next = new Set(openSections.value); next.has(title) ? next.delete(title) : next.add(title); openSections.value = next }
+function toggle(key: FilterKey) { const next = new Set(openSections.value); next.has(key) ? next.delete(key) : next.add(key); openSections.value = next }
 function isActive(key: FilterKey, value: string) { return props[key] === value }
 function select(key: FilterKey, value: string) {
   if (key === 'vendor') emit('update:vendor', value)

@@ -21,6 +21,15 @@ export default {
   'Filter': '筛选',
   'Standard': '标准',
   'Recharge': '充值价',
+  'Providers': '提供商',
+  'Endpoints': '端点',
+  'Capabilities': '能力',
+  'Overview': '概览',
+  'Available public providers': '可用的公共提供商',
+  'Public group-default prices': '公共分组默认价格',
+  'Pricing': '定价',
+  'Available': '已配置',
+  'Not configured': '未配置',
 
   // Subscription Progress (Header component)
   subscriptionProgress: {

@@ -130,6 +130,8 @@ export default {
       description: 'Use the same Base URL and key across coding agents, AI IDEs, chat apps, automation tools, and local model clients.'
     },
     nav: {
+      home: 'Home',
+      console: 'Console',
       models: 'Models',
       docs: 'Docs',
       about: 'About',
