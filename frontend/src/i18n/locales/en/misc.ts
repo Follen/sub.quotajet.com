@@ -614,6 +614,44 @@ export default {
     platforms: 'Platforms',
     models: 'Models',
     providerCount: '{count} public provider(s)',
+    detailNavigation: 'Model details',
+    prices: {
+      base: 'Base price',
+      effective: 'Effective price',
+      groupMultiplier: 'Group multiplier: ×{multiplier}',
+      displayOnly: 'Display-only fallback',
+      unavailable: 'Pricing is not published for this group.',
+      input: 'Input',
+      output: 'Output',
+      cacheWrite: 'Cache write',
+      cacheRead: 'Cache read',
+      imageOutput: 'Image output',
+      perRequest: 'Per request'
+    },
+    tiers: {
+      title: 'Pricing tiers',
+      interval: 'Token interval',
+      base: 'Base',
+      effective: 'Effective',
+      tokens: 'tokens'
+    },
+    sections: {
+      providers: { title: 'Providers', heading: 'Available public providers', empty: 'No public provider data is available for this model.' },
+      pricing: { title: 'Effective Pricing', heading: 'Public group-adjusted prices', empty: 'No effective pricing data is available for this model.' },
+      performance: { title: 'Performance', empty: 'No performance data is available for this model.' },
+      uptime: { title: 'Uptime', empty: 'No uptime data is available for this model.' },
+      benchmarks: { title: 'Benchmarks', empty: 'No benchmark data is available for this model.' },
+      apps: { title: 'Apps', empty: 'No app integrations are published for this model.' },
+      activity: { title: 'Activity', empty: 'No public activity data is available for this model.' }
+    },
+    quickStart: {
+      eyebrow: 'OpenAI-compatible API',
+      title: 'Quick Start',
+      description: 'Use this model with your API key and the public gateway endpoint.',
+      copy: 'Copy',
+      copied: 'Quick Start request copied',
+      createKey: 'Create API Key'
+    },
     empty: {
       title: 'No public models yet',
       description: 'Public model availability will appear here when it is configured.'

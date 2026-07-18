@@ -1,20 +1,20 @@
 <template>
-  <section class="mx-auto w-full max-w-7xl space-y-6" aria-labelledby="model-marketplace-title">
+  <section class="mx-auto w-full max-w-7xl space-y-6 rounded-xl bg-slate-950 p-4 sm:p-6" aria-labelledby="model-marketplace-title">
     <header class="space-y-2">
-      <p class="text-sm font-medium text-primary-600 dark:text-primary-400">
+      <p class="text-sm font-medium text-lime-300">
         {{ t('modelMarketplace.eyebrow') }}
       </p>
-      <h1 id="model-marketplace-title" class="text-3xl font-semibold text-gray-900 dark:text-white">
+      <h1 id="model-marketplace-title" class="text-3xl font-semibold text-white">
         {{ t('modelMarketplace.title') }}
       </h1>
-      <p class="max-w-2xl text-sm text-gray-600 dark:text-content-muted">
+      <p class="max-w-2xl text-sm text-slate-400">
         {{ t('modelMarketplace.description') }}
       </p>
     </header>
 
     <div v-if="loading" data-testid="marketplace-loading" class="flex min-h-64 items-center justify-center gap-3">
       <LoadingSpinner />
-      <span class="text-sm text-gray-600 dark:text-content-muted">{{ t('modelMarketplace.loading') }}</span>
+      <span class="text-sm text-slate-400">{{ t('modelMarketplace.loading') }}</span>
     </div>
 
     <div v-else-if="errorMessage" data-testid="marketplace-error" class="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-900/60 dark:bg-red-950/20">
@@ -25,9 +25,9 @@
       </button>
     </div>
 
-    <div v-else-if="platforms.length === 0" data-testid="marketplace-empty" class="rounded-xl border border-dashed border-gray-300 p-10 text-center dark:border-dark-600">
-      <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('modelMarketplace.empty.title') }}</h2>
-      <p class="mt-2 text-sm text-gray-600 dark:text-content-muted">{{ t('modelMarketplace.empty.description') }}</p>
+    <div v-else-if="platforms.length === 0" data-testid="marketplace-empty" class="rounded-xl border border-dashed border-slate-700 p-10 text-center">
+      <h2 class="text-lg font-medium text-white">{{ t('modelMarketplace.empty.title') }}</h2>
+      <p class="mt-2 text-sm text-slate-400">{{ t('modelMarketplace.empty.description') }}</p>
     </div>
 
     <template v-else>
@@ -42,8 +42,8 @@
             :aria-selected="activePlatform?.name === platform.name"
             class="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
             :class="activePlatform?.name === platform.name
-              ? 'border-primary-600 bg-primary-600 text-white'
-              : 'border-gray-200 bg-white text-gray-700 hover:border-primary-300 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-200'"
+              ? 'border-lime-400/60 bg-lime-400/10 text-lime-300'
+              : 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700 hover:text-white'"
             @click="selectPlatform(platform.name)"
           >
             {{ platform.name }}
@@ -52,8 +52,8 @@
       </nav>
 
       <div class="grid gap-6 lg:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]">
-        <aside class="rounded-xl border border-gray-200 bg-white p-3 dark:border-dark-600 dark:bg-dark-800">
-          <p class="px-2 pb-2 text-xs font-medium text-gray-500 dark:text-content-muted">
+        <aside class="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+          <p class="px-2 pb-2 text-xs font-medium text-slate-500">
             {{ t('modelMarketplace.models') }}
           </p>
           <div class="max-h-[28rem] space-y-1 overflow-y-auto">
@@ -64,26 +64,31 @@
               type="button"
               class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors"
               :class="selectedModel?.name === model.name
-                ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-200'
-                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-dark-700'"
+                ? 'bg-lime-400/10 text-lime-300'
+                : 'text-slate-300 hover:bg-slate-900 hover:text-white'"
               @click="selectModel(model.name)"
             >
               <span class="truncate font-mono">{{ model.name }}</span>
-              <span class="ml-3 shrink-0 text-xs text-gray-500 dark:text-content-muted">
+              <span class="ml-3 shrink-0 text-xs text-slate-500">
                 {{ model.providers.length }}
               </span>
             </button>
           </div>
         </aside>
 
-        <article v-if="selectedModel" class="rounded-xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-800">
-          <p class="text-sm text-gray-500 dark:text-content-muted">{{ activePlatform?.name }}</p>
-          <h2 class="mt-1 break-all font-mono text-xl font-semibold text-gray-900 dark:text-white">
+        <article v-if="selectedModel" class="rounded-xl border border-slate-800 bg-slate-950/70 p-5 text-slate-100 lg:p-6">
+          <p class="text-sm text-slate-500">{{ activePlatform?.name }}</p>
+          <h2 class="mt-1 break-all font-mono text-xl font-semibold text-white">
             {{ selectedModel.name }}
           </h2>
-          <p class="mt-4 text-sm text-gray-600 dark:text-content-muted">
+          <p class="mt-3 text-sm text-slate-400">
             {{ t('modelMarketplace.providerCount', { count: selectedModel.providers.length }) }}
           </p>
+          <div class="mt-6 grid gap-6 xl:grid-cols-[10.5rem_minmax(0,1fr)_minmax(18rem,22rem)]">
+            <MarketplaceDetailNav v-model="activeSection" />
+            <MarketplaceModelDetails :model="selectedModel" :active-section="activeSection" />
+            <MarketplaceQuickStart :api-origin="apiOrigin" :model-name="selectedModel.name" />
+          </div>
         </article>
       </div>
     </template>
@@ -101,17 +106,22 @@ import type {
   PublicModelMarketplace,
 } from '@/api/modelMarketplace'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import MarketplaceDetailNav from './MarketplaceDetailNav.vue'
+import MarketplaceModelDetails from './MarketplaceModelDetails.vue'
+import MarketplaceQuickStart from './MarketplaceQuickStart.vue'
 
 interface Props {
   marketplace?: PublicModelMarketplace | null
   loading?: boolean
   errorMessage?: string
+  apiOrigin?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   marketplace: null,
   loading: false,
   errorMessage: '',
+  apiOrigin: '',
 })
 
 const emit = defineEmits<{ retry: [] }>()
@@ -119,6 +129,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const activePlatformName = ref('')
+const activeSection = ref<'providers' | 'pricing' | 'performance' | 'uptime' | 'benchmarks' | 'apps' | 'activity'>('providers')
 
 const platforms = computed<PublicMarketplacePlatform[]>(() => props.marketplace?.platforms ?? [])
 const selectedModelName = computed(() => {

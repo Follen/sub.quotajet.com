@@ -1,0 +1,155 @@
+import { flushPromises, mount } from '@vue/test-utils'
+import { createMemoryHistory, createRouter } from 'vue-router'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const { copyToClipboard } = vi.hoisted(() => ({ copyToClipboard: vi.fn().mockResolvedValue(true) }))
+
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
+vi.mock('@/composables/useClipboard', () => ({
+  useClipboard: () => ({ copied: { value: false }, copyToClipboard }),
+}))
+
+import ModelMarketplaceShell from '../ModelMarketplaceShell.vue'
+import type { PublicModelMarketplace } from '@/api/modelMarketplace'
+
+const marketplace: PublicModelMarketplace = {
+  version: 'v1',
+  generated_at: '2026-07-18T00:00:00Z',
+  platforms: [
+    {
+      name: 'OpenAI',
+      models: [
+        {
+          name: 'gpt-4.1',
+          providers: [
+            {
+              name: 'OpenAI Direct',
+              description: 'Direct public route',
+              group_prices: [
+                {
+                  name: 'standard',
+                  rate_multiplier: 1.5,
+                  price: {
+                    billing_mode: 'token',
+                    input_price: 0.5,
+                    output_price: 2,
+                    cache_write_price: null,
+                    cache_read_price: 0.125,
+                    image_output_price: null,
+                    per_request_price: null,
+                    fallback: false,
+                    display_only: false,
+                    intervals: [
+                      {
+                        min_tokens: 0,
+                        max_tokens: 128000,
+                        tier_label: 'Standard context',
+                        input_price: 0.5,
+                        output_price: 2,
+                        cache_write_price: null,
+                        cache_read_price: 0.125,
+                        per_request_price: null,
+                      },
+                      {
+                        min_tokens: 128001,
+                        max_tokens: null,
+                        tier_label: 'Long context',
+                        input_price: 1,
+                        output_price: 4,
+                        cache_write_price: null,
+                        cache_read_price: 0.25,
+                        per_request_price: null,
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
+function createTestRouter() {
+  return createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/models', component: { template: '<div />' } },
+      { path: '/keys', component: { template: '<div />' } },
+    ],
+  })
+}
+
+describe('Marketplace details', () => {
+  let router: ReturnType<typeof createTestRouter>
+
+  beforeEach(async () => {
+    copyToClipboard.mockClear()
+    router = createTestRouter()
+    await router.push('/models?platform=OpenAI&model=gpt-4.1')
+    await router.isReady()
+  })
+
+  function mountMarketplace() {
+    return mount(ModelMarketplaceShell, {
+      props: {
+        marketplace,
+        apiOrigin: 'https://api.example.com',
+      },
+      global: { plugins: [router] },
+    })
+  }
+
+  it('renders provider group rows with base and effective prices', () => {
+    const wrapper = mountMarketplace()
+
+    expect(wrapper.get('[data-testid="marketplace-provider-OpenAI Direct"]').text()).toContain('OpenAI Direct')
+    expect(wrapper.get('[data-testid="marketplace-group-standard"]').text()).toContain('standard')
+    expect(wrapper.get('[data-testid="marketplace-base-price"]').text()).toContain('0.5')
+    expect(wrapper.get('[data-testid="marketplace-effective-price"]').text()).toContain('0.75')
+  })
+
+  it('renders inclusive tier intervals and tier prices', () => {
+    const wrapper = mountMarketplace()
+
+    expect(wrapper.get('[data-testid="marketplace-tier-0"]').text()).toContain('128000')
+    expect(wrapper.get('[data-testid="marketplace-tier-1"]').text()).toContain('128001')
+    expect(wrapper.get('[data-testid="marketplace-tier-1"]').text()).toContain('∞')
+  })
+
+  it('keeps unsupported metric sections visible with an honest empty state', async () => {
+    const wrapper = mountMarketplace()
+
+    await wrapper.get('[data-testid="marketplace-detail-nav-benchmarks"]').trigger('click')
+
+    expect(wrapper.get('[data-testid="marketplace-section-empty-benchmarks"]').text()).toContain(
+      'modelMarketplace.sections.benchmarks.empty',
+    )
+  })
+
+  it('substitutes the selected model into Quick Start and copies the request', async () => {
+    const wrapper = mountMarketplace()
+
+    expect(wrapper.get('[data-testid="marketplace-quick-start-code"]').text()).toContain('https://api.example.com/v1')
+    expect(wrapper.get('[data-testid="marketplace-quick-start-code"]').text()).toContain('gpt-4.1')
+
+    await wrapper.get('[data-testid="marketplace-copy-quick-start"]').trigger('click')
+
+    expect(copyToClipboard).toHaveBeenCalledWith(
+      expect.stringContaining('"model": "gpt-4.1"'),
+      'modelMarketplace.quickStart.copied',
+    )
+  })
+
+  it('links Quick Start key creation to the authenticated keys page', async () => {
+    const wrapper = mountMarketplace()
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="marketplace-create-api-key"]').attributes('href')).toBe('/keys')
+  })
+})

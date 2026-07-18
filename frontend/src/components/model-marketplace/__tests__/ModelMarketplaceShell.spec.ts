@@ -6,6 +6,10 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
+vi.mock('@/composables/useClipboard', () => ({
+  useClipboard: () => ({ copied: { value: false }, copyToClipboard: vi.fn().mockResolvedValue(true) }),
+}))
+
 import ModelMarketplaceShell from '../ModelMarketplaceShell.vue'
 import type { PublicModelMarketplace } from '@/api/modelMarketplace'
 
@@ -34,7 +38,10 @@ const marketplace: PublicModelMarketplace = {
 function createTestRouter() {
   return createRouter({
     history: createMemoryHistory(),
-    routes: [{ path: '/models', component: { template: '<div />' } }],
+    routes: [
+      { path: '/models', component: { template: '<div />' } },
+      { path: '/keys', component: { template: '<div />' } },
+    ],
   })
 }
 

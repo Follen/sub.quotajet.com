@@ -638,6 +638,44 @@ export default {
     platforms: '平台',
     models: '模型',
     providerCount: '{count} 个公开服务商',
+    detailNavigation: '模型详情',
+    prices: {
+      base: '基础价格',
+      effective: '实际价格',
+      groupMultiplier: '分组倍率：×{multiplier}',
+      displayOnly: '仅供展示的回退价格',
+      unavailable: '该分组未公开价格。',
+      input: '输入',
+      output: '输出',
+      cacheWrite: '缓存写入',
+      cacheRead: '缓存读取',
+      imageOutput: '图像输出',
+      perRequest: '每次请求'
+    },
+    tiers: {
+      title: '价格分层',
+      interval: 'Token 区间',
+      base: '基础',
+      effective: '实际',
+      tokens: 'tokens'
+    },
+    sections: {
+      providers: { title: '服务商', heading: '公开可用服务商', empty: '此模型暂无公开服务商数据。' },
+      pricing: { title: '实际价格', heading: '公开分组调整后价格', empty: '此模型暂无实际价格数据。' },
+      performance: { title: '性能', empty: '此模型暂无性能数据。' },
+      uptime: { title: '可用性', empty: '此模型暂无可用性数据。' },
+      benchmarks: { title: '基准测试', empty: '此模型暂无基准测试数据。' },
+      apps: { title: '应用', empty: '此模型暂无已公开应用集成。' },
+      activity: { title: '活动', empty: '此模型暂无公开活动数据。' }
+    },
+    quickStart: {
+      eyebrow: '兼容 OpenAI 的 API',
+      title: '快速开始',
+      description: '使用您的 API Key 和公开网关端点调用此模型。',
+      copy: '复制',
+      copied: '快速开始请求已复制',
+      createKey: '创建 API Key'
+    },
     empty: {
       title: '暂未提供公开模型',
       description: '配置公开模型后，它们将显示在这里。'
