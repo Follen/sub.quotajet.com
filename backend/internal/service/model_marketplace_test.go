@@ -113,6 +113,28 @@ func TestBuildPublicModelMarketplacePreservesTierIntervalsAndFallbackMarker(t *t
 	require.Equal(t, "long", price.Intervals[1].TierLabel)
 }
 
+func TestBuildPublicModelMarketplacePreservesEmptyBillingModeAndZeroPrice(t *testing.T) {
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
+		Name:   "provider",
+		Status: StatusActive,
+		Groups: []AvailableGroupRef{{Name: "public", Platform: "openai", RateMultiplier: 1}},
+		SupportedModels: []SupportedModel{{
+			Name: "unconfigured-mode", Platform: "openai",
+			Pricing: &ChannelModelPricing{
+				InputPrice: testMarketplaceFloat64(0),
+			},
+		}},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	price := result.Platforms[0].Models[0].Providers[0].GroupPrices[0].Price
+	require.Empty(t, price.BillingMode)
+	require.NotNil(t, price.InputPrice)
+	require.Zero(t, *price.InputPrice)
+	require.Nil(t, price.OutputPrice)
+}
+
 func TestBuildPublicModelMarketplaceSortsPlatformsModelsAndGroups(t *testing.T) {
 	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{
 		{

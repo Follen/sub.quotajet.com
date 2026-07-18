@@ -170,9 +170,6 @@ func publicMarketplacePrice(model SupportedModel) *PublicMarketplacePrice {
 		Fallback:         model.PricingSource == SupportedModelPricingSourceLiteLLMFallback,
 		DisplayOnly:      model.PricingSource == SupportedModelPricingSourceLiteLLMFallback,
 	}
-	if price.BillingMode == "" {
-		price.BillingMode = string(BillingModeToken)
-	}
 	for _, interval := range pricing.Intervals {
 		price.Intervals = append(price.Intervals, PublicMarketplaceTierInterval{
 			MinTokens:       interval.MinTokens,

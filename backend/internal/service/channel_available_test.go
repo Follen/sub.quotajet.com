@@ -259,6 +259,7 @@ func TestFillGlobalPricingFallback_NilPricing(t *testing.T) {
 	require.NotNil(t, models[0].Pricing)
 	require.NotNil(t, models[0].Pricing.InputPrice)
 	require.InDelta(t, 5e-6, *models[0].Pricing.InputPrice, 1e-12)
+	require.Equal(t, SupportedModelPricingSourceLiteLLMFallback, models[0].PricingSource)
 }
 
 func TestFillGlobalPricingFallback_EmptyPricingFillsFromLiteLLM(t *testing.T) {
