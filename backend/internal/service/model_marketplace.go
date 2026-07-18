@@ -68,17 +68,20 @@ type PublicMarketplaceProvider struct {
 	GroupPrices []PublicMarketplaceGroupPrice `json:"group_prices"`
 }
 
-// PublicMarketplaceGroupPrice describes public group-default pricing. Generic,
+// PublicMarketplaceGroupPrice describes public group-default pricing and the
+// generation gates that make media capability claims meaningful. Generic,
 // image, and video defaults are group configuration only; private user-specific
 // overrides are intentionally absent.
 type PublicMarketplaceGroupPrice struct {
-	Name                string                        `json:"name"`
-	RateMultiplier      float64                       `json:"rate_multiplier"`
-	ImageRateMultiplier *float64                      `json:"image_rate_multiplier,omitempty"`
-	VideoRateMultiplier *float64                      `json:"video_rate_multiplier,omitempty"`
-	ImagePrices         *PublicMarketplaceImagePrices `json:"image_prices,omitempty"`
-	VideoPrices         *PublicMarketplaceVideoPrices `json:"video_prices,omitempty"`
-	Price               *PublicMarketplacePrice       `json:"price"`
+	Name                 string                        `json:"name"`
+	RateMultiplier       float64                       `json:"rate_multiplier"`
+	AllowImageGeneration bool                          `json:"allow_image_generation"`
+	AllowVideoGeneration bool                          `json:"allow_video_generation"`
+	ImageRateMultiplier  *float64                      `json:"image_rate_multiplier,omitempty"`
+	VideoRateMultiplier  *float64                      `json:"video_rate_multiplier,omitempty"`
+	ImagePrices          *PublicMarketplaceImagePrices `json:"image_prices,omitempty"`
+	VideoPrices          *PublicMarketplaceVideoPrices `json:"video_prices,omitempty"`
+	Price                *PublicMarketplacePrice       `json:"price"`
 }
 
 // PublicMarketplaceImagePrices contains public group-default image prices by
@@ -171,13 +174,15 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 			provider := PublicMarketplaceProvider{Name: channel.Name, Description: channel.Description}
 			for _, group := range groups {
 				provider.GroupPrices = append(provider.GroupPrices, PublicMarketplaceGroupPrice{
-					Name:                group.Name,
-					RateMultiplier:      group.RateMultiplier,
-					ImageRateMultiplier: publicMarketplaceIndependentRate(group.ImageRateIndependent, group.ImageRateMultiplier),
-					VideoRateMultiplier: publicMarketplaceIndependentRate(group.VideoRateIndependent, group.VideoRateMultiplier),
-					ImagePrices:         publicMarketplaceImagePrices(group),
-					VideoPrices:         publicMarketplaceVideoPrices(group),
-					Price:               publicMarketplacePrice(supported),
+					Name:                 group.Name,
+					RateMultiplier:       group.RateMultiplier,
+					AllowImageGeneration: group.AllowImageGeneration,
+					AllowVideoGeneration: effectiveAvailableGroupVideoPermission(group),
+					ImageRateMultiplier:  publicMarketplaceIndependentRate(group.ImageRateIndependent, group.ImageRateMultiplier),
+					VideoRateMultiplier:  publicMarketplaceIndependentRate(group.VideoRateIndependent, group.VideoRateMultiplier),
+					ImagePrices:          publicMarketplaceImagePrices(group),
+					VideoPrices:          publicMarketplaceVideoPrices(group),
+					Price:                publicMarketplacePrice(supported),
 				})
 			}
 			sortPublicMarketplaceGroupPrices(provider.GroupPrices)
@@ -227,24 +232,51 @@ func publicMarketplaceCapabilities(model PublicMarketplaceModel) *PublicMarketpl
 		for _, groupPrice := range provider.GroupPrices {
 			if groupPrice.Price != nil {
 				capabilities.Pricing = true
-				switch strings.ToLower(groupPrice.Price.BillingMode) {
-				case string(BillingModeImage):
-					capabilities.ImageGeneration = true
-				case string(BillingModeVideo):
-					capabilities.VideoGeneration = true
-				}
 			}
-			if groupPrice.ImagePrices != nil {
+			if publicMarketplaceImagePricesPublished(groupPrice.ImagePrices) {
 				capabilities.Pricing = true
+			}
+			if publicMarketplaceVideoPricesPublished(groupPrice.VideoPrices) {
+				capabilities.Pricing = true
+			}
+			if groupPrice.AllowImageGeneration && publicMarketplaceGroupHasImageCapability(groupPrice.Price, groupPrice) {
 				capabilities.ImageGeneration = true
 			}
-			if groupPrice.VideoPrices != nil {
-				capabilities.Pricing = true
+			if groupPrice.AllowVideoGeneration && publicMarketplaceGroupHasVideoCapability(groupPrice.Price, groupPrice) {
 				capabilities.VideoGeneration = true
 			}
 		}
 	}
 	return capabilities
+}
+
+func effectiveAvailableGroupVideoPermission(group AvailableGroupRef) bool {
+	if group.AllowVideoGeneration {
+		return true
+	}
+	return strings.EqualFold(strings.TrimSpace(group.Platform), PlatformGrok) && group.AllowImageGeneration
+}
+
+func publicMarketplaceGroupHasImageCapability(price *PublicMarketplacePrice, groupPrice PublicMarketplaceGroupPrice) bool {
+	if publicMarketplaceImagePricesPublished(groupPrice.ImagePrices) {
+		return true
+	}
+	return price != nil && (strings.EqualFold(price.BillingMode, string(BillingModeImage)) || price.ImageOutputPrice != nil)
+}
+
+func publicMarketplaceGroupHasVideoCapability(price *PublicMarketplacePrice, groupPrice PublicMarketplaceGroupPrice) bool {
+	if publicMarketplaceVideoPricesPublished(groupPrice.VideoPrices) {
+		return true
+	}
+	return price != nil && strings.EqualFold(price.BillingMode, string(BillingModeVideo))
+}
+
+func publicMarketplaceImagePricesPublished(prices *PublicMarketplaceImagePrices) bool {
+	return prices != nil && (prices.Price1K != nil || prices.Price2K != nil || prices.Price4K != nil)
+}
+
+func publicMarketplaceVideoPricesPublished(prices *PublicMarketplaceVideoPrices) bool {
+	return prices != nil && (prices.Price480P != nil || prices.Price720P != nil || prices.Price1080P != nil)
 }
 
 // publicMarketplacePlatformDefaultInboundEndpoints describes canonical inbound

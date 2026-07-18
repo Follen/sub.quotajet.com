@@ -651,6 +651,10 @@ export default {
       video1080P: '1080p',
       perRequest: 'Per request',
       modeMultiplier: '{mode} multiplier: ×{multiplier}',
+      modeToken: 'Token pricing',
+      modePerRequest: 'Per-request pricing',
+      modeImage: 'Image pricing',
+      modeVideo: 'Video pricing',
       groupOverride: 'Public group override',
       partialOverride: 'Only configured tiers are shown; other tiers may use the channel fallback.',
       perMillionTokens: '1M tokens'

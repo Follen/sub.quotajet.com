@@ -46,6 +46,8 @@ const marketplace: PublicModelMarketplace = {
                 {
                   name: 'standard',
                   rate_multiplier: 1.5,
+                  allow_image_generation: false,
+                  allow_video_generation: false,
                   price: {
                     billing_mode: 'token',
                     input_price: 0.0000005,
@@ -83,6 +85,8 @@ const marketplace: PublicModelMarketplace = {
                 {
                   name: 'per-request',
                   rate_multiplier: 1,
+                  allow_image_generation: false,
+                  allow_video_generation: false,
                   price: {
                     billing_mode: 'per_request',
                     input_price: null,
@@ -99,6 +103,8 @@ const marketplace: PublicModelMarketplace = {
                 {
                   name: 'default-token-mode',
                   rate_multiplier: 1,
+                  allow_image_generation: false,
+                  allow_video_generation: false,
                   price: {
                     billing_mode: '',
                     input_price: 0.000001,
@@ -115,6 +121,8 @@ const marketplace: PublicModelMarketplace = {
                 {
                   name: 'image',
                   rate_multiplier: 1.5,
+                  allow_image_generation: true,
+                  allow_video_generation: false,
                   image_rate_multiplier: 0.5,
                   image_prices: {
                     price_1k: 0.11,
@@ -226,6 +234,41 @@ describe('Marketplace details', () => {
     expect(wrapper.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.11')
     expect(wrapper.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.055')
     expect(wrapper.text()).toContain('modelMarketplace.prices.groupOverride')
+  })
+
+  it('renders token, per-request, image, and video prices together', () => {
+    const wrapper = mount(MarketplacePricingPanel, {
+      props: {
+        groupPrice: {
+          name: 'grok-mixed',
+          rate_multiplier: 2,
+          allow_image_generation: true,
+          allow_video_generation: true,
+          image_rate_multiplier: 0.5,
+          video_rate_multiplier: 0.25,
+          image_prices: { price_1k: 0.11 },
+          video_prices: { price_480p: 0.04 },
+          price: {
+            billing_mode: 'token',
+            input_price: 0.000001,
+            output_price: 0.000002,
+            cache_write_price: null,
+            cache_read_price: null,
+            image_output_price: null,
+            per_request_price: 0.03,
+            fallback: false,
+            display_only: false,
+            intervals: [],
+          },
+        },
+      },
+    })
+
+    expect(wrapper.get('[data-testid="marketplace-pricing-token"]').text()).toContain('$1 / modelMarketplace.prices.perMillionTokens')
+    expect(wrapper.get('[data-testid="marketplace-pricing-per_request"]').text()).toContain('$0.03')
+    expect(wrapper.get('[data-testid="marketplace-pricing-image"]').text()).toContain('$0.11')
+    expect(wrapper.get('[data-testid="marketplace-pricing-video"]').text()).toContain('$0.04 /s')
+    expect(wrapper.get('[data-testid="marketplace-pricing-video"]').text()).toContain('$0.01 /s')
   })
 
   it('renders inclusive tier intervals and tier prices', () => {

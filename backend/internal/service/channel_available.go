@@ -19,6 +19,8 @@ type AvailableGroupRef struct {
 	Platform             string
 	SubscriptionType     string
 	RateMultiplier       float64
+	AllowImageGeneration bool
+	AllowVideoGeneration bool
 	ImageRateIndependent bool
 	ImageRateMultiplier  float64
 	ImagePrice1K         *float64
@@ -79,6 +81,8 @@ func (s *ChannelService) ListAvailable(ctx context.Context) ([]AvailableChannel,
 			Platform:             g.Platform,
 			SubscriptionType:     g.SubscriptionType,
 			RateMultiplier:       g.RateMultiplier,
+			AllowImageGeneration: g.AllowImageGeneration,
+			AllowVideoGeneration: groupAllowsVideoGeneration(g),
 			ImageRateIndependent: g.ImageRateIndependent,
 			ImageRateMultiplier:  g.ImageRateMultiplier,
 			ImagePrice1K:         g.ImagePrice1K,
@@ -129,6 +133,14 @@ func (s *ChannelService) ListAvailable(ctx context.Context) ([]AvailableChannel,
 		return strings.ToLower(out[i].Name) < strings.ToLower(out[j].Name)
 	})
 	return out, nil
+}
+
+// groupAllowsVideoGeneration returns the effective video permission for the
+// currently supported platform gates. Grok image and video handlers share the
+// legacy AllowImageGeneration flag; other platforms have no video permission
+// flag, so a video price alone must not publish video capability.
+func groupAllowsVideoGeneration(group Group) bool {
+	return strings.EqualFold(strings.TrimSpace(group.Platform), PlatformGrok) && group.AllowImageGeneration
 }
 
 // fillGlobalPricingFallback 对未命中渠道定价的支持模型，从全局 LiteLLM 数据合成一份

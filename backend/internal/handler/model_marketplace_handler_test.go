@@ -99,6 +99,8 @@ func TestModelMarketplaceHandlerReturnsPublicPayload(t *testing.T) {
 						"group_prices": [{
 							"name": "public",
 							"rate_multiplier": 1,
+							"allow_image_generation": false,
+							"allow_video_generation": false,
 							"price": null
 						}]
 					}]

@@ -229,7 +229,7 @@ func TestBuildPublicModelMarketplacePublishesMediaOverrideCapabilityWithoutChann
 	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
 		Name:            "image-provider",
 		Status:          StatusActive,
-		Groups:          []AvailableGroupRef{{Name: "public", Platform: PlatformOpenAI, ImagePrice1K: &image1K}},
+		Groups:          []AvailableGroupRef{{Name: "public", Platform: PlatformOpenAI, AllowImageGeneration: true, ImagePrice1K: &image1K}},
 		SupportedModels: []SupportedModel{{Name: "image-model", Platform: PlatformOpenAI}},
 	}}})
 
@@ -243,6 +243,75 @@ func TestBuildPublicModelMarketplacePublishesMediaOverrideCapabilityWithoutChann
 	require.True(t, model.Capabilities.Pricing)
 	require.True(t, model.Capabilities.ImageGeneration)
 	require.Contains(t, model.PlatformDefaultInboundEndpoints, "/v1/images/generations")
+}
+
+func TestBuildPublicModelMarketplaceMediaCapabilitiesRequireGroupGenerationPermission(t *testing.T) {
+	imagePrice := 0.11
+	videoPrice := 0.04
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{
+		{
+			Name:   "disabled-image-provider",
+			Status: StatusActive,
+			Groups: []AvailableGroupRef{{
+				Name: "disabled-image", Platform: PlatformOpenAI,
+				AllowImageGeneration: false, ImagePrice1K: &imagePrice,
+			}},
+			SupportedModels: []SupportedModel{{
+				Name: "disabled-image-model", Platform: PlatformOpenAI,
+				Pricing: &ChannelModelPricing{BillingMode: BillingModeImage},
+			}},
+		},
+		{
+			Name:   "enabled-image-provider",
+			Status: StatusActive,
+			Groups: []AvailableGroupRef{{
+				Name: "enabled-image", Platform: PlatformOpenAI,
+				AllowImageGeneration: true, ImagePrice1K: &imagePrice,
+			}},
+			SupportedModels: []SupportedModel{{
+				Name: "enabled-image-model", Platform: PlatformOpenAI,
+				Pricing: &ChannelModelPricing{BillingMode: BillingModeImage},
+			}},
+		},
+		{
+			Name:   "enabled-video-provider",
+			Status: StatusActive,
+			Groups: []AvailableGroupRef{{
+				Name: "enabled-video", Platform: PlatformGrok,
+				AllowImageGeneration: true, VideoPrice480P: &videoPrice,
+			}},
+			SupportedModels: []SupportedModel{{
+				Name: "enabled-video-model", Platform: PlatformGrok,
+				Pricing: &ChannelModelPricing{BillingMode: BillingModeVideo},
+			}},
+		},
+		{
+			Name:   "disabled-video-provider",
+			Status: StatusActive,
+			Groups: []AvailableGroupRef{{
+				Name: "disabled-video", Platform: PlatformGrok,
+				AllowImageGeneration: false, VideoPrice480P: &videoPrice,
+			}},
+			SupportedModels: []SupportedModel{{
+				Name: "disabled-video-model", Platform: PlatformGrok,
+				Pricing: &ChannelModelPricing{BillingMode: BillingModeVideo},
+			}},
+		},
+	}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+
+	capabilityByModel := make(map[string]*PublicMarketplaceCapabilities)
+	for _, platform := range result.Platforms {
+		for _, model := range platform.Models {
+			capabilityByModel[model.Name] = model.Capabilities
+		}
+	}
+	require.False(t, capabilityByModel["disabled-image-model"].ImageGeneration)
+	require.True(t, capabilityByModel["enabled-image-model"].ImageGeneration)
+	require.True(t, capabilityByModel["enabled-video-model"].VideoGeneration)
+	require.False(t, capabilityByModel["disabled-video-model"].VideoGeneration)
 }
 
 func TestBuildPublicModelMarketplacePublishesEndpointAndCapabilityMetadata(t *testing.T) {

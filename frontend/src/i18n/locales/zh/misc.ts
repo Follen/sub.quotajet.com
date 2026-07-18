@@ -675,6 +675,10 @@ export default {
       video1080P: '1080p',
       perRequest: '每次请求',
       modeMultiplier: '{mode}倍率：×{multiplier}',
+      modeToken: 'Token 计费',
+      modePerRequest: '按次计费',
+      modeImage: '图像计费',
+      modeVideo: '视频计费',
       groupOverride: '公开分组覆盖价',
       partialOverride: '仅显示已配置的档位；其他档位可能使用渠道回退价格。',
       perMillionTokens: '每 100 万 tokens'

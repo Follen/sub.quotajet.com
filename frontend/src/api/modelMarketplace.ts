@@ -27,6 +27,10 @@ export interface PublicMarketplacePrice {
 export interface PublicMarketplaceGroupPrice {
   name: string
   rate_multiplier: number
+  /** Whether this public group permits image-generation requests. */
+  allow_image_generation?: boolean
+  /** Effective video gate; currently derived from Grok's shared image gate. */
+  allow_video_generation?: boolean
   /** Present only when the group uses an independent image multiplier. */
   image_rate_multiplier?: number | null
   /** Present only when the group uses an independent video multiplier. */

@@ -15,10 +15,10 @@
             {{ tierInterval(tier) }}
           </td>
           <td class="px-3 py-2 align-top">
-            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}</p>
+            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="billingMode === 'video'"> /s</span></p>
           </td>
           <td class="px-3 py-2 align-top text-lime-300">
-            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value * rateMultiplier, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}</p>
+            <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value * rateMultiplier, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="billingMode === 'video'"> /s</span></p>
           </td>
         </tr>
       </tbody>

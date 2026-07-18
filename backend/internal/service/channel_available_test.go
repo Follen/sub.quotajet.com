@@ -127,6 +127,7 @@ func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
 			Name:                 "public",
 			Platform:             PlatformOpenAI,
 			RateMultiplier:       1.5,
+			AllowImageGeneration: true,
 			ImageRateIndependent: true,
 			ImageRateMultiplier:  0.5,
 			ImagePrice1K:         &image1K,
@@ -146,6 +147,7 @@ func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
 	require.Len(t, out[0].Groups, 1)
 	group := out[0].Groups[0]
 	require.True(t, group.ImageRateIndependent)
+	require.True(t, group.AllowImageGeneration)
 	require.InDelta(t, 0.5, group.ImageRateMultiplier, 0)
 	require.True(t, group.VideoRateIndependent)
 	require.InDelta(t, 0.75, group.VideoRateMultiplier, 0)
@@ -161,6 +163,28 @@ func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
 	require.InDelta(t, video720P, *group.VideoPrice720P, 0)
 	require.NotNil(t, group.VideoPrice1080P)
 	require.InDelta(t, video1080P, *group.VideoPrice1080P, 0)
+}
+
+func TestListAvailable_DerivesGrokVideoPermissionFromImageGate(t *testing.T) {
+	channels := []Channel{{
+		ID:       1,
+		Name:     "grok-media",
+		Status:   StatusActive,
+		GroupIDs: []int64{1, 2},
+	}}
+	groupRepo := &stubGroupRepoForAvailable{activeGroups: []Group{
+		{ID: 1, Name: "enabled", Platform: PlatformGrok, AllowImageGeneration: true},
+		{ID: 2, Name: "disabled", Platform: PlatformGrok, AllowImageGeneration: false},
+	}}
+
+	out, err := newAvailableChannelService(channels, groupRepo).ListAvailable(context.Background())
+	require.NoError(t, err)
+	require.Len(t, out, 1)
+	require.Len(t, out[0].Groups, 2)
+	require.False(t, out[0].Groups[0].AllowImageGeneration)
+	require.False(t, out[0].Groups[0].AllowVideoGeneration)
+	require.True(t, out[0].Groups[1].AllowImageGeneration)
+	require.True(t, out[0].Groups[1].AllowVideoGeneration)
 }
 
 func TestListAvailable_SortedByName(t *testing.T) {
