@@ -48,7 +48,12 @@ func TestModelMarketplaceHandlerReturnsPublicPayload(t *testing.T) {
 			Platforms: []service.PublicMarketplacePlatform{{
 				Name: "openai",
 				Models: []service.PublicMarketplaceModel{{
-					Name: "gpt-4o",
+					Name:                      "gpt-4o",
+					SupportedInboundEndpoints: []string{"/v1/chat/completions", "/v1/responses"},
+					Capabilities: &service.PublicMarketplaceCapabilities{
+						Providers: true,
+						Pricing:   true,
+					},
 					Providers: []service.PublicMarketplaceProvider{{
 						Name: "public-provider",
 						GroupPrices: []service.PublicMarketplaceGroupPrice{{
@@ -77,6 +82,18 @@ func TestModelMarketplaceHandlerReturnsPublicPayload(t *testing.T) {
 				"name": "openai",
 				"models": [{
 					"name": "gpt-4o",
+					"supported_inbound_endpoints": ["/v1/chat/completions", "/v1/responses"],
+					"capabilities": {
+						"providers": true,
+						"pricing": true,
+						"image_generation": false,
+						"video_generation": false,
+						"performance": false,
+						"uptime": false,
+						"benchmarks": false,
+						"apps": false,
+						"activity": false
+					},
 					"providers": [{
 						"name": "public-provider",
 						"group_prices": [{

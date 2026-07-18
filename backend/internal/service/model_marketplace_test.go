@@ -145,6 +145,60 @@ func TestBuildPublicModelMarketplacePreservesEmptyBillingModeAndZeroPrice(t *tes
 	require.Nil(t, price.OutputPrice)
 }
 
+func TestBuildPublicModelMarketplaceExposesIndependentImageDefaultWithoutUserRate(t *testing.T) {
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
+		Name:   "image-provider",
+		Status: StatusActive,
+		Groups: []AvailableGroupRef{{
+			Name:                 "public",
+			Platform:             "openai",
+			RateMultiplier:       1.5,
+			ImageRateIndependent: true,
+			ImageRateMultiplier:  0.5,
+		}},
+		SupportedModels: []SupportedModel{{
+			Name:     "image-model",
+			Platform: "openai",
+			Pricing: &ChannelModelPricing{
+				BillingMode:     BillingModeImage,
+				PerRequestPrice: testMarketplaceFloat64(0.04),
+			},
+		}},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	groupPrice := result.Platforms[0].Models[0].Providers[0].GroupPrices[0]
+	require.InDelta(t, 1.5, groupPrice.RateMultiplier, 0)
+	require.NotNil(t, groupPrice.ImageRateMultiplier)
+	require.InDelta(t, 0.5, *groupPrice.ImageRateMultiplier, 0)
+	// User-specific group rates are deliberately not part of the public DTO.
+	_, hasUserRate := reflect.TypeOf(groupPrice).FieldByName("UserRateMultiplier")
+	require.False(t, hasUserRate)
+}
+
+func TestBuildPublicModelMarketplacePublishesEndpointAndCapabilityMetadata(t *testing.T) {
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
+		Name:   "provider",
+		Status: StatusActive,
+		Groups: []AvailableGroupRef{{Name: "public", Platform: "openai", RateMultiplier: 1}},
+		SupportedModels: []SupportedModel{{
+			Name:     "gpt-test",
+			Platform: "openai",
+			Pricing:  &ChannelModelPricing{BillingMode: BillingModeToken, InputPrice: testMarketplaceFloat64(1e-6)},
+		}},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	model := result.Platforms[0].Models[0]
+	require.Equal(t, []string{"/v1/chat/completions", "/v1/responses", "/v1/embeddings"}, model.SupportedInboundEndpoints)
+	require.NotNil(t, model.Capabilities)
+	require.True(t, model.Capabilities.Providers)
+	require.True(t, model.Capabilities.Pricing)
+	require.False(t, model.Capabilities.Benchmarks)
+}
+
 func TestBuildPublicModelMarketplaceSortsPlatformsModelsAndGroups(t *testing.T) {
 	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{
 		{

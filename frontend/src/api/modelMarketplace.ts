@@ -12,7 +12,7 @@ export interface PublicMarketplaceTierInterval {
 }
 
 export interface PublicMarketplacePrice {
-  billing_mode: 'token' | 'per_request' | 'image' | string
+  billing_mode: 'token' | 'per_request' | 'image' | 'video' | string
   input_price: number | null
   output_price: number | null
   cache_write_price: number | null
@@ -27,6 +27,10 @@ export interface PublicMarketplacePrice {
 export interface PublicMarketplaceGroupPrice {
   name: string
   rate_multiplier: number
+  /** Present only when the group uses an independent image multiplier. */
+  image_rate_multiplier?: number | null
+  /** Present only when the group uses an independent video multiplier. */
+  video_rate_multiplier?: number | null
   price: PublicMarketplacePrice | null
 }
 
@@ -39,6 +43,20 @@ export interface PublicMarketplaceProvider {
 export interface PublicMarketplaceModel {
   name: string
   providers: PublicMarketplaceProvider[]
+  supported_inbound_endpoints?: string[]
+  capabilities?: PublicMarketplaceCapabilities | null
+}
+
+export interface PublicMarketplaceCapabilities {
+  providers: boolean
+  pricing: boolean
+  image_generation: boolean
+  video_generation: boolean
+  performance: boolean
+  uptime: boolean
+  benchmarks: boolean
+  apps: boolean
+  activity: boolean
 }
 
 export interface PublicMarketplacePlatform {

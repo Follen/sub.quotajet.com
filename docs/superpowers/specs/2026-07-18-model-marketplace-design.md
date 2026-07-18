@@ -12,8 +12,8 @@ The route is public and does not require authentication. The page uses a dark, h
 
 - A horizontal platform switcher at the top (for example OpenAI, Grok, Anthropic, Gemini), populated from public platform data rather than hard-coded providers.
 - A model selector/list under the active platform, with search and a clear selected state.
-- A left detail navigation rail with Providers, Effective Pricing, Performance, Uptime, Benchmarks, Apps, and Activity. Sections without data remain visible but show a deliberate empty state rather than fabricated metrics.
-- A main detail panel for the selected model. The first implementation prioritizes Providers and Effective Pricing, then adds the remaining sections as data-backed or honest empty states.
+- A left detail navigation rail with Providers, Default Pricing, Performance, Uptime, Benchmarks, Apps, and Activity. Sections without data remain visible but show a deliberate empty state rather than fabricated metrics.
+- A main detail panel for the selected model. The first implementation prioritizes Providers and public group-default pricing, then adds the remaining sections as data-backed or honest empty states.
 - A Quick Start panel showing the `sub2api` OpenAI-compatible endpoint, model identifier, request examples, copy buttons, and a link to the authenticated API-key page for creating a key.
 - Responsive behavior: platform tabs remain horizontally scrollable, the detail rail collapses into a compact selector on small screens, and code blocks remain readable without forcing page-wide overflow.
 
@@ -34,7 +34,7 @@ The endpoint returns only active channels and non-exclusive (`is_exclusive = fal
 - supported inbound endpoint types;
 - public provider/channel associations;
 - group name and public rate multiplier;
-- effective prices for token, cache, image, and per-request modes;
+- base prices plus public group-default estimates for token, cache, image, video, and per-request modes;
 - tier intervals with min/max token bounds and tier labels;
 - capability flags for sections that have real data;
 - a stable generated timestamp/version for client refresh behavior.
@@ -49,9 +49,9 @@ The API preserves `sub2api` billing semantics rather than converting them to the
 - `billing_mode=per_request`: per-request price;
 - `billing_mode=image`: image/output pricing fields;
 - group multipliers are shown alongside base prices;
-- tier intervals retain inclusive lower bounds and nullable upper bounds;
+- token tier intervals use the billing engine's left-open/right-closed `(min_tokens, max_tokens]` semantics; `max_tokens = null` means unbounded;
 - absent prices remain absent, not zero;
-- the UI labels prices with their unit and clearly distinguishes base price from group-adjusted effective price.
+- the UI labels prices with their unit and clearly distinguishes base price from a group-default estimate. Independent image/video defaults are exposed only at group scope; user-specific rates and peak-window overrides are excluded and disclosed in the UI.
 
 The public response is display-only. Actual billing continues through the existing gateway and billing services.
 

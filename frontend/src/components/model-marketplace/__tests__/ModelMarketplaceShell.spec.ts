@@ -127,4 +127,48 @@ describe('ModelMarketplaceShell', () => {
     expect(wrapper.get('[data-testid="marketplace-platform-Anthropic"]').attributes('aria-selected')).toBe('true')
     expect(wrapper.find('[data-testid="marketplace-model-claude-sonnet-4"]').exists()).toBe(true)
   })
+
+  it('passes the target platform when switching to a duplicate first model', async () => {
+    const duplicateFirstMarketplace: PublicModelMarketplace = {
+      ...marketplace,
+      platforms: [
+        {
+          name: 'OpenAI',
+          models: [{ name: 'shared-first', providers: [] }, ...marketplace.platforms[0].models],
+        },
+        {
+          name: 'Anthropic',
+          models: [{ name: 'shared-first', providers: [] }, ...marketplace.platforms[1].models],
+        },
+      ],
+    }
+    await router.push('/models?platform=OpenAI&model=shared-first')
+    const wrapper = mount(ModelMarketplaceShell, {
+      props: { marketplace: duplicateFirstMarketplace },
+      global: { plugins: [router] },
+    })
+
+    await flushPromises()
+    await wrapper.get('[data-testid="marketplace-platform-Anthropic"]').trigger('click')
+    await flushPromises()
+
+    expect(router.currentRoute.value.query).toMatchObject({
+      platform: 'Anthropic',
+      model: 'shared-first',
+    })
+    expect(wrapper.get('[data-testid="marketplace-platform-Anthropic"]').attributes('aria-selected')).toBe('true')
+  })
+
+  it('filters the model list by a case-insensitive search query', async () => {
+    const wrapper = mount(ModelMarketplaceShell, {
+      props: { marketplace },
+      global: { plugins: [router] },
+    })
+
+    const search = wrapper.get('[data-testid="marketplace-model-search"]')
+    await search.setValue('GPT-5')
+
+    expect(wrapper.find('[data-testid="marketplace-model-gpt-5"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="marketplace-model-gpt-4.1"]').exists()).toBe(false)
+  })
 })

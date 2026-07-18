@@ -614,11 +614,27 @@ export default {
     platforms: 'Platforms',
     models: 'Models',
     providerCount: '{count} public provider(s)',
+    search: {
+      placeholder: 'Search models',
+      clear: 'Clear',
+      empty: 'No models match this search.'
+    },
+    endpoints: {
+      title: 'Supported inbound endpoints'
+    },
+    capabilities: {
+      title: 'Published capabilities',
+      providers: 'Public providers',
+      pricing: 'Pricing published',
+      imageGeneration: 'Image generation',
+      videoGeneration: 'Video generation'
+    },
     detailNavigation: 'Model details',
     prices: {
       base: 'Base price',
-      effective: 'Effective price',
-      groupMultiplier: 'Group multiplier: ×{multiplier}',
+      effective: 'Default group price',
+      effectiveDisclaimer: 'Uses the public group default only; user-specific rates, peak windows, and other private overrides are excluded.',
+      groupMultiplier: 'Default group multiplier: ×{multiplier}',
       displayOnly: 'Display-only fallback',
       unavailable: 'Pricing is not published for this group.',
       input: 'Input',
@@ -626,7 +642,9 @@ export default {
       cacheWrite: 'Cache write',
       cacheRead: 'Cache read',
       imageOutput: 'Image output',
+      videoOutput: 'Video output',
       perRequest: 'Per request',
+      modeMultiplier: '{mode} multiplier: ×{multiplier}',
       perMillionTokens: '1M tokens'
     },
     tiers: {
@@ -638,7 +656,7 @@ export default {
     },
     sections: {
       providers: { title: 'Providers', heading: 'Available public providers', empty: 'No public provider data is available for this model.' },
-      pricing: { title: 'Effective Pricing', heading: 'Public group-adjusted prices', empty: 'No effective pricing data is available for this model.' },
+      pricing: { title: 'Default Pricing', heading: 'Public group-default prices', empty: 'No default pricing data is available for this model.' },
       performance: { title: 'Performance', empty: 'No performance data is available for this model.' },
       uptime: { title: 'Uptime', empty: 'No uptime data is available for this model.' },
       benchmarks: { title: 'Benchmarks', empty: 'No benchmark data is available for this model.' },

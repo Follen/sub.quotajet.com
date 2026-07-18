@@ -112,6 +112,37 @@ func TestListAvailable_InactiveGroupIDSilentlyDropped(t *testing.T) {
 	require.Equal(t, int64(1), out[0].Groups[0].ID)
 }
 
+func TestListAvailable_PreservesIndependentMediaRateDefaults(t *testing.T) {
+	channels := []Channel{{
+		ID:       1,
+		Name:     "public-media",
+		Status:   StatusActive,
+		GroupIDs: []int64{1},
+	}}
+	groupRepo := &stubGroupRepoForAvailable{
+		activeGroups: []Group{{
+			ID:                   1,
+			Name:                 "public",
+			Platform:             PlatformOpenAI,
+			RateMultiplier:       1.5,
+			ImageRateIndependent: true,
+			ImageRateMultiplier:  0.5,
+			VideoRateIndependent: true,
+			VideoRateMultiplier:  0.75,
+		}},
+	}
+
+	out, err := newAvailableChannelService(channels, groupRepo).ListAvailable(context.Background())
+	require.NoError(t, err)
+	require.Len(t, out, 1)
+	require.Len(t, out[0].Groups, 1)
+	group := out[0].Groups[0]
+	require.True(t, group.ImageRateIndependent)
+	require.InDelta(t, 0.5, group.ImageRateMultiplier, 0)
+	require.True(t, group.VideoRateIndependent)
+	require.InDelta(t, 0.75, group.VideoRateMultiplier, 0)
+}
+
 func TestListAvailable_SortedByName(t *testing.T) {
 	channels := []Channel{
 		{ID: 1, Name: "beta"},

@@ -34,6 +34,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { useClipboard } from '@/composables/useClipboard'
+import { normalizeMarketplaceApiOrigin, shellQuote } from './marketplaceQuickStart'
 
 const props = defineProps<{
   apiOrigin: string
@@ -44,20 +45,16 @@ const { t } = useI18n()
 const { copyToClipboard } = useClipboard()
 
 const apiBase = computed(() => {
-  const origin = props.apiOrigin.trim().replace(/\/+$/, '') || window.location.origin
-  const root = origin.replace(/\/v1$/, '')
-  return `${root}/v1`
+  const origin = normalizeMarketplaceApiOrigin(props.apiOrigin, window.location.origin)
+  return origin ? `${origin}/v1` : '/v1'
 })
 const requestBody = computed(() => JSON.stringify({
   model: props.modelName,
   messages: [{ role: 'user', content: 'Hello' }],
 }, null, 2))
-const requestExample = computed(() => `curl ${apiBase.value}/chat/completions \\
+const requestExample = computed(() => `curl ${shellQuote(`${apiBase.value}/chat/completions`)} \\
   -H "Authorization: Bearer $YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d ${shellQuote(requestBody.value)}`)
 
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\"'\"'")}'`
-}
 </script>

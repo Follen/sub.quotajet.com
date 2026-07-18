@@ -25,6 +25,18 @@ const marketplace: PublicModelMarketplace = {
       models: [
         {
           name: 'gpt-4.1',
+          supported_inbound_endpoints: ['/v1/chat/completions', '/v1/responses'],
+          capabilities: {
+            providers: true,
+            pricing: true,
+            image_generation: true,
+            video_generation: false,
+            performance: false,
+            uptime: false,
+            benchmarks: false,
+            apps: false,
+            activity: false,
+          },
           providers: [
             {
               name: 'OpenAI Direct',
@@ -101,7 +113,8 @@ const marketplace: PublicModelMarketplace = {
                 },
                 {
                   name: 'image',
-                  rate_multiplier: 1,
+                  rate_multiplier: 1.5,
+                  image_rate_multiplier: 0.5,
                   price: {
                     billing_mode: 'image',
                     input_price: null,
@@ -164,6 +177,14 @@ describe('Marketplace details', () => {
     expect(standard.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.75 / modelMarketplace.prices.perMillionTokens')
   })
 
+  it('renders published endpoint and capability metadata without inventing metrics', () => {
+    const wrapper = mountMarketplace()
+
+    expect(wrapper.get('[data-testid="marketplace-supported-endpoints"]').text()).toContain('/v1/responses')
+    expect(wrapper.get('[data-testid="marketplace-capabilities"]').text()).toContain('modelMarketplace.capabilities.imageGeneration')
+    expect(wrapper.find('[data-testid="marketplace-section-empty-benchmarks"]').exists()).toBe(false)
+  })
+
   it('treats an empty billing mode as token pricing', () => {
     const wrapper = mountMarketplace()
 
@@ -172,11 +193,14 @@ describe('Marketplace details', () => {
     )
   })
 
-  it('does not scale per-request or image prices', () => {
+  it('uses an independent image multiplier instead of the generic group multiplier', () => {
     const wrapper = mountMarketplace()
 
     expect(wrapper.get('[data-testid="marketplace-group-per-request"]').get('[data-testid="marketplace-base-price"]').text()).toContain('$0.03')
-    expect(wrapper.get('[data-testid="marketplace-group-image"]').get('[data-testid="marketplace-base-price"]').text()).toContain('$0.04')
+    const imageGroup = wrapper.get('[data-testid="marketplace-group-image"]')
+    expect(imageGroup.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.04')
+    expect(imageGroup.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.02')
+    expect(imageGroup.text()).toContain('modelMarketplace.prices.effectiveDisclaimer')
   })
 
   it('renders inclusive tier intervals and tier prices', () => {
@@ -232,5 +256,21 @@ describe('Marketplace details', () => {
 
     await wrapper.get('[data-testid="marketplace-copy-quick-start"]').trigger('click')
     expect(copyToClipboard).toHaveBeenCalledWith(code, 'modelMarketplace.quickStart.copied')
+  })
+
+  it('validates and shell-quotes an adversarial API origin', () => {
+    const wrapper = mount(MarketplaceQuickStart, {
+      props: {
+        apiOrigin: `javascript:alert(1)'; echo injected; #`,
+        modelName: 'gpt-4.1',
+      },
+      global: { plugins: [router] },
+    })
+
+    const code = wrapper.get('[data-testid="marketplace-quick-start-code"]').text()
+    expect(code).not.toContain('javascript:')
+    expect(code).not.toContain('echo injected')
+    expect(code).toContain("curl '")
+    expect(code).toContain("/v1/chat/completions'")
   })
 })

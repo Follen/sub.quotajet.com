@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a public OpenRouter-inspired model marketplace in the `sub2api` Vue frontend, backed by a safe public aggregation API that exposes only public channels, groups, models, prices, multipliers, and tier intervals.
+**Goal:** Build a public OpenRouter-inspired model marketplace in the `sub2api` Vue frontend, backed by a safe public aggregation API that exposes only public channels, groups, models, prices, public default multipliers, inbound endpoint types, and capability flags.
 
 **Architecture:** Add a service-level public marketplace aggregator and a dedicated unauthenticated route. Aggregate `ChannelService.ListAvailable` data after filtering inactive/exclusive groups, preserve `ChannelModelPricing.Intervals`, and return explicit public DTOs. Add a Vue marketplace view with horizontal platform tabs, model selection, detail navigation, pricing/tier panels, and Quick Start code using the existing OpenAI-compatible endpoint.
 
@@ -12,7 +12,7 @@
 
 - The marketplace is public but must never expose private groups, user-specific rates, credentials, account health internals, or admin routing fields.
 - The page is display-only; actual gateway billing remains unchanged.
-- Preserve `billing_mode`, absent-vs-zero prices, group multipliers, and tier interval bounds exactly.
+- Preserve `billing_mode`, absent-vs-zero prices, group multipliers, and tier interval bounds exactly. Token tiers use `(min_tokens, max_tokens]` (left-open/right-closed) semantics; a null maximum is unbounded.
 - All visible frontend text uses `useI18n()` and locale keys.
 - Use `common.*` JSON wrappers for backend marshal/unmarshal calls.
 - Add focused regression tests for public filtering, aggregation, tiers, frontend selection, and Quick Start model substitution.
@@ -180,11 +180,11 @@ git commit -m "feat: add public model marketplace shell"
 
 **Interfaces:**
 - Consumes: selected platform/model DTOs and the existing copy utility.
-- Produces: Providers, Effective Pricing, Performance, Uptime, Benchmarks, Apps, Activity sections; real provider/pricing/tier data; honest empty states for unsupported metrics; Quick Start with selected model.
+- Produces: Providers, Default Pricing, Performance, Uptime, Benchmarks, Apps, Activity sections; real provider/pricing/tier data; honest empty states for unsupported metrics; Quick Start with selected model.
 
 - [ ] **Step 1: Write failing component tests**
 
-Cover provider/group rows, base vs effective price labels, tier interval rendering, empty unsupported sections, code substitution, copy action, and the authenticated key-management link.
+Cover provider/group rows, base vs group-default price labels, mode-specific public multipliers, tier interval rendering, empty unsupported sections, code substitution, copy action, and the authenticated key-management link.
 
 - [ ] **Step 2: Run tests to verify RED**
 

@@ -6,6 +6,12 @@
         <p class="mt-1 text-xs text-slate-500">
           {{ t('modelMarketplace.prices.groupMultiplier', { multiplier: groupPrice.rate_multiplier }) }}
         </p>
+        <p v-if="price?.billing_mode === 'image' && groupPrice.image_rate_multiplier !== null && groupPrice.image_rate_multiplier !== undefined" class="mt-1 text-xs text-slate-500">
+          {{ t('modelMarketplace.prices.modeMultiplier', { mode: t('modelMarketplace.prices.imageOutput'), multiplier: groupPrice.image_rate_multiplier }) }}
+        </p>
+        <p v-else-if="price?.billing_mode === 'video' && groupPrice.video_rate_multiplier !== null && groupPrice.video_rate_multiplier !== undefined" class="mt-1 text-xs text-slate-500">
+          {{ t('modelMarketplace.prices.modeMultiplier', { mode: t('modelMarketplace.prices.videoOutput'), multiplier: groupPrice.video_rate_multiplier }) }}
+        </p>
       </div>
       <span v-if="price?.display_only || price?.fallback" class="rounded border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[11px] text-amber-200">
         {{ t('modelMarketplace.prices.displayOnly') }}
@@ -25,14 +31,15 @@
         <div data-testid="marketplace-effective-price" class="rounded border border-lime-400/20 bg-lime-400/[0.06] p-3">
           <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-lime-300">{{ t('modelMarketplace.prices.effective') }}</p>
           <p v-for="entry in priceEntries" :key="entry.label" class="mt-2 text-sm text-lime-100">
-            <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * groupPrice.rate_multiplier, price.billing_mode, t('modelMarketplace.prices.perMillionTokens')) }}
+            <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * effectiveMultiplier, price.billing_mode, t('modelMarketplace.prices.perMillionTokens')) }}
           </p>
+          <p class="mt-3 text-[11px] leading-5 text-lime-200/70">{{ t('modelMarketplace.prices.effectiveDisclaimer') }}</p>
         </div>
       </div>
 
       <div v-if="price.intervals.length > 0" class="mt-4 space-y-2">
         <p class="text-xs font-medium text-slate-400">{{ t('modelMarketplace.tiers.title') }}</p>
-        <MarketplaceTierTable :intervals="price.intervals" :rate-multiplier="groupPrice.rate_multiplier" :billing-mode="price.billing_mode" />
+        <MarketplaceTierTable :intervals="price.intervals" :rate-multiplier="effectiveMultiplier" :billing-mode="price.billing_mode" />
       </div>
     </template>
   </section>
@@ -54,6 +61,16 @@ interface PriceEntry {
 const props = defineProps<{ groupPrice: PublicMarketplaceGroupPrice }>()
 const { t } = useI18n()
 const price = computed(() => props.groupPrice.price)
+const effectiveMultiplier = computed(() => {
+  const billingMode = price.value?.billing_mode
+  if (billingMode === 'image') {
+    return props.groupPrice.image_rate_multiplier ?? props.groupPrice.rate_multiplier
+  }
+  if (billingMode === 'video') {
+    return props.groupPrice.video_rate_multiplier ?? props.groupPrice.rate_multiplier
+  }
+  return props.groupPrice.rate_multiplier
+})
 const priceEntries = computed<PriceEntry[]>(() => {
   const configuredPrice: PublicMarketplacePrice | null = price.value
   if (!configuredPrice) return []

@@ -638,11 +638,27 @@ export default {
     platforms: '平台',
     models: '模型',
     providerCount: '{count} 个公开服务商',
+    search: {
+      placeholder: '搜索模型',
+      clear: '清除',
+      empty: '没有匹配的模型。'
+    },
+    endpoints: {
+      title: '支持的入站端点'
+    },
+    capabilities: {
+      title: '已发布能力',
+      providers: '公开服务商',
+      pricing: '已发布价格',
+      imageGeneration: '图像生成',
+      videoGeneration: '视频生成'
+    },
     detailNavigation: '模型详情',
     prices: {
       base: '基础价格',
-      effective: '实际价格',
-      groupMultiplier: '分组倍率：×{multiplier}',
+      effective: '分组默认价格',
+      effectiveDisclaimer: '仅使用公开分组默认值；不包含用户专属倍率、高峰时段和其他私有覆盖。',
+      groupMultiplier: '分组默认倍率：×{multiplier}',
       displayOnly: '仅供展示的回退价格',
       unavailable: '该分组未公开价格。',
       input: '输入',
@@ -650,7 +666,9 @@ export default {
       cacheWrite: '缓存写入',
       cacheRead: '缓存读取',
       imageOutput: '图像输出',
+      videoOutput: '视频输出',
       perRequest: '每次请求',
+      modeMultiplier: '{mode}倍率：×{multiplier}',
       perMillionTokens: '每 100 万 tokens'
     },
     tiers: {
@@ -662,7 +680,7 @@ export default {
     },
     sections: {
       providers: { title: '服务商', heading: '公开可用服务商', empty: '此模型暂无公开服务商数据。' },
-      pricing: { title: '实际价格', heading: '公开分组调整后价格', empty: '此模型暂无实际价格数据。' },
+      pricing: { title: '默认价格', heading: '公开分组默认价格', empty: '此模型暂无默认价格数据。' },
       performance: { title: '性能', empty: '此模型暂无性能数据。' },
       uptime: { title: '可用性', empty: '此模型暂无可用性数据。' },
       benchmarks: { title: '基准测试', empty: '此模型暂无基准测试数据。' },

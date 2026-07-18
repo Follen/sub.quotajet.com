@@ -53,12 +53,31 @@
 
       <div class="grid gap-6 lg:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]">
         <aside class="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-          <p class="px-2 pb-2 text-xs font-medium text-slate-500">
-            {{ t('modelMarketplace.models') }}
-          </p>
+          <div class="flex items-center justify-between gap-2 px-2 pb-2">
+            <label for="marketplace-model-search" class="text-xs font-medium text-slate-500">
+              {{ t('modelMarketplace.models') }}
+            </label>
+            <button
+              v-if="modelSearch"
+              type="button"
+              data-testid="marketplace-model-search-clear"
+              class="text-[11px] text-slate-500 hover:text-slate-200"
+              @click="modelSearch = ''"
+            >
+              {{ t('modelMarketplace.search.clear') }}
+            </button>
+          </div>
+          <input
+            id="marketplace-model-search"
+            v-model="modelSearch"
+            data-testid="marketplace-model-search"
+            type="search"
+            :placeholder="t('modelMarketplace.search.placeholder')"
+            class="mb-3 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-lime-400/60"
+          />
           <div class="max-h-[28rem] space-y-1 overflow-y-auto">
             <button
-              v-for="model in activePlatform?.models ?? []"
+              v-for="model in visibleModels"
               :key="model.name"
               :data-testid="`marketplace-model-${model.name}`"
               type="button"
@@ -66,13 +85,16 @@
               :class="selectedModel?.name === model.name
                 ? 'bg-lime-400/10 text-lime-300'
                 : 'text-slate-300 hover:bg-slate-900 hover:text-white'"
-              @click="selectModel(model.name)"
+              @click="selectModel(model.name, activePlatform?.name)"
             >
               <span class="truncate font-mono">{{ model.name }}</span>
               <span class="ml-3 shrink-0 text-xs text-slate-500">
                 {{ model.providers.length }}
               </span>
             </button>
+            <p v-if="visibleModels.length === 0" data-testid="marketplace-model-search-empty" class="px-3 py-4 text-sm text-slate-500">
+              {{ t('modelMarketplace.search.empty') }}
+            </p>
           </div>
         </aside>
 
@@ -130,6 +152,7 @@ const route = useRoute()
 const router = useRouter()
 const activePlatformName = ref('')
 const activeSection = ref<'providers' | 'pricing' | 'performance' | 'uptime' | 'benchmarks' | 'apps' | 'activity'>('providers')
+const modelSearch = ref('')
 
 const platforms = computed<PublicMarketplacePlatform[]>(() => props.marketplace?.platforms ?? [])
 const selectedModelName = computed(() => {
@@ -155,8 +178,14 @@ const activePlatform = computed(() => {
   if (selectedPlatformFromQuery.value) return selectedPlatformFromQuery.value
   return platforms.value.find((platform) => platform.name === activePlatformName.value) ?? platforms.value[0]
 })
+const visibleModels = computed<PublicMarketplaceModel[]>(() => {
+  const models = activePlatform.value?.models ?? []
+  const query = modelSearch.value.trim().toLowerCase()
+  if (!query) return models
+  return models.filter((model) => model.name.toLowerCase().includes(query))
+})
 const selectedModel = computed<PublicMarketplaceModel | undefined>(() =>
-  activePlatform.value?.models.find((model) => model.name === selectedModelName.value) ?? activePlatform.value?.models[0],
+  visibleModels.value.find((model) => model.name === selectedModelName.value) ?? visibleModels.value[0],
 )
 
 watch(
@@ -177,15 +206,16 @@ watch(
 
 async function selectPlatform(platformName: string): Promise<void> {
   activePlatformName.value = platformName
+  modelSearch.value = ''
   const platform = platforms.value.find((item) => item.name === platformName)
   const firstModel = platform?.models[0]
   if (firstModel) {
-    await selectModel(firstModel.name)
+    await selectModel(firstModel.name, platformName)
   }
 }
 
-async function selectModel(modelName: string): Promise<void> {
-  const platformName = activePlatform.value?.name
+async function selectModel(modelName: string, targetPlatformName?: string): Promise<void> {
+  const platformName = targetPlatformName ?? activePlatform.value?.name
   await router.replace({
     query: {
       ...route.query,

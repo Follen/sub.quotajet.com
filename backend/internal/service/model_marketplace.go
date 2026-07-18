@@ -40,8 +40,25 @@ type PublicMarketplacePlatform struct {
 
 // PublicMarketplaceModel merges all public provider variants for one platform/model pair.
 type PublicMarketplaceModel struct {
-	Name      string                      `json:"name"`
-	Providers []PublicMarketplaceProvider `json:"providers"`
+	Name                      string                         `json:"name"`
+	Providers                 []PublicMarketplaceProvider    `json:"providers"`
+	SupportedInboundEndpoints []string                       `json:"supported_inbound_endpoints,omitempty"`
+	Capabilities              *PublicMarketplaceCapabilities `json:"capabilities,omitempty"`
+}
+
+// PublicMarketplaceCapabilities describes which detail sections have real,
+// public data. A false flag means the UI must keep the section honest and show
+// an empty state rather than inventing metrics.
+type PublicMarketplaceCapabilities struct {
+	Providers       bool `json:"providers"`
+	Pricing         bool `json:"pricing"`
+	ImageGeneration bool `json:"image_generation"`
+	VideoGeneration bool `json:"video_generation"`
+	Performance     bool `json:"performance"`
+	Uptime          bool `json:"uptime"`
+	Benchmarks      bool `json:"benchmarks"`
+	Apps            bool `json:"apps"`
+	Activity        bool `json:"activity"`
 }
 
 // PublicMarketplaceProvider is a public channel association without routing identifiers or health state.
@@ -51,11 +68,15 @@ type PublicMarketplaceProvider struct {
 	GroupPrices []PublicMarketplaceGroupPrice `json:"group_prices"`
 }
 
-// PublicMarketplaceGroupPrice describes the price visible to one public group.
+// PublicMarketplaceGroupPrice describes public group-default pricing. Generic,
+// image, and video defaults are group configuration only; private user-specific
+// overrides are intentionally absent.
 type PublicMarketplaceGroupPrice struct {
-	Name           string                  `json:"name"`
-	RateMultiplier float64                 `json:"rate_multiplier"`
-	Price          *PublicMarketplacePrice `json:"price"`
+	Name                string                  `json:"name"`
+	RateMultiplier      float64                 `json:"rate_multiplier"`
+	ImageRateMultiplier *float64                `json:"image_rate_multiplier,omitempty"`
+	VideoRateMultiplier *float64                `json:"video_rate_multiplier,omitempty"`
+	Price               *PublicMarketplacePrice `json:"price"`
 }
 
 // PublicMarketplacePrice preserves configured price presence and billing mode for display.
@@ -130,9 +151,11 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 			provider := PublicMarketplaceProvider{Name: channel.Name, Description: channel.Description}
 			for _, group := range groups {
 				provider.GroupPrices = append(provider.GroupPrices, PublicMarketplaceGroupPrice{
-					Name:           group.Name,
-					RateMultiplier: group.RateMultiplier,
-					Price:          publicMarketplacePrice(supported),
+					Name:                group.Name,
+					RateMultiplier:      group.RateMultiplier,
+					ImageRateMultiplier: publicMarketplaceIndependentRate(group.ImageRateIndependent, group.ImageRateMultiplier),
+					VideoRateMultiplier: publicMarketplaceIndependentRate(group.VideoRateIndependent, group.VideoRateMultiplier),
+					Price:               publicMarketplacePrice(supported),
 				})
 			}
 			sortPublicMarketplaceGroupPrices(provider.GroupPrices)
@@ -149,6 +172,8 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 		platform := PublicMarketplacePlatform{Name: platformName, Models: make([]PublicMarketplaceModel, 0, len(models))}
 		for _, model := range models {
 			sortPublicMarketplaceProviders(model.Providers)
+			model.Capabilities = publicMarketplaceCapabilities(*model)
+			model.SupportedInboundEndpoints = publicMarketplaceInboundEndpoints(platformName, *model)
 			platform.Models = append(platform.Models, *model)
 		}
 		sort.SliceStable(platform.Models, func(i, j int) bool {
@@ -160,6 +185,86 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 		return comparePublicMarketplaceNames(result.Platforms[i].Name, result.Platforms[j].Name)
 	})
 	return result, nil
+}
+
+func publicMarketplaceIndependentRate(independent bool, multiplier float64) *float64 {
+	if !independent {
+		return nil
+	}
+	// Keep zero as a meaningful configured public default while omitting the
+	// field entirely when the independent mode is disabled.
+	value := multiplier
+	return &value
+}
+
+func publicMarketplaceCapabilities(model PublicMarketplaceModel) *PublicMarketplaceCapabilities {
+	capabilities := &PublicMarketplaceCapabilities{
+		Providers: len(model.Providers) > 0,
+	}
+	for _, provider := range model.Providers {
+		for _, groupPrice := range provider.GroupPrices {
+			if groupPrice.Price == nil {
+				continue
+			}
+			capabilities.Pricing = true
+			switch strings.ToLower(groupPrice.Price.BillingMode) {
+			case string(BillingModeImage):
+				capabilities.ImageGeneration = true
+			case string(BillingModeVideo):
+				capabilities.VideoGeneration = true
+			}
+		}
+	}
+	return capabilities
+}
+
+// publicMarketplaceInboundEndpoints describes canonical inbound routes chosen
+// by the account platform. It is a platform-routed default, not an upstream
+// health/capability probe; private account metadata is never exposed.
+func publicMarketplaceInboundEndpoints(platform string, model PublicMarketplaceModel) []string {
+	endpoints := make(map[string]struct{})
+	switch strings.ToLower(strings.TrimSpace(platform)) {
+	case PlatformOpenAI:
+		endpoints["/v1/chat/completions"] = struct{}{}
+		endpoints["/v1/responses"] = struct{}{}
+		endpoints["/v1/embeddings"] = struct{}{}
+	case PlatformGrok:
+		endpoints["/v1/chat/completions"] = struct{}{}
+		endpoints["/v1/responses"] = struct{}{}
+	case PlatformAnthropic:
+		endpoints["/v1/messages"] = struct{}{}
+	case PlatformGemini:
+		endpoints["/v1beta/models"] = struct{}{}
+	case PlatformAntigravity:
+		endpoints["/v1/messages"] = struct{}{}
+		endpoints["/v1beta/models"] = struct{}{}
+	}
+
+	if model.Capabilities != nil {
+		if model.Capabilities.ImageGeneration && (strings.EqualFold(platform, PlatformOpenAI) || strings.EqualFold(platform, PlatformGrok)) {
+			endpoints["/v1/images/generations"] = struct{}{}
+		}
+		if model.Capabilities.VideoGeneration && strings.EqualFold(platform, PlatformGrok) {
+			endpoints["/v1/videos/generations"] = struct{}{}
+		}
+	}
+
+	order := []string{
+		"/v1/messages",
+		"/v1/chat/completions",
+		"/v1/responses",
+		"/v1/embeddings",
+		"/v1/images/generations",
+		"/v1/videos/generations",
+		"/v1beta/models",
+	}
+	result := make([]string, 0, len(endpoints))
+	for _, endpoint := range order {
+		if _, ok := endpoints[endpoint]; ok {
+			result = append(result, endpoint)
+		}
+	}
+	return result
 }
 
 func publicMarketplacePrice(model SupportedModel) *PublicMarketplacePrice {
