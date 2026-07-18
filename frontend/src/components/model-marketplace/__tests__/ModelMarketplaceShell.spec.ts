@@ -39,7 +39,7 @@ function createTestRouter() {
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/models', component: { template: '<div />' } },
+      { path: '/pricing', component: { template: '<div />' } },
       { path: '/keys', component: { template: '<div />' } },
     ],
   })
@@ -50,7 +50,7 @@ describe('ModelMarketplaceShell', () => {
 
   beforeEach(async () => {
     router = createTestRouter()
-    await router.push('/models?model=gpt-4.1')
+    await router.push('/pricing?model=gpt-4.1')
     await router.isReady()
   })
 
@@ -99,7 +99,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('normalizes a missing or invalid model query to the visible model', async () => {
-    await router.push('/models?ref=marketplace')
+    await router.push('/pricing?ref=marketplace')
     const wrapper = mount(ModelMarketplaceShell, {
       props: { marketplace },
       global: { plugins: [router] },
@@ -116,7 +116,7 @@ describe('ModelMarketplaceShell', () => {
   })
 
   it('uses the platform query to distinguish duplicate model names', async () => {
-    await router.push('/models?platform=Anthropic&model=shared-model')
+    await router.push('/pricing?platform=Anthropic&model=shared-model')
     const wrapper = mount(ModelMarketplaceShell, {
       props: { marketplace },
       global: { plugins: [router] },
@@ -142,7 +142,7 @@ describe('ModelMarketplaceShell', () => {
         },
       ],
     }
-    await router.push('/models?platform=OpenAI&model=shared-first')
+    await router.push('/pricing?platform=OpenAI&model=shared-first')
     const wrapper = mount(ModelMarketplaceShell, {
       props: { marketplace: duplicateFirstMarketplace },
       global: { plugins: [router] },

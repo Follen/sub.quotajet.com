@@ -157,7 +157,7 @@ function createTestRouter() {
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/models', component: { template: '<div />' } },
+      { path: '/pricing', component: { template: '<div />' } },
       { path: '/keys', component: { template: '<div />' } },
     ],
   })
@@ -169,7 +169,7 @@ describe('Marketplace details', () => {
   beforeEach(async () => {
     copyToClipboard.mockClear()
     router = createTestRouter()
-    await router.push('/models?platform=OpenAI&model=gpt-4.1')
+    await router.push('/pricing?platform=OpenAI&model=gpt-4.1')
     await router.isReady()
   })
 

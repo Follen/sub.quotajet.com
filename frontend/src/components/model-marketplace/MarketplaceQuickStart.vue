@@ -1,16 +1,16 @@
 <template>
-  <aside class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-lime-300">{{ t('modelMarketplace.quickStart.eyebrow') }}</p>
+  <aside class="rounded-lg border border-white/[0.08] bg-[#111318] p-4">
+    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-300">{{ t('modelMarketplace.quickStart.eyebrow') }}</p>
     <h3 class="mt-1 text-base font-semibold text-white">{{ t('modelMarketplace.quickStart.title') }}</h3>
     <p class="mt-2 text-sm leading-6 text-slate-400">{{ t('modelMarketplace.quickStart.description') }}</p>
 
-    <div class="mt-4 overflow-hidden rounded-md border border-slate-800 bg-[#070b12]">
+    <div class="mt-4 overflow-hidden rounded-md border border-white/[0.08] bg-[#0d0f14]">
       <div class="flex items-center justify-between border-b border-slate-800 px-3 py-2">
         <span class="font-mono text-[11px] text-slate-500">curl</span>
         <button
           type="button"
           data-testid="marketplace-copy-quick-start"
-          class="rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 transition-colors hover:border-lime-400/60 hover:text-lime-300"
+          class="rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 transition-colors hover:border-violet-400/60 hover:text-violet-300"
           @click="copyToClipboard(requestExample, t('modelMarketplace.quickStart.copied'))"
         >
           {{ t('modelMarketplace.quickStart.copy') }}

@@ -1,0 +1,42 @@
+import { mount } from '@vue/test-utils'
+import { createMemoryHistory, createRouter } from 'vue-router'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
+vi.mock('@/api/modelMarketplace', () => ({
+  getModelMarketplace: vi.fn().mockResolvedValue({ version: 'v1', generated_at: '', platforms: [] }),
+}))
+
+vi.mock('@/stores/app', () => ({
+  useAppStore: () => ({ apiBaseUrl: '' }),
+}))
+
+vi.mock('@/composables/useClipboard', () => ({
+  useClipboard: () => ({ copied: { value: false }, copyToClipboard: vi.fn() }),
+}))
+
+import ModelMarketplaceView from '../ModelMarketplaceView.vue'
+
+describe('ModelMarketplaceView', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('renders as a standalone public page without the application sidebar shell', () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/pricing', component: ModelMarketplaceView }],
+    })
+
+    const wrapper = mount(ModelMarketplaceView, {
+      global: {
+        plugins: [router],
+        stubs: { ModelMarketplaceShell: true },
+      },
+    })
+
+    expect(wrapper.get('main.model-marketplace-page').exists()).toBe(true)
+    expect(wrapper.find('.sidebar').exists()).toBe(false)
+  })
+})

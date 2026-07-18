@@ -4,7 +4,7 @@
     <select
       id="marketplace-detail-section"
       :value="modelValue"
-      class="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 xl:hidden"
+      class="w-full rounded-md border border-white/[0.1] bg-[#111318] px-3 py-2 text-sm text-slate-100 xl:hidden"
       @change="selectSection"
     >
       <option v-for="section in sections" :key="section.id" :value="section.id">{{ t(section.label) }}</option>
@@ -22,7 +22,7 @@
         class="flex w-full items-center rounded-md border px-3 py-2 text-left text-sm transition-colors"
         :class="modelValue === section.id
           ? 'border-lime-400/60 bg-lime-400/10 text-lime-300'
-          : 'border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-slate-100'"
+          : 'border-transparent text-slate-400 hover:border-white/[0.12] hover:bg-[#20242c] hover:text-slate-100'"
         @click="emit('update:modelValue', section.id)"
       >
         {{ t(section.label) }}

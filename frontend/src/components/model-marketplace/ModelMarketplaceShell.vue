@@ -1,7 +1,7 @@
 <template>
-  <section class="mx-auto w-full max-w-7xl space-y-6 rounded-xl bg-slate-950 p-4 sm:p-6" aria-labelledby="model-marketplace-title">
+  <section class="mx-auto w-full max-w-[1440px] space-y-6 p-5 sm:p-8" aria-labelledby="model-marketplace-title">
     <header class="space-y-2">
-      <p class="text-sm font-medium text-lime-300">
+      <p class="text-sm font-medium text-violet-300">
         {{ t('modelMarketplace.eyebrow') }}
       </p>
       <h1 id="model-marketplace-title" class="text-3xl font-semibold text-white">
@@ -42,8 +42,8 @@
             :aria-selected="activePlatform?.name === platform.name"
             class="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
             :class="activePlatform?.name === platform.name
-              ? 'border-lime-400/60 bg-lime-400/10 text-lime-300'
-              : 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700 hover:text-white'"
+              ? 'border-violet-400/60 bg-violet-400/10 text-violet-200'
+              : 'border-slate-700/80 bg-[#1b1e24] text-slate-300 hover:border-violet-400/50 hover:text-white'"
             @click="selectPlatform(platform.name)"
           >
             {{ platform.name }}
@@ -52,7 +52,7 @@
       </nav>
 
       <div class="grid gap-6 lg:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]">
-        <aside class="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+        <aside class="rounded-xl border border-white/[0.08] bg-[#181b21] p-3">
           <div class="flex items-center justify-between gap-2 px-2 pb-2">
             <label for="marketplace-model-search" class="text-xs font-medium text-slate-500">
               {{ t('modelMarketplace.models') }}
@@ -73,7 +73,7 @@
             data-testid="marketplace-model-search"
             type="search"
             :placeholder="t('modelMarketplace.search.placeholder')"
-            class="mb-3 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-lime-400/60"
+            class="mb-3 w-full rounded-md border border-white/[0.1] bg-[#111318] px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-violet-400/60"
           />
           <div class="max-h-[28rem] space-y-1 overflow-y-auto">
             <button
@@ -83,8 +83,8 @@
               type="button"
               class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors"
               :class="selectedModel?.name === model.name
-                ? 'bg-lime-400/10 text-lime-300'
-                : 'text-slate-300 hover:bg-slate-900 hover:text-white'"
+                ? 'bg-violet-400/10 text-violet-200'
+                : 'text-slate-300 hover:bg-[#20242c] hover:text-white'"
               @click="selectModel(model.name, activePlatform?.name)"
             >
               <span class="truncate font-mono">{{ model.name }}</span>
@@ -98,7 +98,7 @@
           </div>
         </aside>
 
-        <article v-if="selectedModel" class="rounded-xl border border-slate-800 bg-slate-950/70 p-5 text-slate-100 lg:p-6">
+        <article v-if="selectedModel" class="rounded-xl border border-white/[0.08] bg-[#181b21] p-5 text-slate-100 lg:p-6">
           <p class="text-sm text-slate-500">{{ activePlatform?.name }}</p>
           <h2 class="mt-1 break-all font-mono text-xl font-semibold text-white">
             {{ selectedModel.name }}
