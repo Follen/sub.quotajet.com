@@ -175,6 +175,17 @@ const routes: RouteRecordRaw[] = [
       title: 'Legal Document'
     }
   },
+  {
+    path: '/models',
+    name: 'ModelMarketplace',
+    component: () => import('@/views/user/ModelMarketplaceView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Model Marketplace',
+      titleKey: 'modelMarketplace.title',
+      descriptionKey: 'modelMarketplace.description'
+    }
+  },
 
   // ==================== User Routes ====================
   {

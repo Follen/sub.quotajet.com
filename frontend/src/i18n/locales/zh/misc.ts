@@ -630,4 +630,22 @@ export default {
     },
   },
 
+  modelMarketplace: {
+    eyebrow: '模型广场',
+    title: '探索模型',
+    description: '浏览此平台公开可用的模型和服务商。',
+    loading: '正在加载公开模型…',
+    platforms: '平台',
+    models: '模型',
+    providerCount: '{count} 个公开服务商',
+    empty: {
+      title: '暂未提供公开模型',
+      description: '配置公开模型后，它们将显示在这里。'
+    },
+    error: {
+      title: '无法加载模型',
+      description: '无法加载公开模型广场。',
+      retry: '重试'
+    }
+  },
 }

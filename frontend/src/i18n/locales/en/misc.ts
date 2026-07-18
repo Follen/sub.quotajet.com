@@ -606,4 +606,22 @@ export default {
     },
   },
 
+  modelMarketplace: {
+    eyebrow: 'Model marketplace',
+    title: 'Explore models',
+    description: 'Browse the public models and providers available on this platform.',
+    loading: 'Loading public models…',
+    platforms: 'Platforms',
+    models: 'Models',
+    providerCount: '{count} public provider(s)',
+    empty: {
+      title: 'No public models yet',
+      description: 'Public model availability will appear here when it is configured.'
+    },
+    error: {
+      title: 'Unable to load models',
+      description: 'The public model marketplace could not be loaded.',
+      retry: 'Try again'
+    }
+  },
 }
