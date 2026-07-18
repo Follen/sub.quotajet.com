@@ -24,7 +24,7 @@ func NewModelMarketplaceHandler(marketplace publicModelMarketplaceBuilder) *Mode
 }
 
 // List returns the public marketplace catalogue.
-// GET /api/v1/model-marketplace
+// GET /api/v1/pricing
 func (h *ModelMarketplaceHandler) List(c *gin.Context) {
 	marketplace, err := h.marketplace.Build(c.Request.Context())
 	if err != nil {

@@ -32,7 +32,7 @@ func TestModelMarketplaceHandlerIsPublic(t *testing.T) {
 	h := &ModelMarketplaceHandler{marketplace: builder}
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/model-marketplace?user_id=999&group=private", nil)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/pricing?user_id=999&group=private", nil)
 	h.List(c)
 
 	require.Equal(t, http.StatusOK, recorder.Code)
@@ -68,7 +68,7 @@ func TestModelMarketplaceHandlerReturnsPublicPayload(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/model-marketplace", nil)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/pricing", nil)
 	h.List(c)
 
 	require.Equal(t, http.StatusOK, w.Code)
@@ -137,7 +137,7 @@ func TestModelMarketplaceHandlerMapsServiceErrors(t *testing.T) {
 			h := &ModelMarketplaceHandler{marketplace: &stubPublicModelMarketplaceBuilder{err: tt.err}}
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/model-marketplace", nil)
+			c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/pricing", nil)
 
 			h.List(c)
 

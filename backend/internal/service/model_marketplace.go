@@ -152,41 +152,24 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 			continue
 		}
 
-		for _, supported := range channel.SupportedModels {
-			groups := publicGroupsByPlatform[supported.Platform]
-			if supported.Name == "" || len(groups) == 0 {
-				continue
-			}
-
-			models, ok := modelsByPlatform[supported.Platform]
-			if !ok {
-				modelsByPlatform[supported.Platform] = make(map[string]*PublicMarketplaceModel)
-				models = modelsByPlatform[supported.Platform]
-			}
-
-			modelKey := strings.ToLower(supported.Name)
-			model, ok := models[modelKey]
-			if !ok {
-				model = &PublicMarketplaceModel{Name: supported.Name}
-				models[modelKey] = model
-			}
-
-			provider := PublicMarketplaceProvider{Name: channel.Name, Description: channel.Description}
+		for platform, groups := range publicGroupsByPlatform {
 			for _, group := range groups {
-				provider.GroupPrices = append(provider.GroupPrices, PublicMarketplaceGroupPrice{
-					Name:                 group.Name,
-					RateMultiplier:       group.RateMultiplier,
-					AllowImageGeneration: group.AllowImageGeneration,
-					AllowVideoGeneration: effectiveAvailableGroupVideoPermission(group),
-					ImageRateMultiplier:  publicMarketplaceIndependentRate(group.ImageRateIndependent, group.ImageRateMultiplier),
-					VideoRateMultiplier:  publicMarketplaceIndependentRate(group.VideoRateIndependent, group.VideoRateMultiplier),
-					ImagePrices:          publicMarketplaceImagePrices(group),
-					VideoPrices:          publicMarketplaceVideoPrices(group),
-					Price:                publicMarketplacePrice(supported),
-				})
+				modelNames := group.Models
+				if len(modelNames) == 0 {
+					for _, supported := range channel.SupportedModels {
+						if supported.Platform == platform && supported.Name != "" && !hasConfiguredGroupModels(groups) {
+							modelNames = append(modelNames, supported.Name)
+						}
+					}
+				}
+				for _, modelName := range modelNames {
+					supported := findSupportedModel(channel.SupportedModels, platform, modelName)
+					if supported.Name == "" {
+						supported = SupportedModel{Name: modelName, Platform: platform}
+					}
+					addPublicMarketplaceModel(modelsByPlatform, channel, supported, []AvailableGroupRef{group})
+				}
 			}
-			sortPublicMarketplaceGroupPrices(provider.GroupPrices)
-			model.Providers = append(model.Providers, provider)
 		}
 	}
 
@@ -212,6 +195,75 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 		return comparePublicMarketplaceNames(result.Platforms[i].Name, result.Platforms[j].Name)
 	})
 	return result, nil
+}
+
+func addPublicMarketplaceModel(modelsByPlatform map[string]map[string]*PublicMarketplaceModel, channel AvailableChannel, supported SupportedModel, groups []AvailableGroupRef) {
+	models, ok := modelsByPlatform[supported.Platform]
+	if !ok {
+		modelsByPlatform[supported.Platform] = make(map[string]*PublicMarketplaceModel)
+		models = modelsByPlatform[supported.Platform]
+	}
+
+	modelKey := strings.ToLower(supported.Name)
+	model, ok := models[modelKey]
+	if !ok {
+		model = &PublicMarketplaceModel{Name: supported.Name}
+		models[modelKey] = model
+	}
+
+	providerIndex := -1
+	for i := range model.Providers {
+		if model.Providers[i].Name == channel.Name {
+			providerIndex = i
+			break
+		}
+	}
+	if providerIndex < 0 {
+		model.Providers = append(model.Providers, PublicMarketplaceProvider{Name: channel.Name, Description: channel.Description})
+		providerIndex = len(model.Providers) - 1
+	}
+	provider := &model.Providers[providerIndex]
+	for _, group := range groups {
+		provider.GroupPrices = append(provider.GroupPrices, PublicMarketplaceGroupPrice{
+			Name:                 group.Name,
+			RateMultiplier:       group.RateMultiplier,
+			AllowImageGeneration: group.AllowImageGeneration,
+			AllowVideoGeneration: effectiveAvailableGroupVideoPermission(group),
+			ImageRateMultiplier:  publicMarketplaceIndependentRate(group.ImageRateIndependent, group.ImageRateMultiplier),
+			VideoRateMultiplier:  publicMarketplaceIndependentRate(group.VideoRateIndependent, group.VideoRateMultiplier),
+			ImagePrices:          publicMarketplaceImagePrices(group),
+			VideoPrices:          publicMarketplaceVideoPrices(group),
+			Price:                publicMarketplacePrice(supported),
+		})
+	}
+	sortPublicMarketplaceGroupPrices(provider.GroupPrices)
+}
+
+func hasConfiguredGroupModels(groups []AvailableGroupRef) bool {
+	for _, group := range groups {
+		if len(group.Models) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func findSupportedModel(models []SupportedModel, platform, name string) SupportedModel {
+	for _, model := range models {
+		if model.Platform == platform && strings.EqualFold(model.Name, name) {
+			return model
+		}
+	}
+	return SupportedModel{}
+}
+
+func containsModel(models []string, name string) bool {
+	for _, model := range models {
+		if strings.EqualFold(strings.TrimSpace(model), name) {
+			return true
+		}
+	}
+	return false
 }
 
 func publicMarketplaceIndependentRate(independent bool, multiplier float64) *float64 {

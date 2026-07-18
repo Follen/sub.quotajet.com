@@ -44,7 +44,7 @@ func TestRegisterUserRoutesExposesModelMarketplaceWithoutJWT(t *testing.T) {
 	}), nil)
 
 	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/api/v1/model-marketplace", nil)
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/pricing", nil)
 	router.ServeHTTP(recorder, request)
 
 	require.Equal(t, http.StatusOK, recorder.Code)

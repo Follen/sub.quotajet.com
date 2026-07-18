@@ -93,7 +93,7 @@ export interface PublicModelMarketplace {
 export async function getModelMarketplace(
   options?: { signal?: AbortSignal },
 ): Promise<PublicModelMarketplace> {
-  const { data } = await apiClient.get<PublicModelMarketplace>('/model-marketplace', {
+  const { data } = await apiClient.get<PublicModelMarketplace>('/pricing', {
     signal: options?.signal,
   })
   return data

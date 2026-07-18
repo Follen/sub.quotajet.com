@@ -36,6 +36,10 @@ type AvailableGroupRef struct {
 	PeakEnd              string
 	PeakRateMultiplier   float64
 	IsExclusive          bool
+	// Models is the optional public model list configured on the group. When
+	// present, the public pricing catalogue uses it as the authoritative
+	// model-to-group match instead of exposing every model on the channel.
+	Models []string
 }
 
 // AvailableChannel 可用渠道视图：用于「可用渠道」页面展示渠道基础信息 +
@@ -98,6 +102,7 @@ func (s *ChannelService) ListAvailable(ctx context.Context) ([]AvailableChannel,
 			PeakEnd:              g.PeakEnd,
 			PeakRateMultiplier:   g.PeakRateMultiplier,
 			IsExclusive:          g.IsExclusive,
+			Models:               append([]string(nil), g.ModelsListConfig.Models...),
 		}
 	}
 

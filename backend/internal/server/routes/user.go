@@ -17,7 +17,7 @@ func RegisterUserRoutes(
 ) {
 	// Public catalogue: filtering is enforced by PublicModelMarketplaceService,
 	// so it must remain outside authentication and user-specific middleware.
-	v1.GET("/model-marketplace", h.ModelMarketplace.List)
+	v1.GET("/pricing", h.ModelMarketplace.List)
 
 	authenticated := v1.Group("")
 	authenticated.Use(gin.HandlerFunc(jwtAuth))

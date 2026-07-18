@@ -56,6 +56,23 @@ func TestBuildPublicModelMarketplaceFiltersExclusiveGroupsAndInactiveChannels(t 
 	require.Equal(t, []string{"gpt-public"}, publicMarketplaceModelNames(result.Platforms[0].Models))
 }
 
+func TestBuildPublicModelMarketplaceUsesPublicGroupModelsAsTheMatchSource(t *testing.T) {
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
+		Name:   "provider",
+		Status: StatusActive,
+		Groups: []AvailableGroupRef{{Name: "public", Platform: "openai", Models: []string{"gpt-group"}}},
+		SupportedModels: []SupportedModel{
+			{Name: "gpt-group", Platform: "openai"},
+			{Name: "gpt-channel-only", Platform: "openai"},
+		},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	require.Len(t, result.Platforms, 1)
+	require.Equal(t, []string{"gpt-group"}, publicMarketplaceModelNames(result.Platforms[0].Models))
+}
+
 func TestBuildPublicModelMarketplaceMergesModelsAndPreservesAllPublicGroupPrices(t *testing.T) {
 	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{
 		{
