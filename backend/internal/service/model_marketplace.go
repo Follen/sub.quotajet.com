@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
+
+const PublicModelMarketplaceVersion = "v1"
 
 // availableChannelLister is the small read contract the public marketplace needs from ChannelService.
 type availableChannelLister interface {
@@ -24,7 +27,9 @@ func NewPublicModelMarketplaceService(channels availableChannelLister) *PublicMo
 
 // PublicModelMarketplace is the public catalogue returned to marketplace clients.
 type PublicModelMarketplace struct {
-	Platforms []PublicMarketplacePlatform `json:"platforms"`
+	Version     string                      `json:"version"`
+	GeneratedAt time.Time                   `json:"generated_at"`
+	Platforms   []PublicMarketplacePlatform `json:"platforms"`
 }
 
 // PublicMarketplacePlatform groups public models by inbound platform.
@@ -135,7 +140,11 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 		}
 	}
 
-	result := &PublicModelMarketplace{Platforms: make([]PublicMarketplacePlatform, 0, len(modelsByPlatform))}
+	result := &PublicModelMarketplace{
+		Version:     PublicModelMarketplaceVersion,
+		GeneratedAt: time.Now().UTC(),
+		Platforms:   make([]PublicMarketplacePlatform, 0, len(modelsByPlatform)),
+	}
 	for platformName, models := range modelsByPlatform {
 		platform := PublicMarketplacePlatform{Name: platformName, Models: make([]PublicMarketplaceModel, 0, len(models))}
 		for _, model := range models {

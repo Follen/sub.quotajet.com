@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -29,12 +30,10 @@ func TestModelMarketplaceHandlerIsPublic(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	builder := &stubPublicModelMarketplaceBuilder{marketplace: &service.PublicModelMarketplace{}}
 	h := &ModelMarketplaceHandler{marketplace: builder}
-	router := gin.New()
-	router.GET("/api/v1/model-marketplace", h.List)
-
 	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/api/v1/model-marketplace?user_id=999&group=private", nil)
-	router.ServeHTTP(recorder, request)
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/model-marketplace?user_id=999&group=private", nil)
+	h.List(c)
 
 	require.Equal(t, http.StatusOK, recorder.Code)
 	require.Equal(t, 1, builder.calls)
@@ -43,19 +42,23 @@ func TestModelMarketplaceHandlerIsPublic(t *testing.T) {
 func TestModelMarketplaceHandlerReturnsPublicPayload(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	h := &ModelMarketplaceHandler{marketplace: &stubPublicModelMarketplaceBuilder{
-		marketplace: &service.PublicModelMarketplace{Platforms: []service.PublicMarketplacePlatform{{
-			Name: "openai",
-			Models: []service.PublicMarketplaceModel{{
-				Name: "gpt-4o",
-				Providers: []service.PublicMarketplaceProvider{{
-					Name: "public-provider",
-					GroupPrices: []service.PublicMarketplaceGroupPrice{{
-						Name:           "public",
-						RateMultiplier: 1,
+		marketplace: &service.PublicModelMarketplace{
+			Version:     service.PublicModelMarketplaceVersion,
+			GeneratedAt: time.Date(2026, time.July, 18, 12, 0, 0, 0, time.UTC),
+			Platforms: []service.PublicMarketplacePlatform{{
+				Name: "openai",
+				Models: []service.PublicMarketplaceModel{{
+					Name: "gpt-4o",
+					Providers: []service.PublicMarketplaceProvider{{
+						Name: "public-provider",
+						GroupPrices: []service.PublicMarketplaceGroupPrice{{
+							Name:           "public",
+							RateMultiplier: 1,
+						}},
 					}},
 				}},
 			}},
-		}}},
+		},
 	}}
 
 	w := httptest.NewRecorder()
@@ -68,6 +71,8 @@ func TestModelMarketplaceHandlerReturnsPublicPayload(t *testing.T) {
 		"code": 0,
 		"message": "success",
 		"data": {
+			"version": "v1",
+			"generated_at": "2026-07-18T12:00:00Z",
 			"platforms": [{
 				"name": "openai",
 				"models": [{

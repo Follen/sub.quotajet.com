@@ -19,7 +19,7 @@ type ModelMarketplaceHandler struct {
 }
 
 // NewModelMarketplaceHandler constructs the public marketplace handler.
-func NewModelMarketplaceHandler(marketplace *service.PublicModelMarketplaceService) *ModelMarketplaceHandler {
+func NewModelMarketplaceHandler(marketplace publicModelMarketplaceBuilder) *ModelMarketplaceHandler {
 	return &ModelMarketplaceHandler{marketplace: marketplace}
 }
 

@@ -17,6 +17,16 @@ func (s stubAvailableChannelLister) ListAvailable(context.Context) ([]AvailableC
 	return s.channels, s.err
 }
 
+func TestBuildPublicModelMarketplaceIncludesRefreshMetadata(t *testing.T) {
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{})
+
+	result, err := marketplace.Build(context.Background())
+
+	require.NoError(t, err)
+	require.Equal(t, PublicModelMarketplaceVersion, result.Version)
+	require.False(t, result.GeneratedAt.IsZero())
+}
+
 func TestBuildPublicModelMarketplaceFiltersExclusiveGroupsAndInactiveChannels(t *testing.T) {
 	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{
 		{

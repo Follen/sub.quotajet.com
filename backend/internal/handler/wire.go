@@ -160,6 +160,7 @@ var ProviderSet = wire.NewSet(
 	NewPaymentHandler,
 	NewPaymentWebhookHandler,
 	NewAvailableChannelHandler,
+	wire.Bind(new(publicModelMarketplaceBuilder), new(*service.PublicModelMarketplaceService)),
 	NewModelMarketplaceHandler,
 	NewBatchImageHandler,
 
