@@ -55,6 +55,21 @@ type AvailableChannel struct {
 	SupportedModels    []SupportedModel
 }
 
+func availableGroupRefFromGroup(g Group) AvailableGroupRef {
+	return AvailableGroupRef{
+		ID: g.ID, Name: g.Name, Platform: g.Platform, SubscriptionType: g.SubscriptionType,
+		RateMultiplier: g.RateMultiplier, AllowImageGeneration: g.AllowImageGeneration,
+		AllowVideoGeneration: groupAllowsVideoGeneration(g), ImageRateIndependent: g.ImageRateIndependent,
+		ImageRateMultiplier: g.ImageRateMultiplier, ImagePrice1K: g.ImagePrice1K, ImagePrice2K: g.ImagePrice2K,
+		ImagePrice4K: g.ImagePrice4K, VideoRateIndependent: g.VideoRateIndependent,
+		VideoRateMultiplier: g.VideoRateMultiplier, VideoPrice480P: g.VideoPrice480P,
+		VideoPrice720P: g.VideoPrice720P, VideoPrice1080P: g.VideoPrice1080P,
+		PeakRateEnabled: g.PeakRateEnabled, PeakStart: g.PeakStart, PeakEnd: g.PeakEnd,
+		PeakRateMultiplier: g.PeakRateMultiplier, IsExclusive: g.IsExclusive,
+		Models: append([]string(nil), g.ModelsListConfig.Models...),
+	}
+}
+
 // ListAvailable 返回所有渠道的可用视图：每个渠道附带关联分组信息与支持模型列表。
 //
 // 支持模型通过 (*Channel).SupportedModels() 计算（mapping ∪ pricing 并联）。
@@ -79,31 +94,7 @@ func (s *ChannelService) ListAvailable(ctx context.Context) ([]AvailableChannel,
 	groupByID := make(map[int64]AvailableGroupRef, len(groups))
 	for i := range groups {
 		g := groups[i]
-		groupByID[g.ID] = AvailableGroupRef{
-			ID:                   g.ID,
-			Name:                 g.Name,
-			Platform:             g.Platform,
-			SubscriptionType:     g.SubscriptionType,
-			RateMultiplier:       g.RateMultiplier,
-			AllowImageGeneration: g.AllowImageGeneration,
-			AllowVideoGeneration: groupAllowsVideoGeneration(g),
-			ImageRateIndependent: g.ImageRateIndependent,
-			ImageRateMultiplier:  g.ImageRateMultiplier,
-			ImagePrice1K:         g.ImagePrice1K,
-			ImagePrice2K:         g.ImagePrice2K,
-			ImagePrice4K:         g.ImagePrice4K,
-			VideoRateIndependent: g.VideoRateIndependent,
-			VideoRateMultiplier:  g.VideoRateMultiplier,
-			VideoPrice480P:       g.VideoPrice480P,
-			VideoPrice720P:       g.VideoPrice720P,
-			VideoPrice1080P:      g.VideoPrice1080P,
-			PeakRateEnabled:      g.PeakRateEnabled,
-			PeakStart:            g.PeakStart,
-			PeakEnd:              g.PeakEnd,
-			PeakRateMultiplier:   g.PeakRateMultiplier,
-			IsExclusive:          g.IsExclusive,
-			Models:               append([]string(nil), g.ModelsListConfig.Models...),
-		}
+		groupByID[g.ID] = availableGroupRefFromGroup(g)
 	}
 
 	out := make([]AvailableChannel, 0, len(channels))

@@ -15,14 +15,23 @@ type availableChannelLister interface {
 	ListAvailable(context.Context) ([]AvailableChannel, error)
 }
 
+type pricingGroupLister interface {
+	ListActive(context.Context) ([]Group, error)
+}
+
 // PublicModelMarketplaceService builds the public, display-only model catalogue.
 type PublicModelMarketplaceService struct {
 	channels availableChannelLister
+	groups   pricingGroupLister
 }
 
 // NewPublicModelMarketplaceService constructs the public marketplace aggregation service.
-func NewPublicModelMarketplaceService(channels availableChannelLister) *PublicModelMarketplaceService {
-	return &PublicModelMarketplaceService{channels: channels}
+func NewPublicModelMarketplaceService(channels availableChannelLister, groupListers ...pricingGroupLister) *PublicModelMarketplaceService {
+	service := &PublicModelMarketplaceService{channels: channels}
+	if len(groupListers) > 0 {
+		service.groups = groupListers[0]
+	}
+	return service
 }
 
 // PublicModelMarketplace is the public catalogue returned to marketplace clients.
@@ -133,6 +142,31 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 	channels, err := s.channels.ListAvailable(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("list available channels: %w", err)
+	}
+	if s.groups != nil {
+		groups, groupErr := s.groups.ListActive(ctx)
+		if groupErr != nil {
+			return nil, fmt.Errorf("list active pricing groups: %w", groupErr)
+		}
+		boundGroupIDs := make(map[int64]struct{})
+		for _, channel := range channels {
+			for _, group := range channel.Groups {
+				boundGroupIDs[group.ID] = struct{}{}
+			}
+		}
+		for _, group := range groups {
+			if group.Status != StatusActive || group.IsExclusive || group.Platform == "" || len(group.ModelsListConfig.Models) == 0 {
+				continue
+			}
+			if _, bound := boundGroupIDs[group.ID]; bound {
+				continue
+			}
+			channels = append(channels, AvailableChannel{
+				Name:   group.Name,
+				Status: StatusActive,
+				Groups: []AvailableGroupRef{availableGroupRefFromGroup(group)},
+			})
+		}
 	}
 
 	modelsByPlatform := make(map[string]map[string]*PublicMarketplaceModel)

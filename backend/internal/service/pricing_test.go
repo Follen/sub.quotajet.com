@@ -13,6 +13,15 @@ type stubAvailableChannelLister struct {
 	err      error
 }
 
+type stubPricingGroupLister struct {
+	groups []Group
+	err    error
+}
+
+func (s stubPricingGroupLister) ListActive(context.Context) ([]Group, error) {
+	return s.groups, s.err
+}
+
 func (s stubAvailableChannelLister) ListAvailable(context.Context) ([]AvailableChannel, error) {
 	return s.channels, s.err
 }
@@ -71,6 +80,18 @@ func TestBuildPublicModelMarketplaceUsesPublicGroupModelsAsTheMatchSource(t *tes
 	require.NoError(t, err)
 	require.Len(t, result.Platforms, 1)
 	require.Equal(t, []string{"gpt-group"}, publicMarketplaceModelNames(result.Platforms[0].Models))
+}
+
+func TestBuildPublicModelMarketplaceIncludesModelsFromUnboundPublicGroups(t *testing.T) {
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{}, stubPricingGroupLister{groups: []Group{{
+		ID: 11, Name: "OpenAI public", Platform: "openai", Status: StatusActive,
+		ModelsListConfig: GroupModelsListConfig{Enabled: true, Models: []string{"gpt-4.1"}},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	require.Len(t, result.Platforms, 1)
+	require.Equal(t, []string{"gpt-4.1"}, publicMarketplaceModelNames(result.Platforms[0].Models))
 }
 
 func TestBuildPublicModelMarketplaceMergesModelsAndPreservesAllPublicGroupPrices(t *testing.T) {
