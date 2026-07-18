@@ -10,12 +10,17 @@ vi.mock('@/api/pricing', () => ({
   getPricing: vi.fn().mockResolvedValue({ version: 'v1', generated_at: '', platforms: [] }),
 }))
 
-vi.mock('@/stores/app', () => ({
-  useAppStore: () => ({ apiBaseUrl: '' }),
+vi.mock('@/stores', () => ({
+  useAppStore: () => ({ apiBaseUrl: '', cachedPublicSettings: {}, docUrl: '' }),
+  useAuthStore: () => ({ isAuthenticated: false }),
 }))
 
 vi.mock('@/composables/useClipboard', () => ({
   useClipboard: () => ({ copied: { value: false }, copyToClipboard: vi.fn() }),
+}))
+
+vi.mock('@/components/home', () => ({
+  HomeHeader: { name: 'HomeHeader', template: '<header data-home-header />' },
 }))
 
 import PricingView from '../PricingView.vue'
@@ -32,11 +37,12 @@ describe('PricingView', () => {
     const wrapper = mount(PricingView, {
       global: {
         plugins: [router],
-        stubs: { PricingShell: true },
+        stubs: { HomeHeader: true, PricingShell: true },
       },
     })
 
-    expect(wrapper.get('main.model-marketplace-page').exists()).toBe(true)
+    expect(wrapper.get('.qj-landing').exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'HomeHeader' }).exists()).toBe(true)
     expect(wrapper.find('.sidebar').exists()).toBe(false)
   })
 })

@@ -1,14 +1,6 @@
 <template>
-  <main class="model-marketplace-page min-h-screen bg-[#111318] text-slate-100">
-    <header class="border-b border-white/[0.08] bg-[#15181e]/95 px-5 py-4 backdrop-blur sm:px-8">
-      <div class="mx-auto flex max-w-[1440px] items-center justify-between">
-        <a href="/" class="flex items-center gap-3 text-sm font-semibold text-white transition-colors hover:text-violet-300">
-          <img src="/logo.png" alt="QuotaJet" class="h-8 w-8 rounded-lg" />
-          <span>QuotaJet</span>
-        </a>
-        <span class="text-xs text-slate-500">{{ t('modelMarketplace.eyebrow') }}</span>
-      </div>
-    </header>
+  <div class="qj-landing min-h-[100dvh] overflow-x-hidden">
+    <HomeHeader :is-authenticated="authStore.isAuthenticated" :doc-url="safeDocUrl" />
     <PricingShell
       :marketplace="marketplace"
       :loading="loading"
@@ -16,24 +8,29 @@
       :api-origin="apiOrigin"
       @retry="loadMarketplace"
     />
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import '@/styles/home.css'
 
 import { getPricing, type PublicPricingCatalogue } from '@/api/pricing'
 import PricingShell from '@/components/pricing/PricingShell.vue'
-import { useAppStore } from '@/stores/app'
+import { HomeHeader } from '@/components/home'
+import { useAppStore, useAuthStore } from '@/stores'
 import { extractApiErrorMessage } from '@/utils/apiError'
+import { sanitizeUrl } from '@/utils/url'
 
 const { t } = useI18n()
 const appStore = useAppStore()
+const authStore = useAuthStore()
 const marketplace = ref<PublicPricingCatalogue | null>(null)
 const loading = ref(false)
 const errorMessage = ref('')
 const apiOrigin = computed(() => appStore.apiBaseUrl || window.location.origin)
+const safeDocUrl = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.doc_url || appStore.docUrl || ''))
 
 async function loadMarketplace(): Promise<void> {
   loading.value = true

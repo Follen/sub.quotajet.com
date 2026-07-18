@@ -19,15 +19,23 @@ type pricingGroupLister interface {
 	ListActive(context.Context) ([]Group, error)
 }
 
+type pricingFallbackLister interface {
+	GetModelPricing(string) *LiteLLMModelPricing
+}
+
 // PublicModelMarketplaceService builds the public, display-only model catalogue.
 type PublicModelMarketplaceService struct {
 	channels availableChannelLister
 	groups   pricingGroupLister
+	pricing  pricingFallbackLister
 }
 
 // NewPublicModelMarketplaceService constructs the public marketplace aggregation service.
 func NewPublicModelMarketplaceService(channels availableChannelLister, groupListers ...pricingGroupLister) *PublicModelMarketplaceService {
 	service := &PublicModelMarketplaceService{channels: channels}
+	if channelService, ok := channels.(*ChannelService); ok {
+		service.pricing = channelService.pricingService
+	}
 	if len(groupListers) > 0 {
 		service.groups = groupListers[0]
 	}
@@ -201,6 +209,7 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 					if supported.Name == "" {
 						supported = SupportedModel{Name: modelName, Platform: platform}
 					}
+					supported = s.enrichPricing(supported)
 					addPublicMarketplaceModel(modelsByPlatform, channel, supported, []AvailableGroupRef{group})
 				}
 			}
@@ -229,6 +238,19 @@ func (s *PublicModelMarketplaceService) Build(ctx context.Context) (*PublicModel
 		return comparePublicMarketplaceNames(result.Platforms[i].Name, result.Platforms[j].Name)
 	})
 	return result, nil
+}
+
+func (s *PublicModelMarketplaceService) enrichPricing(model SupportedModel) SupportedModel {
+	if model.Pricing != nil || s.pricing == nil {
+		return model
+	}
+	liteLLMPricing := s.pricing.GetModelPricing(model.Name)
+	if liteLLMPricing == nil {
+		return model
+	}
+	model.Pricing = synthesizePricingFromLiteLLM(liteLLMPricing, nil)
+	model.PricingSource = SupportedModelPricingSourceLiteLLMFallback
+	return model
 }
 
 func addPublicMarketplaceModel(modelsByPlatform map[string]map[string]*PublicMarketplaceModel, channel AvailableChannel, supported SupportedModel, groups []AvailableGroupRef) {

@@ -1,15 +1,21 @@
 <template>
-  <section class="mx-auto w-full max-w-[1440px] space-y-6 p-5 sm:p-8" aria-labelledby="model-marketplace-title">
-    <header class="space-y-2">
-      <p class="text-sm font-medium text-violet-300">
+  <section class="mx-auto w-full max-w-[1440px] space-y-8 px-5 pb-16 pt-24 sm:px-8 sm:pt-28" aria-labelledby="model-marketplace-title">
+    <header class="flex flex-col gap-5 border-b border-[var(--landing-border)] pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-accent)]">
         {{ t('modelMarketplace.eyebrow') }}
       </p>
-      <h1 id="model-marketplace-title" class="text-3xl font-semibold text-white">
+      <h1 id="model-marketplace-title" class="text-4xl font-semibold tracking-tight text-[var(--landing-fg)] sm:text-5xl">
         {{ t('modelMarketplace.title') }}
       </h1>
-      <p class="max-w-2xl text-sm text-slate-400">
+      <p class="max-w-2xl text-sm leading-6 text-[var(--landing-fg-soft)]">
         {{ t('modelMarketplace.description') }}
       </p>
+      </div>
+      <div v-if="platforms.length" class="flex shrink-0 items-center gap-3 text-xs text-[var(--landing-fg-soft)]">
+        <span class="rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] px-3 py-1.5">{{ platforms.length }} {{ t('modelMarketplace.platforms') }}</span>
+        <span class="rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] px-3 py-1.5">{{ totalModelCount }} {{ t('modelMarketplace.models') }}</span>
+      </div>
     </header>
 
     <div v-if="loading" data-testid="marketplace-loading" class="flex min-h-64 items-center justify-center gap-3">
@@ -42,8 +48,8 @@
             :aria-selected="activePlatform?.name === platform.name"
             class="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
             :class="activePlatform?.name === platform.name
-              ? 'border-violet-400/60 bg-violet-400/10 text-violet-200'
-              : 'border-slate-700/80 bg-[#1b1e24] text-slate-300 hover:border-violet-400/50 hover:text-white'"
+              ? 'border-[var(--landing-accent)] bg-[var(--landing-accent)]/10 text-[var(--landing-accent)]'
+              : 'border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-fg-soft)] hover:border-[var(--landing-accent)]/50 hover:text-[var(--landing-fg)]'"
             @click="selectPlatform(platform.name)"
           >
             {{ platform.name }}
@@ -52,7 +58,7 @@
       </nav>
 
       <div class="grid gap-6 lg:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]">
-        <aside class="rounded-xl border border-white/[0.08] bg-[#181b21] p-3">
+        <aside class="rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3">
           <div class="flex items-center justify-between gap-2 px-2 pb-2">
             <label for="marketplace-model-search" class="text-xs font-medium text-slate-500">
               {{ t('modelMarketplace.models') }}
@@ -98,7 +104,7 @@
           </div>
         </aside>
 
-        <article v-if="selectedModel" class="rounded-xl border border-white/[0.08] bg-[#181b21] p-5 text-slate-100 lg:p-6">
+        <article v-if="selectedModel" class="rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-[var(--landing-fg)] lg:p-7">
           <p class="text-sm text-slate-500">{{ activePlatform?.name }}</p>
           <h2 class="mt-1 break-all font-mono text-xl font-semibold text-white">
             {{ selectedModel.name }}
@@ -106,6 +112,11 @@
           <p class="mt-3 text-sm text-slate-400">
             {{ t('modelMarketplace.providerCount', { count: selectedModel.providers.length }) }}
           </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span v-if="selectedModel.capabilities?.pricing" class="rounded-full border border-[var(--landing-accent)]/40 bg-[var(--landing-accent)]/10 px-2.5 py-1 text-xs font-medium text-[var(--landing-accent)]">{{ t('modelMarketplace.capabilities.pricing') }}</span>
+            <span v-if="selectedModel.capabilities?.image_generation" class="rounded-full border border-[var(--landing-border)] px-2.5 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.capabilities.imageGeneration') }}</span>
+            <span v-if="selectedModel.capabilities?.video_generation" class="rounded-full border border-[var(--landing-border)] px-2.5 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.capabilities.videoGeneration') }}</span>
+          </div>
           <div class="mt-6 grid gap-6 xl:grid-cols-[10.5rem_minmax(0,1fr)_minmax(18rem,22rem)]">
             <PricingDetailNav v-model="activeSection" />
             <PricingModelDetails :model="selectedModel" :active-section="activeSection" />
@@ -155,6 +166,7 @@ const activeSection = ref<'providers' | 'pricing' | 'performance' | 'uptime' | '
 const modelSearch = ref('')
 
 const platforms = computed<PublicMarketplacePlatform[]>(() => props.marketplace?.platforms ?? [])
+const totalModelCount = computed(() => platforms.value.reduce((count, platform) => count + platform.models.length, 0))
 const selectedModelName = computed(() => {
   const value = route.query.model
   return typeof value === 'string' ? value : ''
