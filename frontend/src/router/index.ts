@@ -191,7 +191,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: `${MODEL_MARKETPLACE_PATH}/:modelId`,
     name: 'PricingModel',
-    component: () => import('@/views/user/PricingView.vue'),
+    component: () => import('@/views/user/PricingModelDetailView.vue'),
     props: true,
     meta: {
       requiresAuth: false,
