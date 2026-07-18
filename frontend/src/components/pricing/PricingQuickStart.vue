@@ -1,11 +1,11 @@
 <template>
-  <aside class="rounded-lg border border-white/[0.08] bg-[#111318] p-4">
-    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-300">{{ t('modelMarketplace.quickStart.eyebrow') }}</p>
-    <h3 class="mt-1 text-base font-semibold text-white">{{ t('modelMarketplace.quickStart.title') }}</h3>
-    <p class="mt-2 text-sm leading-6 text-slate-400">{{ t('modelMarketplace.quickStart.description') }}</p>
+  <aside class="rounded-lg border border-[var(--landing-border)] p-4">
+    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.quickStart.eyebrow') }}</p>
+    <h3 class="mt-1 text-base font-semibold text-[var(--landing-fg)]">{{ t('modelMarketplace.quickStart.title') }}</h3>
+    <p class="mt-2 text-sm leading-6 text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.quickStart.description') }}</p>
 
-    <div class="mt-4 overflow-hidden rounded-md border border-white/[0.08] bg-[#0d0f14]">
-      <div class="flex items-center justify-between border-b border-slate-800 px-3 py-2">
+    <div class="mt-4 overflow-hidden rounded-md border border-[var(--landing-border)] bg-[var(--landing-surface)]">
+      <div class="flex items-center justify-between border-b border-[var(--landing-border)] px-3 py-2">
         <span class="font-mono text-[11px] text-slate-500">curl</span>
         <button
           type="button"
@@ -22,7 +22,7 @@
     <RouterLink
       to="/keys"
       data-testid="marketplace-create-api-key"
-      class="mt-4 inline-flex w-full items-center justify-center rounded-md bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-lime-300"
+      class="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--landing-accent)] px-3 py-2 text-sm font-semibold text-[var(--landing-accent-contrast)] transition-opacity hover:opacity-85"
     >
       {{ t('modelMarketplace.quickStart.createKey') }}
     </RouterLink>

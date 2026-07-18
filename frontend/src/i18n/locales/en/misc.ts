@@ -1,4 +1,15 @@
 export default {
+  'Models & pricing': 'Models & pricing',
+  'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.': 'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.',
+  'This site currently has {{count}} models enabled': 'This site currently has {{count}} models enabled',
+  'All Vendors': 'All Vendors',
+  'Search model name, provider, endpoint, or tag...': 'Search model name, provider, endpoint, or tag...',
+  'Table view': 'Table view',
+  'Card view': 'Card view',
+  'Name': 'Name',
+  'Price': 'Price',
+  'Model': 'Model',
+  'Provider': 'Provider',
 
   // Subscription Progress (Header component)
   subscriptionProgress: {
@@ -607,6 +618,7 @@ export default {
   },
 
   modelMarketplace: {
+    modelsEnabled: 'This site currently has {count} models enabled',
     backToModels: 'Back to models',
     eyebrow: 'Model marketplace',
     title: 'Explore models',
@@ -669,6 +681,8 @@ export default {
       tokens: 'tokens'
     },
     sections: {
+      overview: { title: 'Overview' },
+      api: { title: 'API' },
       providers: { title: 'Providers', heading: 'Available public providers', empty: 'No public provider data is available for this model.' },
       pricing: { title: 'Default Pricing', heading: 'Public group-default prices', empty: 'No default pricing data is available for this model.' },
       performance: { title: 'Performance', empty: 'No performance data is available for this model.' },

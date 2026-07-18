@@ -1,18 +1,15 @@
 <template>
-  <section class="mx-auto w-full max-w-[1440px] space-y-8 px-5 pb-16 pt-24 sm:px-8 sm:pt-28" aria-labelledby="model-marketplace-title">
-    <header class="space-y-3 border-b border-[var(--landing-border)] pb-8">
+  <section class="mx-auto w-full max-w-7xl px-4 pb-12 pt-24 sm:px-6 lg:px-8" aria-labelledby="model-marketplace-title">
+    <header v-if="!modelId" class="mb-8 space-y-6">
       <div class="space-y-2">
-      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-accent)]">
-        {{ t('modelMarketplace.eyebrow') }}
-      </p>
-      <h1 id="model-marketplace-title" class="text-4xl font-semibold tracking-tight text-[var(--landing-fg)] sm:text-5xl">
-        {{ t('modelMarketplace.title') }}
+      <h1 id="model-marketplace-title" class="text-lg font-semibold tracking-tight text-[var(--landing-fg)]">
+        {{ t('Models & pricing') }}
       </h1>
-      <p class="max-w-2xl text-sm leading-6 text-[var(--landing-fg-soft)]">
-        {{ t('modelMarketplace.description') }}
+      <p class="max-w-3xl text-sm leading-relaxed text-[var(--landing-fg-soft)]">
+        {{ t('Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.') }}
+        {{ t('modelMarketplace.modelsEnabled', { count: modelCount }) }}
       </p>
       </div>
-      <p v-if="platforms.length" class="text-sm text-[var(--landing-fg-soft)]">{{ totalModelCount }} {{ t('modelMarketplace.models') }} · {{ platforms.length }} {{ t('modelMarketplace.platforms') }}</p>
     </header>
 
     <div v-if="loading" data-testid="marketplace-loading" class="flex min-h-64 items-center justify-center gap-3">
@@ -40,6 +37,7 @@
             <p class="text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.platforms') }}</p>
             <button v-if="activePlatformName" type="button" class="text-xs text-[var(--landing-fg-soft)] hover:text-[var(--landing-fg)]" @click="activePlatformName = ''">{{ t('modelMarketplace.search.clear') }}</button>
           </div>
+          <p class="mb-2 text-sm font-medium text-[var(--landing-fg)]">{{ t('All Vendors') }}</p>
           <div class="flex flex-wrap gap-2" role="tablist">
           <button
             v-for="platform in platforms"
@@ -58,7 +56,7 @@
             <span class="rounded bg-[var(--landing-surface-strong)] px-1.5 py-0.5 tabular-nums">{{ platform.models.length }}</span>
           </button>
           </div>
-          <div class="mt-5 border-t border-[var(--landing-border)] pt-4">
+          <div class="hidden mt-5 border-t border-[var(--landing-border)] pt-4">
           <div class="flex items-center justify-between gap-2 px-2 pb-2">
             <label for="marketplace-model-search" class="text-xs font-medium text-slate-500">
               {{ t('modelMarketplace.models') }}
@@ -106,24 +104,30 @@
         </aside>
 
         <main class="min-w-0 space-y-4" :class="modelId ? 'xl:col-span-2' : ''">
-          <div v-if="!modelId" class="flex flex-wrap items-center justify-between gap-3">
-            <p class="text-sm text-[var(--landing-fg-soft)]"><span class="font-medium text-[var(--landing-fg)]">{{ visibleModels.length }}</span> {{ t('modelMarketplace.models') }}</p>
-            <span class="rounded-md border border-[var(--landing-border)] px-2.5 py-1.5 text-xs text-[var(--landing-fg-soft)]">{{ activePlatform?.name }}</span>
+          <div v-if="!modelId" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input v-model="modelSearch" type="search" :placeholder="t('Search model name, provider, endpoint, or tag...')" class="w-full rounded-md border border-[var(--landing-border)] bg-transparent px-3 py-2 text-sm text-[var(--landing-fg)] outline-none placeholder:text-[var(--landing-fg-muted)] focus:border-[var(--landing-fg)]/40 sm:max-w-sm" />
+            <div class="flex flex-wrap items-center gap-2 sm:ml-auto">
+              <select v-model="sortMode" class="rounded-md border border-[var(--landing-border)] bg-transparent px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]"><option value="name">{{ t('Name') }}</option><option value="price">{{ t('Price') }}</option></select>
+              <button type="button" class="rounded-md border border-[var(--landing-border)] px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]" @click="tokenUnit = tokenUnit === 'M' ? 'K' : 'M'">1{{ tokenUnit }}</button>
+              <button type="button" class="rounded-md border border-[var(--landing-border)] px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]" @click="viewMode = viewMode === 'card' ? 'table' : 'card'">{{ viewMode === 'card' ? t('Table view') : t('Card view') }}</button>
+            </div>
           </div>
-          <div v-if="!modelId" class="grid gap-4 md:grid-cols-2">
+          <p v-if="!modelId" class="text-sm text-[var(--landing-fg-soft)]"><span class="font-medium text-[var(--landing-fg)]">{{ visibleModels.length }}</span> {{ visibleModels.length === 1 ? t('model') : t('models') }}</p>
+          <div v-if="!modelId && viewMode === 'card'" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <button v-for="model in visibleModels" :key="model.name" type="button" class="group rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 text-left transition hover:-translate-y-0.5 hover:bg-[var(--landing-surface-strong)]" @click="selectModel(model.name, activePlatform?.name)">
               <div class="flex items-start gap-3"><div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--landing-surface-strong)] font-mono text-sm">{{ model.name.charAt(0).toUpperCase() }}</div><div class="min-w-0"><h2 class="truncate font-mono text-sm font-medium text-[var(--landing-fg)]">{{ model.name }}</h2><p class="mt-0.5 text-xs text-[var(--landing-fg-soft)]">{{ model.providers.length }} {{ t('modelMarketplace.providers') }}</p></div></div>
               <div class="mt-4 border-y border-[var(--landing-border)] py-3"><div class="grid grid-cols-2 gap-3"><div><p class="text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.prices.input') }}</p><p class="mt-1 text-sm font-semibold text-[var(--landing-fg)]">{{ modelInputPrice(model) }}</p></div><div><p class="text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.prices.output') }}</p><p class="mt-1 text-sm font-semibold text-[var(--landing-fg)]">{{ modelOutputPrice(model) }}</p></div></div></div>
               <div class="mt-3 flex flex-wrap gap-1.5"><span v-for="group in modelGroups(model).slice(0, 3)" :key="group" class="rounded-md bg-[var(--landing-surface-strong)] px-2 py-1 text-[11px] text-[var(--landing-fg-soft)]">{{ group }}</span></div>
             </button>
           </div>
-        <article v-if="selectedModel" class="rounded-lg border border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-[var(--landing-fg)] lg:p-7">
-          <RouterLink v-if="modelId" to="/pricing" class="mb-5 inline-flex items-center gap-2 text-sm text-[var(--landing-fg-soft)] hover:text-[var(--landing-fg)]">← {{ t('modelMarketplace.backToModels') }}</RouterLink>
-          <p class="text-sm text-slate-500">{{ activePlatform?.name }}</p>
-          <h2 class="mt-1 break-all font-mono text-xl font-semibold text-white">
+          <div v-else-if="!modelId" class="overflow-x-auto rounded-lg border border-[var(--landing-border)]"><table class="w-full text-left text-sm"><thead class="border-b border-[var(--landing-border)] text-xs text-[var(--landing-fg-soft)]"><tr><th class="px-4 py-3 font-medium">{{ t('Model') }}</th><th class="px-4 py-3 font-medium">{{ t('Provider') }}</th><th class="px-4 py-3 font-medium">{{ t('Input') }}</th><th class="px-4 py-3 font-medium">{{ t('Output') }}</th></tr></thead><tbody><tr v-for="model in visibleModels" :key="model.name" class="cursor-pointer border-b border-[var(--landing-border)] last:border-0 hover:bg-[var(--landing-surface-strong)]" @click="selectModel(model.name, activePlatform?.name)"><td class="px-4 py-3 font-mono text-xs">{{ model.name }}</td><td class="px-4 py-3 text-xs text-[var(--landing-fg-soft)]">{{ model.providers.length }}</td><td class="px-4 py-3 text-xs">{{ modelInputPrice(model) }}</td><td class="px-4 py-3 text-xs">{{ modelOutputPrice(model) }}</td></tr></tbody></table></div>
+        <article v-if="selectedModel" class="mx-auto w-full max-w-5xl text-[var(--landing-fg)]">
+          <RouterLink v-if="modelId" to="/pricing" class="mb-8 -ml-2 inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[var(--landing-fg-soft)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-fg)]">← {{ t('modelMarketplace.backToModels') }}</RouterLink>
+          <p class="text-sm text-[var(--landing-fg-soft)]">{{ activePlatform?.name }}</p>
+          <h2 class="mt-1 break-all font-mono text-xl font-semibold text-[var(--landing-fg)]">
             {{ selectedModel.name }}
           </h2>
-          <p class="mt-3 text-sm text-slate-400">
+          <p class="mt-3 text-sm text-[var(--landing-fg-soft)]">
             {{ t('modelMarketplace.providerCount', { count: selectedModel.providers.length }) }}
           </p>
           <div class="mt-4 flex flex-wrap gap-2">
@@ -131,10 +135,10 @@
             <span v-if="selectedModel.capabilities?.image_generation" class="rounded-full border border-[var(--landing-border)] px-2.5 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.capabilities.imageGeneration') }}</span>
             <span v-if="selectedModel.capabilities?.video_generation" class="rounded-full border border-[var(--landing-border)] px-2.5 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.capabilities.videoGeneration') }}</span>
           </div>
-          <div class="mt-6 grid gap-6 xl:grid-cols-[10.5rem_minmax(0,1fr)_minmax(18rem,22rem)]">
+          <div class="mt-6 space-y-6">
             <PricingDetailNav v-model="activeSection" />
             <PricingModelDetails :model="selectedModel" :active-section="activeSection" />
-            <PricingQuickStart :api-origin="apiOrigin" :model-name="selectedModel.name" />
+            <PricingQuickStart v-if="activeSection === 'apps'" :api-origin="apiOrigin" :model-name="selectedModel.name" />
           </div>
         </article>
         </main>
@@ -181,9 +185,12 @@ const router = useRouter()
 const activePlatformName = ref('')
 const activeSection = ref<'providers' | 'pricing' | 'performance' | 'uptime' | 'benchmarks' | 'apps' | 'activity'>('providers')
 const modelSearch = ref('')
+const sortMode = ref<'name' | 'price'>('name')
+const tokenUnit = ref<'M' | 'K'>('M')
+const viewMode = ref<'card' | 'table'>('card')
 
 const platforms = computed<PublicMarketplacePlatform[]>(() => props.marketplace?.platforms ?? [])
-const totalModelCount = computed(() => platforms.value.reduce((count, platform) => count + platform.models.length, 0))
+const modelCount = computed(() => platforms.value.reduce((count, platform) => count + platform.models.length, 0))
 const selectedModelName = computed(() => {
   if (props.modelId) return props.modelId
   const value = route.query.model
@@ -206,16 +213,16 @@ const selectedModelPlatform = computed(() =>
 const activePlatform = computed(() => {
   if (selectedModelPlatform.value) return selectedModelPlatform.value
   if (selectedPlatformFromQuery.value) return selectedPlatformFromQuery.value
-  return platforms.value.find((platform) => platform.name === activePlatformName.value) ?? platforms.value[0]
+  return platforms.value.find((platform) => platform.name === activePlatformName.value)
 })
 const visibleModels = computed<PublicMarketplaceModel[]>(() => {
-  const models = activePlatform.value?.models ?? []
+  const models = activePlatform.value?.models ?? platforms.value.flatMap((platform) => platform.models)
   const query = modelSearch.value.trim().toLowerCase()
-  if (!query) return models
-  return models.filter((model) => model.name.toLowerCase().includes(query))
+  const filtered = query ? models.filter((model) => model.name.toLowerCase().includes(query)) : models
+  return [...filtered].sort((a, b) => sortMode.value === 'name' ? a.name.localeCompare(b.name) : (firstPrice(a, 'input_price') ?? Infinity) - (firstPrice(b, 'input_price') ?? Infinity))
 })
 const selectedModel = computed<PublicMarketplaceModel | undefined>(() =>
-  visibleModels.value.find((model) => model.name === selectedModelName.value) ?? visibleModels.value[0],
+  selectedModelName.value ? platforms.value.flatMap((platform) => platform.models).find((model) => model.name === selectedModelName.value) : undefined,
 )
 
 function firstPrice(model: PublicMarketplaceModel, key: 'input_price' | 'output_price'): number | null {

@@ -1,5 +1,5 @@
 <template>
-  <section class="rounded-md border border-slate-800 bg-slate-950/60 p-4">
+  <section class="rounded-lg border border-[var(--landing-border)] p-4">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p class="font-mono text-sm text-slate-100">{{ groupPrice.name }}</p>
@@ -22,7 +22,7 @@
         v-for="(section, index) in pricingSections"
         :key="section.mode"
         :data-testid="`marketplace-pricing-${section.mode}`"
-        class="rounded border border-slate-800/80 bg-slate-950/30 p-3"
+        class="rounded-md border border-[var(--landing-border)] p-3"
       >
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{{ section.label }}</p>
@@ -31,18 +31,18 @@
         <p v-if="section.partialMediaOverride" class="mt-1 text-[11px] leading-5 text-amber-200/80">{{ t('modelMarketplace.prices.partialOverride') }}</p>
 
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          <div :data-testid="index === 0 ? 'marketplace-base-price' : `marketplace-base-price-${section.mode}`" class="rounded border border-slate-800 bg-slate-900/70 p-3">
+          <div :data-testid="index === 0 ? 'marketplace-base-price' : `marketplace-base-price-${section.mode}`" class="rounded-md border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3">
             <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">{{ t('modelMarketplace.prices.base') }}</p>
-            <p v-for="entry in section.entries" :key="entry.label" class="mt-2 text-sm text-slate-200">
+            <p v-for="entry in section.entries" :key="entry.label" class="mt-2 text-sm text-[var(--landing-fg)]">
               <span class="text-slate-500">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value, section.billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="entry.unit">{{ entry.unit }}</span>
             </p>
           </div>
-          <div :data-testid="index === 0 ? 'marketplace-effective-price' : `marketplace-effective-price-${section.mode}`" class="rounded border border-lime-400/20 bg-lime-400/[0.06] p-3">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-lime-300">{{ t('modelMarketplace.prices.effective') }}</p>
-            <p v-for="entry in section.entries" :key="entry.label" class="mt-2 text-sm text-lime-100">
-              <span class="text-lime-300/70">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * section.multiplier, section.billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="entry.unit">{{ entry.unit }}</span>
+          <div :data-testid="index === 0 ? 'marketplace-effective-price' : `marketplace-effective-price-${section.mode}`" class="rounded-md border border-[var(--landing-border)] bg-[var(--landing-surface-strong)] p-3">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--landing-fg)]">{{ t('modelMarketplace.prices.effective') }}</p>
+            <p v-for="entry in section.entries" :key="entry.label" class="mt-2 text-sm text-[var(--landing-fg)]">
+              <span class="text-[var(--landing-fg-soft)]">{{ entry.label }}</span> {{ formatMarketplacePrice(entry.value * section.multiplier, section.billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="entry.unit">{{ entry.unit }}</span>
             </p>
-            <p class="mt-3 text-[11px] leading-5 text-lime-200/70">{{ t('modelMarketplace.prices.effectiveDisclaimer') }}</p>
+            <p class="mt-3 text-[11px] leading-5 text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.prices.effectiveDisclaimer') }}</p>
           </div>
         </div>
 

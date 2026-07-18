@@ -1,28 +1,25 @@
 <template>
-  <nav class="border-b border-slate-800 pb-4 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-4" :aria-label="t('modelMarketplace.detailNavigation')">
+  <nav class="border-b border-[var(--landing-border)]" :aria-label="t('modelMarketplace.detailNavigation')">
     <label class="sr-only" for="marketplace-detail-section">{{ t('modelMarketplace.detailNavigation') }}</label>
     <select
       id="marketplace-detail-section"
       :value="modelValue"
-      class="w-full rounded-md border border-white/[0.1] bg-[#111318] px-3 py-2 text-sm text-slate-100 xl:hidden"
+      class="mb-3 w-full rounded-md border border-[var(--landing-border)] bg-transparent px-3 py-2 text-sm text-[var(--landing-fg)] md:hidden"
       @change="selectSection"
     >
       <option v-for="section in sections" :key="section.id" :value="section.id">{{ t(section.label) }}</option>
     </select>
 
-    <div class="hidden space-y-1 xl:block">
-      <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-        {{ t('modelMarketplace.detailNavigation') }}
-      </p>
+    <div class="hidden items-center gap-6 md:flex">
       <button
         v-for="section in sections"
         :key="section.id"
         :data-testid="`marketplace-detail-nav-${section.id}`"
         type="button"
-        class="flex w-full items-center rounded-md border px-3 py-2 text-left text-sm transition-colors"
+        class="flex items-center border-b-2 px-0.5 pb-3 text-sm transition-colors"
         :class="modelValue === section.id
-          ? 'border-lime-400/60 bg-lime-400/10 text-lime-300'
-          : 'border-transparent text-slate-400 hover:border-white/[0.12] hover:bg-[#20242c] hover:text-slate-100'"
+          ? 'border-[var(--landing-fg)] text-[var(--landing-fg)]'
+          : 'border-transparent text-[var(--landing-fg-soft)] hover:text-[var(--landing-fg)]'"
         @click="emit('update:modelValue', section.id)"
       >
         {{ t(section.label) }}
@@ -42,13 +39,9 @@ const emit = defineEmits<{ 'update:modelValue': [section: DetailSection] }>()
 const { t } = useI18n()
 
 const sections: Array<{ id: DetailSection; label: string }> = [
-  { id: 'providers', label: 'modelMarketplace.sections.providers.title' },
-  { id: 'pricing', label: 'modelMarketplace.sections.pricing.title' },
+  { id: 'providers', label: 'modelMarketplace.sections.overview.title' },
   { id: 'performance', label: 'modelMarketplace.sections.performance.title' },
-  { id: 'uptime', label: 'modelMarketplace.sections.uptime.title' },
-  { id: 'benchmarks', label: 'modelMarketplace.sections.benchmarks.title' },
-  { id: 'apps', label: 'modelMarketplace.sections.apps.title' },
-  { id: 'activity', label: 'modelMarketplace.sections.activity.title' },
+  { id: 'apps', label: 'modelMarketplace.sections.api.title' },
 ]
 
 function selectSection(event: Event): void {

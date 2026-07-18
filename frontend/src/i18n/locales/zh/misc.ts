@@ -1,4 +1,15 @@
 export default {
+  'Models & pricing': '模型与定价',
+  'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.': '探索精选 AI 模型，比较价格与能力，为不同场景选择合适的模型。',
+  'This site currently has {{count}} models enabled': '本站当前已启用模型，总计 {{count}} 个',
+  'All Vendors': '所有供应商',
+  'Search model name, provider, endpoint, or tag...': '搜索模型名称、提供商、端点或标签…',
+  'Table view': '表格视图',
+  'Card view': '卡片视图',
+  'Name': '名称',
+  'Price': '价格',
+  'Model': '模型',
+  'Provider': '提供商',
 
   // Subscription Progress (Header component)
   subscriptionProgress: {
@@ -631,6 +642,7 @@ export default {
   },
 
   modelMarketplace: {
+    modelsEnabled: '本站当前已启用模型，总计 {count} 个',
     backToModels: '返回模型列表',
     eyebrow: '模型广场',
     title: '探索模型',
@@ -693,6 +705,8 @@ export default {
       tokens: 'tokens'
     },
     sections: {
+      overview: { title: '概览' },
+      api: { title: 'API' },
       providers: { title: '服务商', heading: '公开可用服务商', empty: '此模型暂无公开服务商数据。' },
       pricing: { title: '默认价格', heading: '公开分组默认价格', empty: '此模型暂无默认价格数据。' },
       performance: { title: '性能', empty: '此模型暂无性能数据。' },
