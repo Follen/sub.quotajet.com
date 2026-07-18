@@ -10,6 +10,17 @@ export default {
   'Price': '价格',
   'Model': '模型',
   'Provider': '提供商',
+  'Endpoint Type': '端点类型',
+  'Pricing Type': '计费类型',
+  'Groups': '分组',
+  'Model Tags': '模型标签',
+  'All Models': '全部模型',
+  'Token-based': '按 Token',
+  'Per Request': '按请求',
+  'All Tags': '全部标签',
+  'Filter': '筛选',
+  'Standard': '标准',
+  'Recharge': '充值价',
 
   // Subscription Progress (Header component)
   subscriptionProgress: {
@@ -643,6 +654,7 @@ export default {
 
   modelMarketplace: {
     modelsEnabled: '本站当前已启用模型，总计 {count} 个',
+    providers: '个提供商',
     backToModels: '返回模型列表',
     eyebrow: '模型广场',
     title: '探索模型',

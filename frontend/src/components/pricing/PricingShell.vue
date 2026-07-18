@@ -56,6 +56,12 @@
             <span class="rounded bg-[var(--landing-surface-strong)] px-1.5 py-0.5 tabular-nums">{{ platform.models.length }}</span>
           </button>
           </div>
+          <div class="mt-4 space-y-1">
+            <div class="border-b border-[var(--landing-border)] py-2.5"><p class="mb-2 text-sm font-medium text-[var(--landing-fg)]">{{ t('Endpoint Type') }}</p><div class="flex flex-wrap gap-1.5"><span v-for="endpoint in endpointTypes" :key="endpoint" class="rounded-md border border-[var(--landing-border)] px-2 py-1 text-xs text-[var(--landing-fg-soft)]">{{ endpoint }}</span></div></div>
+            <div class="border-b border-[var(--landing-border)] py-2.5"><p class="mb-2 text-sm font-medium text-[var(--landing-fg)]">{{ t('Pricing Type') }}</p><div class="flex flex-wrap gap-1.5"><span class="rounded-md border border-[var(--landing-border)] px-2 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('All Models') }} {{ modelCount }}</span><span class="rounded-md border border-[var(--landing-border)] px-2 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('Token-based') }}</span><span class="rounded-md border border-[var(--landing-border)] px-2 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('Per Request') }}</span></div></div>
+            <div class="border-b border-[var(--landing-border)] py-2.5"><p class="mb-2 text-sm font-medium text-[var(--landing-fg)]">{{ t('Groups') }}</p><div class="flex flex-wrap gap-1.5"><span v-for="group in allGroups" :key="group" class="rounded-md border border-[var(--landing-border)] px-2 py-1 text-xs text-[var(--landing-fg-soft)]">{{ group }}</span></div></div>
+            <div class="py-2.5"><p class="mb-2 text-sm font-medium text-[var(--landing-fg)]">{{ t('Model Tags') }}</p><span class="rounded-md border border-[var(--landing-border)] px-2 py-1 text-xs text-[var(--landing-fg-soft)]">{{ t('All Tags') }}</span></div>
+          </div>
           <div class="hidden mt-5 border-t border-[var(--landing-border)] pt-4">
           <div class="flex items-center justify-between gap-2 px-2 pb-2">
             <label for="marketplace-model-search" class="text-xs font-medium text-slate-500">
@@ -107,7 +113,7 @@
           <div v-if="!modelId" class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <input v-model="modelSearch" type="search" :placeholder="t('Search model name, provider, endpoint, or tag...')" class="w-full rounded-md border border-[var(--landing-border)] bg-transparent px-3 py-2 text-sm text-[var(--landing-fg)] outline-none placeholder:text-[var(--landing-fg-muted)] focus:border-[var(--landing-fg)]/40 sm:max-w-sm" />
             <div class="flex flex-wrap items-center gap-2 sm:ml-auto">
-              <select v-model="sortMode" class="rounded-md border border-[var(--landing-border)] bg-transparent px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]"><option value="name">{{ t('Name') }}</option><option value="price">{{ t('Price') }}</option></select>
+              <button type="button" class="rounded-md border border-[var(--landing-border)] px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]">{{ t('Filter') }}</button><select v-model="sortMode" class="rounded-md border border-[var(--landing-border)] bg-transparent px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]"><option value="name">↕ {{ t('Name') }}</option><option value="price">↕ {{ t('Price') }}</option></select><div class="flex rounded-md border border-[var(--landing-border)] p-0.5"><button type="button" class="rounded px-2 py-1.5 text-xs" :class="!showRecharge ? 'bg-[var(--landing-surface-strong)] text-[var(--landing-fg)]' : 'text-[var(--landing-fg-soft)]'" @click="showRecharge = false">{{ t('Standard') }}</button><button type="button" class="rounded px-2 py-1.5 text-xs" :class="showRecharge ? 'bg-[var(--landing-surface-strong)] text-[var(--landing-fg)]' : 'text-[var(--landing-fg-soft)]'" @click="showRecharge = true">{{ t('Recharge') }}</button></div>
               <button type="button" class="rounded-md border border-[var(--landing-border)] px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]" @click="tokenUnit = tokenUnit === 'M' ? 'K' : 'M'">1{{ tokenUnit }}</button>
               <button type="button" class="rounded-md border border-[var(--landing-border)] px-2.5 py-2 text-xs text-[var(--landing-fg-soft)]" @click="viewMode = viewMode === 'card' ? 'table' : 'card'">{{ viewMode === 'card' ? t('Table view') : t('Card view') }}</button>
             </div>
@@ -187,10 +193,13 @@ const activeSection = ref<'providers' | 'pricing' | 'performance' | 'uptime' | '
 const modelSearch = ref('')
 const sortMode = ref<'name' | 'price'>('name')
 const tokenUnit = ref<'M' | 'K'>('M')
-const viewMode = ref<'card' | 'table'>('card')
+const viewMode = ref<'card' | 'table'>('table')
+const showRecharge = ref(false)
 
 const platforms = computed<PublicMarketplacePlatform[]>(() => props.marketplace?.platforms ?? [])
 const modelCount = computed(() => platforms.value.reduce((count, platform) => count + platform.models.length, 0))
+const endpointTypes = computed(() => [...new Set(platforms.value.flatMap((platform) => platform.models.flatMap((model) => model.platform_default_inbound_endpoints ?? [])))])
+const allGroups = computed(() => [...new Set(platforms.value.flatMap((platform) => platform.models.flatMap(modelGroups)))].sort())
 const selectedModelName = computed(() => {
   if (props.modelId) return props.modelId
   const value = route.query.model
@@ -238,8 +247,9 @@ function firstPrice(model: PublicMarketplaceModel, key: 'input_price' | 'output_
 function formatCardPrice(value: number | null): string {
   if (value === null) return '—'
   if (value === 0) return '0'
-  if (value < 0.01) return value.toFixed(4)
-  return value.toFixed(2)
+  const scaled = value * (tokenUnit.value === 'M' ? 1_000_000 : 1_000)
+  if (scaled < 0.01) return scaled.toFixed(4)
+  return scaled.toFixed(2)
 }
 
 function modelInputPrice(model: PublicMarketplaceModel): string {

@@ -10,6 +10,17 @@ export default {
   'Price': 'Price',
   'Model': 'Model',
   'Provider': 'Provider',
+  'Endpoint Type': 'Endpoint Type',
+  'Pricing Type': 'Pricing Type',
+  'Groups': 'Groups',
+  'Model Tags': 'Model Tags',
+  'All Models': 'All Models',
+  'Token-based': 'Token-based',
+  'Per Request': 'Per Request',
+  'All Tags': 'All Tags',
+  'Filter': 'Filter',
+  'Standard': 'Standard',
+  'Recharge': 'Recharge',
 
   // Subscription Progress (Header component)
   subscriptionProgress: {
@@ -619,6 +630,7 @@ export default {
 
   modelMarketplace: {
     modelsEnabled: 'This site currently has {count} models enabled',
+    providers: 'providers',
     backToModels: 'Back to models',
     eyebrow: 'Model marketplace',
     title: 'Explore models',
