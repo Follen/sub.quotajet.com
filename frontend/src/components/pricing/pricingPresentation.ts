@@ -22,7 +22,7 @@ export function modelEndpoints(model: PublicMarketplaceModel): string[] {
   return model.platform_default_inbound_endpoints ?? []
 }
 
-export function modelPrice(model: PublicMarketplaceModel, key: 'input_price' | 'output_price', unit: 'M' | 'K'): string {
+export function modelPrice(model: PublicMarketplaceModel, key: 'input_price' | 'output_price' | 'cache_read_price' | 'cache_write_price', unit: 'M' | 'K'): string {
   const raw = model.providers.flatMap((provider) => provider.group_prices).map((group) => group.price?.[key]).find((value): value is number => typeof value === 'number' && Number.isFinite(value))
   if (raw == null) return '—'
   const scaled = raw * (unit === 'M' ? 1_000_000 : 1_000)
