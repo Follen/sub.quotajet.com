@@ -46,6 +46,11 @@ command -v git >/dev/null
 command -v openssl >/dev/null
 docker compose version >/dev/null
 
+# Keep release rebuilds from exhausting the small test host disk. This only
+# removes unused build cache and dangling images; named data volumes remain.
+docker builder prune -af >/dev/null 2>&1 || true
+docker image prune -af >/dev/null 2>&1 || true
+
 if [[ ! -f "$env_file" ]]; then
   cp "$deploy_dir/.env.example" "$env_file"
   set_env POSTGRES_PASSWORD "$(generate_secret)"
