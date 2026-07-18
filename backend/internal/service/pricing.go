@@ -257,15 +257,6 @@ func findSupportedModel(models []SupportedModel, platform, name string) Supporte
 	return SupportedModel{}
 }
 
-func containsModel(models []string, name string) bool {
-	for _, model := range models {
-		if strings.EqualFold(strings.TrimSpace(model), name) {
-			return true
-		}
-	}
-	return false
-}
-
 func publicMarketplaceIndependentRate(independent bool, multiplier float64) *float64 {
 	if !independent {
 		return nil
