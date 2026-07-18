@@ -650,7 +650,8 @@ export default {
       cacheWrite: '缓存写入',
       cacheRead: '缓存读取',
       imageOutput: '图像输出',
-      perRequest: '每次请求'
+      perRequest: '每次请求',
+      perMillionTokens: '每 100 万 tokens'
     },
     tiers: {
       title: '价格分层',

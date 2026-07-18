@@ -84,6 +84,22 @@ const marketplace: PublicModelMarketplace = {
                   },
                 },
                 {
+                  name: 'default-token-mode',
+                  rate_multiplier: 1,
+                  price: {
+                    billing_mode: '',
+                    input_price: 0.000001,
+                    output_price: null,
+                    cache_write_price: null,
+                    cache_read_price: null,
+                    image_output_price: null,
+                    per_request_price: null,
+                    fallback: false,
+                    display_only: false,
+                    intervals: [],
+                  },
+                },
+                {
                   name: 'image',
                   rate_multiplier: 1,
                   price: {
@@ -144,8 +160,16 @@ describe('Marketplace details', () => {
     expect(wrapper.get('[data-testid="marketplace-provider-OpenAI Direct"]').text()).toContain('OpenAI Direct')
     expect(wrapper.get('[data-testid="marketplace-group-standard"]').text()).toContain('standard')
     const standard = wrapper.get('[data-testid="marketplace-group-standard"]')
-    expect(standard.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.5 / 1M tokens')
-    expect(standard.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.75 / 1M tokens')
+    expect(standard.get('[data-testid="marketplace-base-price"]').text()).toContain('$0.5 / modelMarketplace.prices.perMillionTokens')
+    expect(standard.get('[data-testid="marketplace-effective-price"]').text()).toContain('$0.75 / modelMarketplace.prices.perMillionTokens')
+  })
+
+  it('treats an empty billing mode as token pricing', () => {
+    const wrapper = mountMarketplace()
+
+    expect(wrapper.get('[data-testid="marketplace-group-default-token-mode"]').get('[data-testid="marketplace-base-price"]').text()).toContain(
+      '$1 / modelMarketplace.prices.perMillionTokens',
+    )
   })
 
   it('does not scale per-request or image prices', () => {

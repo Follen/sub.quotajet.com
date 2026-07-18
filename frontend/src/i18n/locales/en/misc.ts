@@ -626,7 +626,8 @@ export default {
       cacheWrite: 'Cache write',
       cacheRead: 'Cache read',
       imageOutput: 'Image output',
-      perRequest: 'Per request'
+      perRequest: 'Per request',
+      perMillionTokens: '1M tokens'
     },
     tiers: {
       title: 'Pricing tiers',
