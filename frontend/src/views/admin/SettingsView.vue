@@ -11076,15 +11076,15 @@ watch(
    because Vue's scoped-CSS compiler was dropping the `:global(.dark) ...`
    rules in the production build, leaving inactive tabs unreadable on dark. */
 .dark .settings-tabs-shell {
-  border-color: rgb(51 65 85 / 0.65);
-  background: rgb(15 23 42 / 0.86);
+  border-color: oklch(var(--qj-surface-accent) / 0.65);
+  background: oklch(var(--qj-surface-card) / 0.92);
   box-shadow:
     0 16px 36px rgb(0 0 0 / 0.28),
     0 1px 0 rgb(255 255 255 / 0.06) inset;
 }
 
 .dark .settings-tab::before {
-  background: linear-gradient(135deg, rgb(30 41 59 / 0.9), rgb(51 65 85 / 0.62));
+  background: oklch(var(--qj-surface-accent) / 0.72);
 }
 
 .dark .settings-tab-active {

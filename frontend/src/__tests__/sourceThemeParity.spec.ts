@@ -280,6 +280,16 @@ describe('source-aligned global theme', () => {
     expect(applicationSource).not.toMatch(/dark:[^\s"'`]*bg-(?:gray|slate)-/)
   })
 
+  it('keeps the settings tab bar on neutral theme roles', () => {
+    const darkTabsBlock = settingsSource.match(
+      /\.dark \.settings-tabs-shell \{[\s\S]*?\.dark \.settings-tab-active \{[\s\S]*?\n\}/
+    )?.[0]
+
+    expect(darkTabsBlock).toContain('background: oklch(var(--qj-surface-card) / 0.92);')
+    expect(darkTabsBlock).toContain('background: oklch(var(--qj-surface-accent) / 0.72);')
+    expect(darkTabsBlock).not.toMatch(/rgb\((?:15 23 42|30 41 59|51 65 85)/)
+  })
+
   it('keeps generic primary buttons theme-aware outside shared button components', () => {
     expect(platformColorsSource).toContain(
       "const BUTTON_DEFAULT = 'bg-primary-500 text-primary-50 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-500'"
