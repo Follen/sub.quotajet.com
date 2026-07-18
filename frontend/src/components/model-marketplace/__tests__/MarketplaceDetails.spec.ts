@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const { copyToClipboard } = vi.hoisted(() => ({ copyToClipboard: vi.fn().mockResolvedValue(true) }))
 
 vi.mock('vue-i18n', () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({
+    t: (key: string) => key === 'modelMarketplace.prices.perSecond' ? '/s' : key,
+  }),
 }))
 
 vi.mock('@/composables/useClipboard', () => ({
@@ -269,6 +271,39 @@ describe('Marketplace details', () => {
     expect(wrapper.get('[data-testid="marketplace-pricing-image"]').text()).toContain('$0.11')
     expect(wrapper.get('[data-testid="marketplace-pricing-video"]').text()).toContain('$0.04 /s')
     expect(wrapper.get('[data-testid="marketplace-pricing-video"]').text()).toContain('$0.01 /s')
+  })
+
+  it('does not publish gated media pricing for a disabled group', () => {
+    const wrapper = mount(MarketplacePricingPanel, {
+      props: {
+        groupPrice: {
+          name: 'gated-media',
+          rate_multiplier: 1,
+          allow_image_generation: false,
+          allow_video_generation: false,
+          image_prices: { price_1k: 0.11 },
+          video_prices: { price_480p: 0.04 },
+          price: {
+            billing_mode: 'token',
+            input_price: 0.000001,
+            output_price: null,
+            cache_write_price: null,
+            cache_read_price: null,
+            image_output_price: null,
+            per_request_price: null,
+            fallback: false,
+            display_only: false,
+            intervals: [],
+          },
+        },
+      },
+    })
+
+    expect(wrapper.get('[data-testid="marketplace-pricing-token"]').text()).toContain('$1 / modelMarketplace.prices.perMillionTokens')
+    expect(wrapper.find('[data-testid="marketplace-pricing-image"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="marketplace-pricing-video"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('$0.11')
+    expect(wrapper.text()).not.toContain('$0.04')
   })
 
   it('renders inclusive tier intervals and tier prices', () => {

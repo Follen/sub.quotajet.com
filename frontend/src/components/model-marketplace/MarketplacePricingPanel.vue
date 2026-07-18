@@ -129,9 +129,10 @@ function imageOverrideEntries(prices: PublicMarketplaceImagePrices | null): Pric
 function videoOverrideEntries(prices: PublicMarketplaceVideoPrices | null): PriceEntry[] {
   if (!prices) return []
   const entries: PriceEntry[] = []
-  if (prices.price_480p !== null && prices.price_480p !== undefined) entries.push({ label: t('modelMarketplace.prices.video480P'), value: prices.price_480p, unit: ' /s' })
-  if (prices.price_720p !== null && prices.price_720p !== undefined) entries.push({ label: t('modelMarketplace.prices.video720P'), value: prices.price_720p, unit: ' /s' })
-  if (prices.price_1080p !== null && prices.price_1080p !== undefined) entries.push({ label: t('modelMarketplace.prices.video1080P'), value: prices.price_1080p, unit: ' /s' })
+  const perSecondUnit = ` ${t('modelMarketplace.prices.perSecond')}`
+  if (prices.price_480p !== null && prices.price_480p !== undefined) entries.push({ label: t('modelMarketplace.prices.video480P'), value: prices.price_480p, unit: perSecondUnit })
+  if (prices.price_720p !== null && prices.price_720p !== undefined) entries.push({ label: t('modelMarketplace.prices.video720P'), value: prices.price_720p, unit: perSecondUnit })
+  if (prices.price_1080p !== null && prices.price_1080p !== undefined) entries.push({ label: t('modelMarketplace.prices.video1080P'), value: prices.price_1080p, unit: perSecondUnit })
   return entries
 }
 
@@ -157,8 +158,10 @@ function mediaPartialOverride(values: Array<number | null | undefined>): boolean
 const pricingSections = computed<PricingSection[]>(() => {
   const configuredPrice = price.value
   const declaredMode = normalizeBillingMode(configuredPrice?.billing_mode)
-  const imageEntries = imageOverrideEntries(imagePrices.value)
-  const videoEntries = videoOverrideEntries(videoPrices.value)
+  const imageAllowed = props.groupPrice.allow_image_generation !== false
+  const videoAllowed = props.groupPrice.allow_video_generation !== false
+  const imageEntries = imageAllowed ? imageOverrideEntries(imagePrices.value) : []
+  const videoEntries = videoAllowed ? videoOverrideEntries(videoPrices.value) : []
   const sections: PricingSection[] = []
   const tokenPriceEntries = tokenEntries(configuredPrice)
   const tokenIntervals = configuredPrice && declaredMode === 'token' ? configuredPrice.intervals : []
@@ -175,8 +178,9 @@ const pricingSections = computed<PricingSection[]>(() => {
     })
   }
 
-  const requestPriceEntries = perRequestEntries(configuredPrice)
-  const requestIntervals = configuredPrice && declaredMode === 'per_request' ? configuredPrice.intervals : []
+  const requestModeAllowed = declaredMode === 'image' ? imageAllowed : declaredMode === 'video' ? videoAllowed : true
+  const requestPriceEntries = requestModeAllowed ? perRequestEntries(configuredPrice) : []
+  const requestIntervals = requestModeAllowed && configuredPrice && declaredMode === 'per_request' ? configuredPrice.intervals : []
   if (requestPriceEntries.length > 0 || requestIntervals.length > 0 || declaredMode === 'per_request') {
     sections.push({
       mode: 'per_request',
@@ -190,15 +194,15 @@ const pricingSections = computed<PricingSection[]>(() => {
     })
   }
 
-  const imageChannelEntries = imageEntries.length > 0
+  const imageChannelEntries = imageAllowed && imageEntries.length > 0
     ? imageEntries
-    : configuredPrice?.image_output_price !== null && configuredPrice?.image_output_price !== undefined
+    : imageAllowed && configuredPrice?.image_output_price !== null && configuredPrice?.image_output_price !== undefined
       ? [{ label: t('modelMarketplace.prices.imageOutput'), value: configuredPrice.image_output_price }]
-      : declaredMode === 'image' && requestPriceEntries.length > 0
+      : imageAllowed && declaredMode === 'image' && requestPriceEntries.length > 0
         ? requestPriceEntries
         : []
-  const imageIntervals = configuredPrice && declaredMode === 'image' ? configuredPrice.intervals : []
-  if (imageChannelEntries.length > 0 || imageIntervals.length > 0 || imageEntries.length > 0 || declaredMode === 'image') {
+  const imageIntervals = imageAllowed && configuredPrice && declaredMode === 'image' ? configuredPrice.intervals : []
+  if (imageAllowed && (imageChannelEntries.length > 0 || imageIntervals.length > 0 || imageEntries.length > 0 || declaredMode === 'image')) {
     sections.push({
       mode: 'image',
       billingMode: 'image',
@@ -211,13 +215,13 @@ const pricingSections = computed<PricingSection[]>(() => {
     })
   }
 
-  const videoChannelEntries = videoEntries.length > 0
+  const videoChannelEntries = videoAllowed && videoEntries.length > 0
     ? videoEntries
-    : declaredMode === 'video' && requestPriceEntries.length > 0
+    : videoAllowed && declaredMode === 'video' && requestPriceEntries.length > 0
       ? requestPriceEntries
       : []
-  const videoIntervals = configuredPrice && declaredMode === 'video' ? configuredPrice.intervals : []
-  if (videoChannelEntries.length > 0 || videoIntervals.length > 0 || videoEntries.length > 0 || declaredMode === 'video') {
+  const videoIntervals = videoAllowed && configuredPrice && declaredMode === 'video' ? configuredPrice.intervals : []
+  if (videoAllowed && (videoChannelEntries.length > 0 || videoIntervals.length > 0 || videoEntries.length > 0 || declaredMode === 'video')) {
     sections.push({
       mode: 'video',
       billingMode: 'video',

@@ -649,6 +649,7 @@ export default {
       video480P: '480p',
       video720P: '720p',
       video1080P: '1080p',
+      perSecond: '/s',
       perRequest: 'Per request',
       modeMultiplier: '{mode} multiplier: ×{multiplier}',
       modeToken: 'Token pricing',

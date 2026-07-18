@@ -673,6 +673,7 @@ export default {
       video480P: '480p',
       video720P: '720p',
       video1080P: '1080p',
+      perSecond: '/s',
       perRequest: '每次请求',
       modeMultiplier: '{mode}倍率：×{multiplier}',
       modeToken: 'Token 计费',
