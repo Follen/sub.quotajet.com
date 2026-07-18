@@ -17,6 +17,8 @@ import { resolveRouteDocumentTitle } from './title'
 /**
  * Route definitions with lazy loading
  */
+export const MODEL_MARKETPLACE_PATH = '/pricing'
+
 const routes: RouteRecordRaw[] = [
   // ==================== Setup Routes ====================
   {
@@ -176,7 +178,7 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/models',
+    path: MODEL_MARKETPLACE_PATH,
     name: 'ModelMarketplace',
     component: () => import('@/views/user/ModelMarketplaceView.vue'),
     meta: {
@@ -714,7 +716,7 @@ let authInitialized = false
 const navigationLoading = useNavigationLoadingState()
 // 延迟初始化预加载，传入 router 实例
 let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
-const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', '/models']
+const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal', MODEL_MARKETPLACE_PATH]
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
   '/auth/linuxdo/callback',
