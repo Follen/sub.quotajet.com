@@ -42,7 +42,7 @@
             {{ t(link.labelKey) }}
           </a>
           <a
-            v-if="safeDocUrl"
+            v-if="safeDocUrl && !publicCatalog"
             data-doc-link
             :href="safeDocUrl"
             target="_blank"
@@ -53,7 +53,7 @@
           </a>
 
           <div class="mx-2 h-4 w-px bg-[var(--landing-border)]" />
-          <LocaleSwitcher />
+          <LocaleSwitcher :compact="publicCatalog" />
           <button
             data-theme-button
             type="button"
@@ -75,7 +75,7 @@
         </div>
 
         <div class="flex items-center gap-1.5 lg:hidden">
-          <LocaleSwitcher />
+          <LocaleSwitcher :compact="publicCatalog" />
           <button
             data-theme-button
             type="button"
@@ -148,7 +148,7 @@
           {{ t(link.labelKey) }}
         </a>
         <a
-          v-if="safeDocUrl"
+          v-if="safeDocUrl && !publicCatalog"
           data-doc-link
           :href="safeDocUrl"
           target="_blank"
@@ -192,9 +192,9 @@ const safeDocUrl = computed(() => sanitizeUrl(props.docUrl))
 const navigation = computed(() => props.publicCatalog ? [
   { labelKey: 'Home', href: '/home', external: false },
   { labelKey: 'Console', href: '/dashboard', external: false },
-  { labelKey: 'landing.nav.models', href: '/pricing', external: false },
-  { labelKey: 'landing.nav.docs', href: safeDocUrl.value || '#', external: Boolean(safeDocUrl.value) },
-  { labelKey: 'landing.nav.status', href: 'https://status.quotajet.com/', external: true },
+  { labelKey: 'Models', href: '/pricing', external: false },
+  { labelKey: 'landing.nav.docs', href: safeDocUrl.value || '/home#docs', external: Boolean(safeDocUrl.value) },
+  { labelKey: 'Status check', href: 'https://status.quotajet.com/', external: true },
   { labelKey: 'landing.nav.about', href: '/home#privacy', external: false },
 ] as const : [
   { labelKey: 'landing.nav.models', href: '#models', external: false },

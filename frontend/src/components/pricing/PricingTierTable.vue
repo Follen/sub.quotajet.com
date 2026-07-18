@@ -1,23 +1,23 @@
 <template>
-  <div v-if="intervals.length > 0" class="overflow-x-auto rounded-md border border-slate-800">
-    <table class="min-w-full divide-y divide-slate-800 text-left text-xs">
-      <thead class="bg-slate-950/70 text-slate-500">
+  <div v-if="intervals.length > 0" class="overflow-x-auto rounded-lg border border-pricing">
+    <table class="min-w-full divide-y divide-pricing text-left text-xs">
+      <thead class="bg-pricing-subtle text-pricing-muted">
         <tr>
           <th class="px-3 py-2 font-medium">{{ t('modelMarketplace.tiers.interval') }}</th>
           <th class="px-3 py-2 font-medium">{{ t('modelMarketplace.tiers.base') }}</th>
           <th class="px-3 py-2 font-medium">{{ t('modelMarketplace.tiers.effective') }}</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-800 bg-slate-950/30 text-slate-300">
+      <tbody class="divide-y divide-pricing">
         <tr v-for="(tier, index) in intervals" :key="`${tier.min_tokens}-${tier.max_tokens ?? 'infinity'}-${tier.tier_label ?? ''}`" :data-testid="`marketplace-tier-${index}`">
-          <td class="whitespace-nowrap px-3 py-2 align-top font-mono text-slate-200">
-            <p v-if="tier.tier_label" class="font-sans text-slate-400">{{ tier.tier_label }}</p>
+          <td class="whitespace-nowrap px-3 py-2 align-top font-mono">
+            <p v-if="tier.tier_label" class="font-sans text-pricing-muted">{{ tier.tier_label }}</p>
             {{ tierInterval(tier) }}
           </td>
           <td class="px-3 py-2 align-top">
             <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="billingMode === 'video'">{{ videoUnitLabel }}</span></p>
           </td>
-          <td class="px-3 py-2 align-top text-lime-300">
+          <td class="px-3 py-2 align-top font-medium">
             <p v-for="entry in tierEntries(tier)" :key="entry.label">{{ entry.label }} {{ formatMarketplacePrice(entry.value * rateMultiplier, billingMode, t('modelMarketplace.prices.perMillionTokens')) }}<span v-if="billingMode === 'video'">{{ videoUnitLabel }}</span></p>
           </td>
         </tr>

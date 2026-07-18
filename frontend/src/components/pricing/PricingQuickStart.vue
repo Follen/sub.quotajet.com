@@ -1,60 +1,96 @@
 <template>
-  <aside class="rounded-lg border border-[var(--landing-border)] p-4">
-    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.quickStart.eyebrow') }}</p>
-    <h3 class="mt-1 text-base font-semibold text-[var(--landing-fg)]">{{ t('modelMarketplace.quickStart.title') }}</h3>
-    <p class="mt-2 text-sm leading-6 text-[var(--landing-fg-soft)]">{{ t('modelMarketplace.quickStart.description') }}</p>
+  <section>
+    <h2 class="pricing-section-title">{{ t('Quick start') }}</h2>
+    <p class="mb-4 text-sm leading-6 text-pricing-muted">{{ t('Call this model through the public Sub2API-compatible endpoint.') }}</p>
 
-    <div class="mt-4 overflow-hidden rounded-md border border-[var(--landing-border)] bg-[var(--landing-surface)]">
-      <div class="flex items-center justify-between border-b border-[var(--landing-border)] px-3 py-2">
-        <span class="font-mono text-[11px] text-slate-500">curl</span>
+    <div class="overflow-hidden rounded-xl border border-pricing bg-pricing-code">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-pricing px-3 py-2">
+        <div class="flex gap-1">
+          <button
+            v-for="language in languages"
+            :key="language.id"
+            type="button"
+            class="pricing-code-tab"
+            :class="activeLanguage === language.id ? 'is-active' : ''"
+            @click="activeLanguage = language.id"
+          >
+            {{ language.label }}
+          </button>
+        </div>
         <button
           type="button"
           data-testid="marketplace-copy-quick-start"
-          class="rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 transition-colors hover:border-violet-400/60 hover:text-violet-300"
+          class="pricing-control-button"
           @click="copyToClipboard(requestExample, t('modelMarketplace.quickStart.copied'))"
         >
-          {{ t('modelMarketplace.quickStart.copy') }}
+          <Icon name="copy" size="xs" />
+          {{ t('Copy') }}
         </button>
       </div>
-      <pre data-testid="marketplace-quick-start-code" class="overflow-x-auto p-3 text-xs leading-6 text-slate-300"><code>{{ requestExample }}</code></pre>
+      <pre data-testid="marketplace-quick-start-code" class="max-h-[420px] overflow-auto p-4 font-mono text-xs leading-6"><code>{{ requestExample }}</code></pre>
     </div>
 
-    <RouterLink
-      to="/keys"
-      data-testid="marketplace-create-api-key"
-      class="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--landing-accent)] px-3 py-2 text-sm font-semibold text-[var(--landing-accent-contrast)] transition-opacity hover:opacity-85"
-    >
-      {{ t('modelMarketplace.quickStart.createKey') }}
-    </RouterLink>
-  </aside>
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <RouterLink to="/keys" data-testid="marketplace-create-api-key" class="pricing-primary-button">
+        {{ t('Create API key') }}
+        <Icon name="arrowRight" size="sm" />
+      </RouterLink>
+      <span class="text-xs text-pricing-muted">{{ t('Replace $YOUR_API_KEY before sending the request.') }}</span>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-
+import Icon from '@/components/icons/Icon.vue'
 import { useClipboard } from '@/composables/useClipboard'
 import { normalizeMarketplaceApiOrigin, shellQuote } from './pricingQuickStart'
 
-const props = defineProps<{
+type SampleLanguage = 'curl' | 'python' | 'javascript'
+
+const props = withDefaults(defineProps<{
   apiOrigin: string
   modelName: string
-}>()
+  endpoint?: string
+}>(), { endpoint: '/v1/chat/completions' })
 
 const { t } = useI18n()
 const { copyToClipboard } = useClipboard()
+const activeLanguage = ref<SampleLanguage>('curl')
+const languages = [
+  { id: 'curl' as const, label: 'curl' },
+  { id: 'python' as const, label: 'Python' },
+  { id: 'javascript' as const, label: 'JavaScript' },
+]
 
-const apiBase = computed(() => {
+const endpointUrl = computed(() => {
   const origin = normalizeMarketplaceApiOrigin(props.apiOrigin, window.location.origin)
-  return origin ? `${origin}/v1` : '/v1'
+  const endpoint = props.endpoint.startsWith('/') ? props.endpoint : `/${props.endpoint}`
+  return `${origin || ''}${endpoint}`
 })
+const sdkBaseUrl = computed(() => {
+  const url = new URL(endpointUrl.value)
+  url.pathname = url.pathname.replace(/\/v1(?:beta)?(?:\/.*)?$/, '/v1')
+  return url.toString().replace(/\/$/, '')
+})
+
 const requestBody = computed(() => JSON.stringify({
   model: props.modelName,
   messages: [{ role: 'user', content: 'Hello' }],
 }, null, 2))
-const requestExample = computed(() => `curl ${shellQuote(`${apiBase.value}/chat/completions`)} \\
-  -H "Authorization: Bearer $YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d ${shellQuote(requestBody.value)}`)
+const isChatEndpoint = computed(() => /chat\/completions|responses|messages/.test(props.endpoint))
 
+const rawRequestExample = computed(() => {
+  if (activeLanguage.value === 'python') {
+    if (!isChatEndpoint.value) return `import requests\n\nresponse = requests.post(\n    ${JSON.stringify(endpointUrl.value)},\n    headers={"Authorization": "Bearer $YOUR_API_KEY"},\n    json={"model": ${JSON.stringify(props.modelName)}, "input": "Hello"},\n)\n\nprint(response.json())`
+    return `from openai import OpenAI\n\nclient = OpenAI(\n    api_key="$YOUR_API_KEY",\n    base_url=${JSON.stringify(sdkBaseUrl.value)},\n)\n\nresponse = client.chat.completions.create(\n    model=${JSON.stringify(props.modelName)},\n    messages=[{"role": "user", "content": "Hello"}],\n)\n\nprint(response.choices[0].message.content)`
+  }
+  if (activeLanguage.value === 'javascript') {
+    if (!isChatEndpoint.value) return `const response = await fetch(${JSON.stringify(endpointUrl.value)}, {\n  method: "POST",\n  headers: { Authorization: "Bearer $YOUR_API_KEY", "Content-Type": "application/json" },\n  body: JSON.stringify({ model: ${JSON.stringify(props.modelName)}, input: "Hello" }),\n});\n\nconsole.log(await response.json());`
+    return `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  apiKey: process.env.YOUR_API_KEY,\n  baseURL: ${JSON.stringify(sdkBaseUrl.value)},\n});\n\nconst response = await client.chat.completions.create({\n  model: ${JSON.stringify(props.modelName)},\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`
+  }
+  return `curl ${shellQuote(endpointUrl.value)} \\\n+  -H "Authorization: Bearer $YOUR_API_KEY" \\\n+  -H "Content-Type: application/json" \\\n+  -d ${shellQuote(requestBody.value)}`
+})
+const requestExample = computed(() => rawRequestExample.value.replace(/\n\+\x20{2}/g, '\n  '))
 </script>

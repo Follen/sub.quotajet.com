@@ -1,27 +1,18 @@
 <template>
-  <nav class="border-b border-[var(--landing-border)]" :aria-label="t('modelMarketplace.detailNavigation')">
-    <label class="sr-only" for="marketplace-detail-section">{{ t('modelMarketplace.detailNavigation') }}</label>
-    <select
-      id="marketplace-detail-section"
-      :value="modelValue"
-      class="mb-3 w-full rounded-md border border-[var(--landing-border)] bg-transparent px-3 py-2 text-sm text-[var(--landing-fg)] md:hidden"
-      @change="selectSection"
-    >
-      <option v-for="section in sections" :key="section.id" :value="section.id">{{ t(section.label) }}</option>
-    </select>
-
-    <div class="hidden items-center gap-6 md:flex">
+  <nav class="border-b border-pricing" :aria-label="t('Model detail navigation')">
+    <div class="flex items-center gap-6 overflow-x-auto">
       <button
         v-for="section in sections"
         :key="section.id"
-        :data-testid="`marketplace-detail-nav-${section.id}`"
         type="button"
-        class="flex items-center border-b-2 px-0.5 pb-3 text-sm transition-colors"
-        :class="modelValue === section.id
-          ? 'border-[var(--landing-fg)] text-[var(--landing-fg)]'
-          : 'border-transparent text-[var(--landing-fg-soft)] hover:text-[var(--landing-fg)]'"
+        role="tab"
+        :data-testid="`pricing-detail-tab-${section.id}`"
+        :aria-selected="modelValue === section.id"
+        class="pricing-detail-tab"
+        :class="modelValue === section.id ? 'is-active' : ''"
         @click="emit('update:modelValue', section.id)"
       >
+        <Icon :name="section.icon" size="xs" />
         {{ t(section.label) }}
       </button>
     </div>
@@ -30,21 +21,17 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import Icon from '@/components/icons/Icon.vue'
 
-type DetailSection = 'providers' | 'pricing' | 'performance' | 'uptime' | 'benchmarks' | 'apps' | 'activity'
+export type PricingDetailSection = 'overview' | 'performance' | 'api'
 
-defineProps<{ modelValue: DetailSection }>()
-
-const emit = defineEmits<{ 'update:modelValue': [section: DetailSection] }>()
+defineProps<{ modelValue: PricingDetailSection }>()
+const emit = defineEmits<{ 'update:modelValue': [section: PricingDetailSection] }>()
 const { t } = useI18n()
 
-const sections: Array<{ id: DetailSection; label: string }> = [
-  { id: 'providers', label: 'modelMarketplace.sections.overview.title' },
-  { id: 'performance', label: 'modelMarketplace.sections.performance.title' },
-  { id: 'apps', label: 'modelMarketplace.sections.api.title' },
+const sections = [
+  { id: 'overview' as const, label: 'Overview', icon: 'infoCircle' as const },
+  { id: 'performance' as const, label: 'Performance', icon: 'chart' as const },
+  { id: 'api' as const, label: 'API', icon: 'terminal' as const },
 ]
-
-function selectSection(event: Event): void {
-  emit('update:modelValue', (event.target as HTMLSelectElement).value as DetailSection)
-}
 </script>
