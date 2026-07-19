@@ -38,3 +38,18 @@ func TestRegisterPublicRoutesExposesLandingMetricsWithoutAuth(t *testing.T) {
 	assert.GreaterOrEqual(t, body.Data.StableUptimeSeconds, int64(8553900))
 	assert.GreaterOrEqual(t, body.Data.GeneratedAt, int64(1782496800))
 }
+
+func TestRegisterPublicRoutesExposesStatusWithoutAuth(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	v1 := router.Group("/api/v1")
+	RegisterPublicRoutes(v1, func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/status", nil)
+	router.ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusNoContent, recorder.Code)
+}

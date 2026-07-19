@@ -71,6 +71,12 @@ type channelMonitorUserDetailResponse struct {
 	Models    []channelMonitorUserModelStat `json:"models"`
 }
 
+type publicStatusSnapshot struct {
+	GeneratedAt string                       `json:"generated_at"`
+	Overall     string                       `json:"overall"`
+	Items       []channelMonitorUserListItem `json:"items"`
+}
+
 type channelMonitorUserModelStat struct {
 	Model           string  `json:"model"`
 	LatestStatus    string  `json:"latest_status"`
@@ -136,6 +142,29 @@ func userMonitorDetailToResponse(d *service.UserMonitorDetail) *channelMonitorUs
 	}
 }
 
+func derivePublicStatusOverall(items []channelMonitorUserListItem) string {
+	completed := false
+	for _, item := range items {
+		statuses := make([]string, 1, 1+len(item.ExtraModels))
+		statuses[0] = item.PrimaryStatus
+		for _, model := range item.ExtraModels {
+			statuses = append(statuses, model.Status)
+		}
+		for _, status := range statuses {
+			switch status {
+			case service.MonitorStatusOperational:
+				completed = true
+			case service.MonitorStatusDegraded, service.MonitorStatusFailed, service.MonitorStatusError:
+				return service.MonitorStatusDegraded
+			}
+		}
+	}
+	if !completed {
+		return "unknown"
+	}
+	return service.MonitorStatusOperational
+}
+
 // --- Handlers ---
 
 // List GET /api/v1/channel-monitors
@@ -154,6 +183,33 @@ func (h *ChannelMonitorUserHandler) List(c *gin.Context) {
 		items = append(items, userMonitorViewToItem(v))
 	}
 	response.Success(c, gin.H{"items": items})
+}
+
+// PublicStatus GET /api/v1/status
+func (h *ChannelMonitorUserHandler) PublicStatus(c *gin.Context) {
+	c.Header("Cache-Control", "no-cache")
+	snapshot := publicStatusSnapshot{
+		GeneratedAt: time.Now().UTC().Format(time.RFC3339),
+		Overall:     "unknown",
+		Items:       []channelMonitorUserListItem{},
+	}
+	if !h.featureEnabled(c) {
+		response.Success(c, snapshot)
+		return
+	}
+
+	views, err := h.monitorService.ListUserView(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	items := make([]channelMonitorUserListItem, 0, len(views))
+	for _, view := range views {
+		items = append(items, userMonitorViewToItem(view))
+	}
+	snapshot.Items = items
+	snapshot.Overall = derivePublicStatusOverall(items)
+	response.Success(c, snapshot)
 }
 
 // GetStatus GET /api/v1/channel-monitors/:id/status

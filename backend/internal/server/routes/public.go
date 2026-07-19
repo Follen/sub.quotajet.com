@@ -5,6 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterPublicRoutes(v1 *gin.RouterGroup) {
+func RegisterPublicRoutes(v1 *gin.RouterGroup, statusHandlers ...gin.HandlerFunc) {
 	v1.GET("/landing/metrics", handler.GetLandingMetrics)
+	if len(statusHandlers) > 0 && statusHandlers[0] != nil {
+		v1.GET("/status", statusHandlers[0])
+	}
 }
