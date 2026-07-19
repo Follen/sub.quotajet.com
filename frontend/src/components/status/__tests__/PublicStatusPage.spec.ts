@@ -34,8 +34,10 @@ const messages: Record<string, string> = {
   'monitorCommon.latencyEmpty': '-',
 }
 
+const locale = { value: 'en-US' }
+
 vi.mock('vue-i18n', () => ({
-  useI18n: () => ({ t: (key: string) => messages[key] ?? key }),
+  useI18n: () => ({ t: (key: string) => messages[key] ?? key, locale }),
 }))
 
 function monitor(overrides: Partial<UserMonitorView>): UserMonitorView {
@@ -109,6 +111,60 @@ describe('PublicStatusPage', () => {
     const bars = wrapper.findAll('[data-testid="status-timeline-bar"]')
     expect(bars.length).toBeGreaterThan(0)
     expect(bars.every((bar) => bar.classes().includes('status-timeline-bar--unknown'))).toBe(true)
+  })
+
+  it('keeps the newest 30 API history points and displays them from earlier to now', () => {
+    const timeline = Array.from({ length: 31 }, (_, index) => ({
+      status: 'operational' as const,
+      latency_ms: null,
+      ping_latency_ms: null,
+      checked_at: `entry_${index}_end`,
+    }))
+    const wrapper = mount(PublicStatusPage, {
+      props: {
+        snapshot: snapshot([monitor({ timeline })]),
+        loading: false,
+        errorMessage: '',
+        countdown: 60,
+      },
+    })
+
+    const labels = wrapper
+      .findAll('[data-testid="status-timeline-bar"]')
+      .map((bar) => bar.attributes('aria-label'))
+
+    expect(labels).toEqual(Array.from({ length: 30 }, (_, index) => `entry_${29 - index}_end: Operational`))
+    expect(labels).not.toContain('entry_30_end: Operational')
+  })
+
+  it('formats generated and timeline timestamps using the active locale', () => {
+    locale.value = 'fr-FR'
+    const dateTimeFormat = vi.spyOn(Intl, 'DateTimeFormat')
+    const wrapper = mount(PublicStatusPage, {
+      props: {
+        snapshot: snapshot([
+          monitor({
+            timeline: [
+              {
+                status: 'operational',
+                latency_ms: 412,
+                ping_latency_ms: 21,
+                checked_at: '2026-07-20T00:00:00Z',
+              },
+            ],
+          }),
+        ]),
+        loading: false,
+        errorMessage: '',
+        countdown: 60,
+      },
+    })
+
+    expect(wrapper.text()).not.toBe('')
+    expect(dateTimeFormat).toHaveBeenCalledWith('fr-FR', expect.any(Object))
+
+    dateTimeFormat.mockRestore()
+    locale.value = 'en-US'
   })
 
   it('renders loading, empty, and retryable error states', async () => {

@@ -68,7 +68,7 @@ const TIMELINE_BAR_COUNT = 30
 
 const props = defineProps<{ item: UserMonitorView }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { formatAvailability, formatLatency, providerLabel, statusLabel } = useChannelMonitorFormat()
 
 function toneForStatus(status?: string): 'operational' | 'degraded' | 'failed' | 'unknown' {
@@ -90,7 +90,7 @@ function timelineLabel(point?: MonitorTimelinePoint): string {
   const checkedAt = Date.parse(point.checked_at)
   const timestamp = Number.isNaN(checkedAt)
     ? point.checked_at
-    : new Intl.DateTimeFormat(undefined, {
+    : new Intl.DateTimeFormat(locale.value, {
         dateStyle: 'medium',
         timeStyle: 'short',
       }).format(checkedAt)
@@ -104,7 +104,7 @@ const latency = computed(() => {
 })
 const availability = computed(() => formatAvailability(props.item))
 const timelineBars = computed(() => {
-  const points = props.item.timeline.slice(-TIMELINE_BAR_COUNT)
+  const points = props.item.timeline.slice(0, TIMELINE_BAR_COUNT).reverse()
   const missingCount = TIMELINE_BAR_COUNT - points.length
   const missing = Array.from({ length: missingCount }, (_, index) => ({
     key: `missing-${index}`,

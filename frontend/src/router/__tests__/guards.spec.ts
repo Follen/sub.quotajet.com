@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { resolveCompletedSetupRedirectPath } from '@/router/setupRedirect'
+import { isBackendModePublicRouteAllowed } from '@/router'
 
 // Mock 导航加载状态
 vi.mock('@/composables/useNavigationLoading', () => {
@@ -84,7 +85,7 @@ function simulateGuard(
       return authState.isAdmin ? '/admin/dashboard' : '/dashboard'
     }
     if (authState.backendModeEnabled && !authState.isAuthenticated) {
-      const allowed = ['/login', '/key-usage', '/setup', '/payment/result', '/pricing']
+      const allowed = ['/login', '/key-usage', '/setup', '/payment/result', '/pricing', '/status']
       const callbackPaths = [
         '/auth/callback',
         '/auth/linuxdo/callback',
@@ -382,6 +383,19 @@ describe('路由守卫逻辑', () => {
       }
       const redirect = simulateGuard('/pricing', { requiresAuth: false }, authState)
       expect(redirect).toBeNull()
+    })
+
+    it('unauthenticated: /status is allowed by the backend-mode guard', () => {
+      const authState: MockAuthState = {
+        isAuthenticated: false,
+        isAdmin: false,
+        isSimpleMode: false,
+        backendModeEnabled: true,
+        hasPendingAuthSession: false,
+      }
+
+      expect(isBackendModePublicRouteAllowed('/status', authState.hasPendingAuthSession)).toBe(true)
+      expect(simulateGuard('/status', { requiresAuth: false }, authState)).toBeNull()
     })
 
     it('unauthenticated: legacy /models API path is not a public UI route', () => {

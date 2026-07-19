@@ -88,7 +88,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ retry: [] }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const groups = computed(() => {
   const grouped = new Map<string, UserMonitorView[]>()
@@ -110,7 +110,7 @@ const generatedAt = computed(() => {
   if (!props.snapshot?.generated_at) return '-'
   const timestamp = Date.parse(props.snapshot.generated_at)
   if (Number.isNaN(timestamp)) return props.snapshot.generated_at
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale.value, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(timestamp)
