@@ -90,12 +90,6 @@
       </section>
     </template>
 
-    <section v-else-if="activeSection === 'performance'" data-testid="pricing-detail-performance-empty" class="rounded-xl border border-dashed border-pricing p-12 text-center">
-      <Icon name="chart" class="mx-auto text-pricing-muted" />
-      <h2 class="mt-4 text-sm font-medium">{{ t('Performance') }}</h2>
-      <p class="mt-2 text-sm text-pricing-muted">{{ t('No public performance data is available for this model.') }}</p>
-    </section>
-
     <template v-else>
       <section>
         <h2 class="pricing-section-title">{{ t('API endpoints') }}</h2>
@@ -115,7 +109,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PublicGroupPriceEntry, PricingCatalogueModel, PriceField, TokenUnit } from './pricingPresentation'
-import Icon from '@/components/icons/Icon.vue'
 import PricingQuickStart from './PricingQuickStart.vue'
 import PricingTierTable from './PricingTierTable.vue'
 import {

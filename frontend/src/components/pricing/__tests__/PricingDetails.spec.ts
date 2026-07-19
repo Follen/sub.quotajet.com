@@ -143,13 +143,11 @@ describe('main-site model detail adaptation', () => {
     expect(wrapper.text()).toContain('(128000, ∞)')
   })
 
-  it('keeps unavailable performance data honest', async () => {
+  it('does not advertise unavailable performance data', () => {
     const wrapper = mountDetail()
-    await wrapper.get('[data-testid="pricing-detail-tab-performance"]').trigger('click')
-
-    expect(wrapper.get('[data-testid="pricing-detail-performance-empty"]').text()).toContain(
-      'No public performance data is available for this model.',
-    )
+    expect(wrapper.find('[data-testid="pricing-detail-tab-performance"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('TPS')
+    expect(wrapper.text()).not.toContain('平均延迟')
   })
 
   it('renders an API tab using the public Sub2API endpoint and selected model', async () => {

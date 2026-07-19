@@ -23,7 +23,7 @@
 import { useI18n } from 'vue-i18n'
 import Icon from '@/components/icons/Icon.vue'
 
-export type PricingDetailSection = 'overview' | 'performance' | 'api'
+export type PricingDetailSection = 'overview' | 'api'
 
 defineProps<{ modelValue: PricingDetailSection }>()
 const emit = defineEmits<{ 'update:modelValue': [section: PricingDetailSection] }>()
@@ -31,7 +31,6 @@ const { t } = useI18n()
 
 const sections = [
   { id: 'overview' as const, label: 'Overview', icon: 'infoCircle' as const },
-  { id: 'performance' as const, label: 'Performance', icon: 'chart' as const },
   { id: 'api' as const, label: 'API', icon: 'terminal' as const },
 ]
 </script>

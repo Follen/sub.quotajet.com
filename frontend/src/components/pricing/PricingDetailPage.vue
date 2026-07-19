@@ -48,13 +48,6 @@
         </div>
       </header>
 
-      <div class="mt-8 grid divide-y overflow-hidden rounded-xl border border-pricing sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-        <div v-for="metric in metrics" :key="metric.label" class="px-4 py-3">
-          <div class="text-xs font-medium text-pricing-muted">{{ metric.label }}</div>
-          <div class="mt-1 truncate text-sm font-semibold tabular-nums">{{ metric.value }}</div>
-        </div>
-      </div>
-
       <div class="mt-8 space-y-8">
         <PricingDetailNav v-model="activeSection" />
         <PricingModelDetails
@@ -108,12 +101,6 @@ const model = computed(() => {
 const hasFallbackPricing = computed(() =>
   model.value ? groupPriceEntries(model.value).some((entry) => entry.price?.fallback) : false,
 )
-const metrics = computed(() => [
-  { label: 'TPS', value: '—' },
-  { label: t('Average latency'), value: '—' },
-  { label: t('Success rate'), value: '—' },
-])
-
 function copyModelName() {
   if (model.value) void copyToClipboard(model.value.name)
 }
