@@ -39,6 +39,12 @@ export interface UserMonitorListResponse {
   items: UserMonitorView[]
 }
 
+export interface PublicStatusSnapshot {
+  generated_at: string
+  overall: 'operational' | 'degraded' | 'unknown' | string
+  items: UserMonitorView[]
+}
+
 export interface UserMonitorModelDetail {
   model: string
   latest_status: MonitorStatus
@@ -75,9 +81,20 @@ export async function status(id: number): Promise<UserMonitorDetail> {
   return data
 }
 
+/**
+ * Get the public status snapshot without requiring authentication.
+ */
+export async function getPublicStatus(options?: { signal?: AbortSignal }): Promise<PublicStatusSnapshot> {
+  const { data } = await apiClient.get<PublicStatusSnapshot>('/status', {
+    signal: options?.signal,
+  })
+  return data
+}
+
 export const channelMonitorUserAPI = {
   list,
   status,
+  getPublicStatus,
 }
 
 export default channelMonitorUserAPI

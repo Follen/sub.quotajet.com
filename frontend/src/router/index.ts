@@ -189,6 +189,16 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/status',
+    name: 'PublicStatus',
+    component: () => import('@/views/user/PublicStatusView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Service Status',
+      titleKey: 'publicStatus.title',
+    },
+  },
+  {
     path: `${MODEL_MARKETPLACE_PATH}/:modelId`,
     name: 'PricingModel',
     component: () => import('@/views/user/PricingModelDetailView.vue'),
