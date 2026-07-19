@@ -143,23 +143,17 @@ func userMonitorDetailToResponse(d *service.UserMonitorDetail) *channelMonitorUs
 }
 
 func derivePublicStatusOverall(items []channelMonitorUserListItem) string {
-	completed := false
+	unknown := len(items) == 0
 	for _, item := range items {
-		statuses := make([]string, 1, 1+len(item.ExtraModels))
-		statuses[0] = item.PrimaryStatus
-		for _, model := range item.ExtraModels {
-			statuses = append(statuses, model.Status)
-		}
-		for _, status := range statuses {
-			switch status {
-			case service.MonitorStatusOperational:
-				completed = true
-			case service.MonitorStatusDegraded, service.MonitorStatusFailed, service.MonitorStatusError:
-				return service.MonitorStatusDegraded
-			}
+		switch item.PrimaryStatus {
+		case service.MonitorStatusOperational:
+		case service.MonitorStatusDegraded, service.MonitorStatusFailed, service.MonitorStatusError:
+			return service.MonitorStatusDegraded
+		default:
+			unknown = true
 		}
 	}
-	if !completed {
+	if unknown {
 		return "unknown"
 	}
 	return service.MonitorStatusOperational

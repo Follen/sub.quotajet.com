@@ -127,30 +127,30 @@ func TestDerivePublicStatusOverall(t *testing.T) {
 			want: "unknown",
 		},
 		{
-			name: "all completed checks operational",
+			name: "all primary checks operational ignores extra model failure",
 			items: []channelMonitorUserListItem{{
 				PrimaryStatus: "operational",
 				ExtraModels: []dto.ChannelMonitorExtraModelStatus{{
-					Status: "operational",
+					Status: "failed",
 				}},
 			}},
 			want: "operational",
 		},
 		{
-			name: "degraded check",
-			items: []channelMonitorUserListItem{{
-				PrimaryStatus: "operational",
-				ExtraModels: []dto.ChannelMonitorExtraModelStatus{{
-					Status: "degraded",
-				}},
-			}},
-			want: "degraded",
+			name: "operational and unknown primary statuses are unknown",
+			items: []channelMonitorUserListItem{
+				{PrimaryStatus: "operational"},
+				{PrimaryStatus: ""},
+			},
+			want: "unknown",
 		},
 		{
-			name: "failed check",
-			items: []channelMonitorUserListItem{{
-				PrimaryStatus: "failed",
-			}},
+			name: "mixed primary states are degraded when one primary is degraded",
+			items: []channelMonitorUserListItem{
+				{PrimaryStatus: "operational"},
+				{PrimaryStatus: "degraded"},
+				{PrimaryStatus: ""},
+			},
 			want: "degraded",
 		},
 		{

@@ -738,7 +738,7 @@ export default {
     unknown: '状态数据准备中',
     availability: '7 天可用率',
     latency: '请求延迟',
-    lastCheck: '上次检查',
+    lastCheck: '上次刷新',
     nextUpdate: '下次更新',
     emptyTitle: '暂无监控服务',
     emptyDescription: '公共状态数据暂不可用。',

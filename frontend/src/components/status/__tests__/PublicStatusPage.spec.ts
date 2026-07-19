@@ -13,7 +13,7 @@ const messages: Record<string, string> = {
   'publicStatus.unknown': 'Status warming up',
   'publicStatus.availability': '7-day availability',
   'publicStatus.latency': 'Request latency',
-  'publicStatus.lastCheck': 'Last check',
+  'publicStatus.lastCheck': 'Last refresh',
   'publicStatus.nextUpdate': 'Next update in',
   'publicStatus.emptyTitle': 'No monitored services',
   'publicStatus.emptyDescription': 'Public status data is not available yet.',
@@ -93,6 +93,7 @@ describe('PublicStatusPage', () => {
     expect(wrapper.text()).toContain('OpenAI')
     expect(wrapper.text()).toContain('gpt-5.4')
     expect(wrapper.text()).toContain('99.95%')
+    expect(wrapper.text()).toContain('Last refresh')
     expect(wrapper.findAll('[data-testid="public-status-group"]')).toHaveLength(1)
     expect(wrapper.get('[data-testid="public-status-group"]').text()).toContain('Core APIs')
     expect(wrapper.find('[data-testid="admin-monitor-action"]').exists()).toBe(false)
@@ -161,7 +162,11 @@ describe('PublicStatusPage', () => {
     })
 
     expect(wrapper.text()).not.toBe('')
-    expect(dateTimeFormat).toHaveBeenCalledWith('fr-FR', expect.any(Object))
+    expect(dateTimeFormat).toHaveBeenCalledTimes(2)
+    expect(dateTimeFormat.mock.calls).toEqual([
+      ['fr-FR', expect.any(Object)],
+      ['fr-FR', expect.any(Object)],
+    ])
 
     dateTimeFormat.mockRestore()
     locale.value = 'en-US'

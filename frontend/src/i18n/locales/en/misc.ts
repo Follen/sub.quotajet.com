@@ -714,7 +714,7 @@ export default {
     unknown: 'Status warming up',
     availability: '7-day availability',
     latency: 'Request latency',
-    lastCheck: 'Last check',
+    lastCheck: 'Last refresh',
     nextUpdate: 'Next update in',
     emptyTitle: 'No monitored services',
     emptyDescription: 'Public status data is not available yet.',
