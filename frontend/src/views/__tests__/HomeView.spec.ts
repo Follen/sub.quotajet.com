@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import enLocale from '@/i18n/locales/en/landing'
 import zhLocale from '@/i18n/locales/zh/landing'
+import { HomeHeader } from '@/components/home'
 import HomeView from '../HomeView.vue'
 
 type PublicSettings = {
@@ -195,6 +196,31 @@ describe('HomeView', () => {
     expect(wrapper.get('[data-doc-link]').attributes('href')).toBe(
       'https://docs.example.com/guide',
     )
+  })
+
+  it('uses the internal status route in the public catalogue header', () => {
+    const wrapper = mount(HomeHeader, {
+      props: {
+        isAuthenticated: false,
+        docUrl: '',
+        publicCatalog: true,
+      },
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>',
+          },
+          LocaleSwitcher: true,
+          AnnouncementBell: true,
+        },
+      },
+    })
+    wrappers.push(wrapper)
+
+    const status = wrapper.get('a[href="/status"]')
+    expect(status.attributes('target')).toBeUndefined()
+    expect(status.attributes('rel')).toBeUndefined()
   })
 
   it('preserves custom home HTML instead of mounting the default homepage', () => {

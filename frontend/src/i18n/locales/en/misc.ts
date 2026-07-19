@@ -705,6 +705,30 @@ export default {
     },
   },
 
+  publicStatus: {
+    title: 'QuotaJet Status',
+    subtitle: 'Live availability across the public AI network.',
+    currentNetworkState: 'Current network state',
+    operational: 'All systems operational',
+    degraded: 'Partial degradation',
+    unknown: 'Status warming up',
+    availability: '7-day availability',
+    latency: 'Request latency',
+    lastCheck: 'Last check',
+    nextUpdate: 'Next update in',
+    emptyTitle: 'No monitored services',
+    emptyDescription: 'Public status data is not available yet.',
+    errorTitle: 'Unable to load status',
+    errorDescription: 'The public status endpoint could not be reached.',
+    retry: 'Try again',
+    failed: 'Service interruption',
+    error: 'Check failed',
+    noHistory: 'No check',
+    history: 'Recent checks',
+    recent: 'Earlier',
+    now: 'Now'
+  },
+
   modelMarketplace: {
     modelsEnabled: 'This site currently has {count} models enabled',
     providers: 'providers',

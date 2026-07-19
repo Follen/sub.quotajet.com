@@ -194,7 +194,7 @@ const navigation = computed(() => props.publicCatalog ? [
   { labelKey: 'Console', href: '/dashboard', external: false },
   { labelKey: 'Models', href: '/pricing', external: false },
   { labelKey: 'landing.nav.docs', href: safeDocUrl.value || '/home#docs', external: Boolean(safeDocUrl.value) },
-  { labelKey: 'Status check', href: 'https://status.quotajet.com/', external: true },
+  { labelKey: 'Status check', href: '/status', external: false },
   { labelKey: 'landing.nav.about', href: '/home#privacy', external: false },
 ] as const : [
   { labelKey: 'landing.nav.models', href: '#models', external: false },

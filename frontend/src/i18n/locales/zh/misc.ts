@@ -729,6 +729,30 @@ export default {
     },
   },
 
+  publicStatus: {
+    title: 'QuotaJet 服务状态',
+    subtitle: '实时查看公共 AI 网络的可用性。',
+    currentNetworkState: '当前网络状态',
+    operational: '所有系统运行正常',
+    degraded: '部分服务降级',
+    unknown: '状态数据准备中',
+    availability: '7 天可用率',
+    latency: '请求延迟',
+    lastCheck: '上次检查',
+    nextUpdate: '下次更新',
+    emptyTitle: '暂无监控服务',
+    emptyDescription: '公共状态数据暂不可用。',
+    errorTitle: '无法加载服务状态',
+    errorDescription: '暂时无法连接公共状态接口。',
+    retry: '重试',
+    failed: '服务中断',
+    error: '检查失败',
+    noHistory: '暂无检查',
+    history: '近期检查',
+    recent: '较早',
+    now: '现在'
+  },
+
   modelMarketplace: {
     modelsEnabled: '本站当前已启用模型，总计 {count} 个',
     providers: '个提供商',
