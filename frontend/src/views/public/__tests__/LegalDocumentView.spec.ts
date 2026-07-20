@@ -1,4 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
+import { createPinia, type Pinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import LegalDocumentView from '@/views/public/LegalDocumentView.vue'
 
@@ -18,8 +19,13 @@ vi.mock('@/api/auth', () => ({
 }))
 
 describe('LegalDocumentView', () => {
+  let pinia: Pinia
+
   beforeEach(() => {
     getPublicSettingsMock.mockReset()
+    pinia = createPinia()
+    setActivePinia(pinia)
+    delete (window as any).__APP_CONFIG__
   })
 
   it('uses QuotaJet defaults when public brand settings are blank', async () => {
@@ -30,6 +36,7 @@ describe('LegalDocumentView', () => {
 
     const wrapper = mount(LegalDocumentView, {
       global: {
+        plugins: [pinia],
         stubs: {
           RouterLink: { template: '<a><slot /></a>' },
           Icon: true,
@@ -40,6 +47,27 @@ describe('LegalDocumentView', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('QuotaJet')
+    expect(wrapper.get('img').attributes('src')).toBe('/logo.png')
+  })
+
+  it('falls back to the QuotaJet logo when the configured logo is unsafe', async () => {
+    getPublicSettingsMock.mockResolvedValue({
+      site_name: 'QuotaJet',
+      site_logo: 'javascript:alert(1)',
+    })
+
+    const wrapper = mount(LegalDocumentView, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          RouterLink: { template: '<a><slot /></a>' },
+          Icon: true,
+        },
+      },
+    })
+
+    await flushPromises()
+
     expect(wrapper.get('img').attributes('src')).toBe('/logo.png')
   })
 })

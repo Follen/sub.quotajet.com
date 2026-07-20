@@ -10,9 +10,7 @@ import (
 )
 
 func (s *notificationEmailTestSMTPServer) lastMessageBody() string {
-	s.messageMu.Lock()
-	defer s.messageMu.Unlock()
-	return s.lastMessage
+	return s.lastMessage()
 }
 
 func TestSendPendingOAuthVerifyCode_UsesQuotaJetWithoutSettingService(t *testing.T) {

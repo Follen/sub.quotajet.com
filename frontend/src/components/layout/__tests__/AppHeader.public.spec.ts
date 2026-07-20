@@ -27,6 +27,7 @@ vi.mock('vue-i18n', () => ({
       'landing.nav.publicNavigation': 'Public navigation',
       'landing.nav.openNavigation': 'Open public navigation',
       'landing.nav.about': 'About',
+      'common.userMenu': 'User menu',
     }[key] || key)
   })
 }))
@@ -136,7 +137,7 @@ describe('AppHeader public mode', () => {
       }
     })
 
-    expect(wrapper.get('button[aria-label="User Menu"]').text()).toContain('Ada')
+    expect(wrapper.get('button[aria-label="User menu"]').text()).toContain('Ada')
     expect(wrapper.get('nav[aria-label="Public navigation"] a[href="/home"]').exists()).toBe(true)
     expect(wrapper.find('a[href="/login"]').exists()).toBe(false)
 

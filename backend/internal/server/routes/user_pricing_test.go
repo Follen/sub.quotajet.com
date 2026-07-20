@@ -41,7 +41,7 @@ func TestRegisterUserRoutesExposesModelMarketplaceWithoutJWT(t *testing.T) {
 		ModelMarketplace: handler.NewModelMarketplaceHandler(builder),
 	}, servermiddleware.JWTAuthMiddleware(func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
-	}), nil)
+	}), nil, nil)
 
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodGet, "/api/v1/pricing", nil)
