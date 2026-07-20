@@ -1,17 +1,27 @@
 <template>
-  <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50">
+  <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50 relative">
     <div class="flex h-16 items-center justify-between px-4 md:px-6">
       <!-- Left: Mobile Menu Toggle + Page Title -->
       <div class="flex items-center gap-4">
         <button
+          v-if="!publicPage"
           @click="toggleMobileSidebar"
           class="btn-ghost btn-icon lg:hidden"
           aria-label="Toggle Menu"
         >
           <Icon name="menu" size="md" />
         </button>
+        <button
+          v-else
+          @click="togglePublicMenu"
+          class="btn-ghost btn-icon md:hidden"
+          aria-label="Toggle Public Navigation"
+          :aria-expanded="publicMenuOpen"
+        >
+          <Icon name="menu" size="md" />
+        </button>
 
-        <div class="hidden lg:block">
+        <div :class="publicPage ? '' : 'hidden lg:block'">
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ pageTitle }}
           </h1>
@@ -23,13 +33,22 @@
 
       <!-- Right: Announcements + Docs + Language + Subscriptions + Balance + User Dropdown -->
       <div class="flex items-center gap-3">
+        <nav v-if="publicPage" class="hidden items-center gap-1 md:flex" aria-label="Public navigation">
+          <router-link to="/pricing" class="header-public-link">
+            {{ t('Models & pricing') }}
+          </router-link>
+          <router-link to="/status" class="header-public-link">
+            {{ t('Status check') }}
+          </router-link>
+        </nav>
+
         <!-- Announcement Bell -->
         <AnnouncementBell v-if="user" />
 
         <!-- Docs Link -->
         <a
-          v-if="docUrl"
-          :href="docUrl"
+          v-if="configuredDocUrl"
+          :href="configuredDocUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
@@ -236,6 +255,28 @@
         </div>
       </div>
     </div>
+
+    <div
+      v-if="publicPage && publicMenuOpen"
+      class="absolute inset-x-4 top-14 z-40 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-dark-700 dark:bg-dark-800 md:hidden"
+    >
+      <router-link to="/pricing" class="header-public-menu-link" @click="closePublicMenu">
+        {{ t('Models & pricing') }}
+      </router-link>
+      <router-link to="/status" class="header-public-menu-link" @click="closePublicMenu">
+        {{ t('Status check') }}
+      </router-link>
+      <a
+        v-if="configuredDocUrl"
+        :href="configuredDocUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="header-public-menu-link"
+        @click="closePublicMenu"
+      >
+        {{ t('nav.docs') }}
+      </a>
+    </div>
   </header>
 </template>
 
@@ -251,6 +292,16 @@ import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { sanitizeUrl } from '@/utils/url'
 
+interface Props {
+  publicPage?: boolean
+  publicDocUrl?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  publicPage: false,
+  publicDocUrl: ''
+})
+
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
@@ -261,9 +312,10 @@ const onboardingStore = useOnboardingStore()
 
 const user = computed(() => authStore.user)
 const dropdownOpen = ref(false)
+const publicMenuOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
-const docUrl = computed(() => sanitizeUrl(appStore.docUrl))
+const configuredDocUrl = computed(() => sanitizeUrl(props.publicDocUrl || appStore.docUrl))
 const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
 const availableBalance = computed(() => Number(user.value?.balance || 0))
 const frozenBalance = computed(() => Number(user.value?.frozen_balance || 0))
@@ -325,6 +377,14 @@ function toggleMobileSidebar() {
   appStore.toggleMobileSidebar()
 }
 
+function togglePublicMenu() {
+  publicMenuOpen.value = !publicMenuOpen.value
+}
+
+function closePublicMenu() {
+  publicMenuOpen.value = false
+}
+
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
 }
@@ -379,5 +439,41 @@ onBeforeUnmount(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: scale(0.95) translateY(-4px);
+}
+
+.header-public-link,
+.header-public-menu-link {
+  color: rgb(75 85 99);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.header-public-link {
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.625rem;
+}
+
+.header-public-link:hover,
+.header-public-menu-link:hover {
+  background: rgb(243 244 246);
+  color: rgb(17 24 39);
+}
+
+.header-public-menu-link {
+  display: block;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+}
+
+:global(.dark) .header-public-link,
+:global(.dark) .header-public-menu-link {
+  color: rgb(156 163 175);
+}
+
+:global(.dark) .header-public-link:hover,
+:global(.dark) .header-public-menu-link:hover {
+  background: rgb(31 41 55);
+  color: white;
 }
 </style>

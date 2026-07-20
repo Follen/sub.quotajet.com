@@ -13,8 +13,12 @@ vi.mock('@/stores', () => ({
   useAppStore: () => ({ cachedPublicSettings: {}, docUrl: '' }),
   useAuthStore: () => ({ isAuthenticated: false }),
 }))
-vi.mock('@/components/home', () => ({
-  HomeHeader: { name: 'HomeHeader', template: '<header data-home-header />' },
+vi.mock('@/components/layout/AppHeader.vue', () => ({
+  default: {
+    name: 'AppHeader',
+    props: ['publicPage', 'publicDocUrl'],
+    template: '<header data-app-header :data-public-page="publicPage" :data-public-doc-url="publicDocUrl" />'
+  },
 }))
 vi.mock('@/components/status/PublicStatusPage.vue', () => ({
   default: {
@@ -56,7 +60,8 @@ describe('PublicStatusView', () => {
     expect(getPublicStatus).toHaveBeenCalledTimes(1)
     expect(getPublicStatus.mock.calls[0]?.[0]?.signal).toBeInstanceOf(AbortSignal)
     expect(wrapper.get('.qj-landing.qj-pricing').exists()).toBe(true)
-    expect(wrapper.find('[data-home-header]').exists()).toBe(true)
+    expect(wrapper.find('[data-app-header]').exists()).toBe(true)
+    expect(wrapper.find('[data-app-header]').attributes('data-public-page')).toBe('')
     expect(wrapper.find('.sidebar').exists()).toBe(false)
 
     await vi.advanceTimersByTimeAsync(59_000)

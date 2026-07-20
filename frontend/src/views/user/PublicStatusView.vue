@@ -1,6 +1,6 @@
 <template>
   <div class="qj-landing qj-pricing min-h-[100dvh] overflow-x-hidden">
-    <HomeHeader :is-authenticated="authStore.isAuthenticated" :doc-url="safeDocUrl" public-catalog />
+    <AppHeader public-page :public-doc-url="safeDocUrl" />
     <PublicStatusPage
       :snapshot="snapshot"
       :loading="loading"
@@ -16,9 +16,9 @@ import '@fontsource-variable/public-sans'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getPublicStatus, type PublicStatusSnapshot } from '@/api/channelMonitor'
-import { HomeHeader } from '@/components/home'
+import AppHeader from '@/components/layout/AppHeader.vue'
 import PublicStatusPage from '@/components/status/PublicStatusPage.vue'
-import { useAppStore, useAuthStore } from '@/stores'
+import { useAppStore } from '@/stores'
 import '@/styles/home.css'
 import '@/styles/pricing.css'
 import '@/styles/status.css'
@@ -29,7 +29,6 @@ const REFRESH_SECONDS = 60
 
 const { t } = useI18n()
 const appStore = useAppStore()
-const authStore = useAuthStore()
 const snapshot = ref<PublicStatusSnapshot | null>(null)
 const loading = ref(true)
 const errorMessage = ref('')
