@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 
 const { appStoreState, authStoreState } = vi.hoisted(() => ({
@@ -140,5 +141,36 @@ describe('AppHeader public mode', () => {
     expect(wrapper.find('a[href="/login"]').exists()).toBe(false)
 
     authStoreState.user = null
+  })
+
+  it('compresses the public header after scrolling past the main-site threshold', async () => {
+    const wrapper = mount(AppHeader, {
+      props: { publicPage: true },
+      global: {
+        stubs: {
+          'router-link': {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          }
+        }
+      }
+    })
+
+    const outer = wrapper.get('header > div')
+    const nav = wrapper.get('header > div > div')
+    expect(outer.classes()).toContain('max-w-7xl')
+    expect(nav.classes()).toContain('h-16')
+
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 21 })
+    window.dispatchEvent(new Event('scroll'))
+    await nextTick()
+
+    expect(outer.classes()).toContain('max-w-[52rem]')
+    expect(nav.classes()).toContain('h-12')
+    expect(nav.classes()).toContain('rounded-2xl')
+    expect(nav.classes()).toContain('backdrop-blur-2xl')
+
+    wrapper.unmount()
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 })
   })
 })

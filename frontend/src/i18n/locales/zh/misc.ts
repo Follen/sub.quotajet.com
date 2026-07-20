@@ -730,15 +730,15 @@ export default {
   },
 
   publicStatus: {
-    title: 'QuotaJet 服务状态',
+    title: 'QuotaJet 状态',
     subtitle: '实时查看公共 AI 网络的可用性。',
     currentNetworkState: '当前网络状态',
-    operational: '所有系统运行正常',
+    operational: '全部服务正常',
     degraded: '部分服务降级',
     unknown: '状态数据准备中',
     availability: '7 天可用率',
     latency: '请求延迟',
-    lastCheck: '上次刷新',
+    lastCheck: '上次检查',
     nextUpdate: '下次更新',
     emptyTitle: '暂无监控服务',
     emptyDescription: '公共状态数据暂不可用。',
@@ -749,7 +749,7 @@ export default {
     error: '检查失败',
     noHistory: '暂无检查',
     history: '近期检查',
-    recent: '较早',
+    recent: '5 小时前',
     now: '现在'
   },
 

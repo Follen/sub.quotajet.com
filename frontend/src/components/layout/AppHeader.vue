@@ -1,6 +1,30 @@
 <template>
-  <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50 relative">
-    <div class="flex h-16 items-center justify-between px-4 md:px-6">
+  <header
+    :class="[
+      'z-50',
+      publicPage
+        ? 'pointer-events-none fixed inset-x-0 top-0'
+        : 'glass relative sticky top-0 border-b border-gray-200/50 dark:border-dark-700/50',
+    ]"
+  >
+    <div
+      :class="[
+        'mx-auto transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
+        publicPage
+          ? (scrolled ? 'max-w-[52rem] px-3 pt-3' : 'max-w-7xl px-4 pt-0 md:px-6')
+          : 'w-full',
+      ]"
+    >
+    <div
+      :class="[
+        'flex items-center justify-between transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
+        publicPage
+          ? (scrolled
+            ? 'pointer-events-auto h-12 rounded-2xl border border-gray-200/50 bg-white/60 pl-4 pr-1.5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.02)] backdrop-blur-2xl dark:border-dark-700/50 dark:bg-dark-900/60 dark:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.4)]'
+            : 'pointer-events-auto h-16 px-2')
+          : 'h-16 px-4 md:px-6',
+      ]"
+    >
       <!-- Left: Mobile Menu Toggle + Page Title -->
       <div class="flex items-center gap-4">
         <button
@@ -14,7 +38,7 @@
         <button
           v-else
           @click="togglePublicMenu"
-          class="btn-ghost btn-icon md:hidden"
+          class="btn-ghost btn-icon lg:hidden"
           :aria-label="publicMenuLabel"
           :aria-expanded="publicMenuOpen"
         >
@@ -42,8 +66,8 @@
       </div>
 
       <!-- Right: Announcements + Docs + Language + Subscriptions + Balance + User Dropdown -->
-      <div class="flex items-center gap-3">
-        <nav v-if="publicPage" class="hidden items-center gap-1 md:flex" :aria-label="t('landing.nav.publicNavigation')">
+      <div :class="['flex items-center', publicPage ? 'gap-1.5' : 'gap-3']">
+        <nav v-if="publicPage" class="hidden items-center gap-0.5 lg:flex" :aria-label="t('landing.nav.publicNavigation')">
           <template v-for="link in publicNavigation" :key="link.href">
             <a
               v-if="link.external"
@@ -281,10 +305,11 @@
         </div>
       </div>
     </div>
+    </div>
 
     <div
       v-if="publicPage && publicMenuOpen"
-      class="absolute inset-x-4 top-14 z-40 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-dark-700 dark:bg-dark-800 md:hidden"
+      class="pointer-events-auto absolute inset-x-4 top-14 z-40 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-dark-700 dark:bg-dark-800 lg:hidden"
     >
       <template v-for="link in publicNavigation" :key="link.href">
         <a
@@ -346,6 +371,7 @@ const onboardingStore = useOnboardingStore()
 const user = computed(() => authStore.user)
 const dropdownOpen = ref(false)
 const publicMenuOpen = ref(false)
+const scrolled = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
 const configuredDocUrl = computed(() => sanitizeUrl(props.publicDocUrl || appStore.docUrl))
@@ -468,12 +494,21 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+function updatePublicScrollState() {
+  if (props.publicPage) scrolled.value = window.scrollY > 20
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  if (props.publicPage) {
+    updatePublicScrollState()
+    window.addEventListener('scroll', updatePublicScrollState, { passive: true })
+  }
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', updatePublicScrollState)
 })
 </script>
 

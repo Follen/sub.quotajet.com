@@ -1,55 +1,34 @@
 <template>
-  <article
-    class="public-status-row"
-    data-testid="public-status-row"
-    :data-status="statusTone"
-  >
-    <div class="public-status-row__identity">
-      <div class="public-status-row__heading">
-        <span class="public-status-row__provider-icon" aria-hidden="true">
-          <ProviderIcon :provider="item.provider" :size="20" />
-        </span>
-        <div class="public-status-row__title">
-          <h3>{{ item.name }}</h3>
-          <p>
-            <span>{{ providerLabel(item.provider) }}</span>
-            <span aria-hidden="true">/</span>
-            <span class="public-status-row__model">{{ item.primary_model }}</span>
-          </p>
-        </div>
-        <span class="public-status-row__status">
-          <span class="public-status-row__status-dot" aria-hidden="true" />
-          {{ statusLabel(item.primary_status) }}
-        </span>
+  <article class="monitor-row public-status-row" data-testid="public-status-row">
+    <div class="monitor-name">
+      <span :class="['uptime-badge', `uptime-${statusTone}`]">{{ availability }}</span>
+      <div class="monitor-copy">
+        <h3>{{ item.name }}</h3>
+        <p>{{ meta }}</p>
       </div>
-
-      <dl class="public-status-row__metrics">
-        <div>
-          <dt>{{ t('publicStatus.latency') }}</dt>
-          <dd>{{ latency }}</dd>
-        </div>
-        <div>
-          <dt>{{ t('publicStatus.availability') }}</dt>
-          <dd>{{ availability }}</dd>
-        </div>
-      </dl>
     </div>
 
-    <div class="public-status-row__history">
-      <span class="public-status-row__history-label">{{ t('publicStatus.history') }}</span>
-      <div class="public-status-timeline">
+    <div
+      class="monitor-history"
+      :aria-label="`${item.name} ${t('publicStatus.history')}`"
+    >
+      <div class="bar-strip">
         <span
           v-for="bar in timelineBars"
           :key="bar.key"
-          data-testid="status-timeline-bar"
-          class="status-timeline-bar"
-          :class="`status-timeline-bar--${bar.tone}`"
-          :title="bar.label"
+          :data-testid="bar.testId"
+          :class="[
+            'bar',
+            `bar-${bar.tone}`,
+            'status-timeline-bar',
+            `status-timeline-bar--${bar.legacyTone}`,
+          ]"
+          :data-label="bar.label"
           :aria-label="bar.label"
           role="img"
         />
       </div>
-      <div class="public-status-row__axis" aria-hidden="true">
+      <div class="bar-axis" aria-hidden="true">
         <span>{{ t('publicStatus.recent') }}</span>
         <span>{{ t('publicStatus.now') }}</span>
       </div>
@@ -61,28 +40,36 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { MonitorTimelinePoint, UserMonitorView } from '@/api/channelMonitor'
-import ProviderIcon from '@/components/user/monitor/ProviderIcon.vue'
 import { useChannelMonitorFormat } from '@/composables/useChannelMonitorFormat'
 
-const TIMELINE_BAR_COUNT = 30
+const VISUAL_BAR_COUNT = 60
+const API_HISTORY_COUNT = 30
 
 const props = defineProps<{ item: UserMonitorView }>()
 
 const { t, locale } = useI18n()
-const { formatAvailability, formatLatency, providerLabel, statusLabel } = useChannelMonitorFormat()
+const { formatAvailability, providerLabel, statusLabel } = useChannelMonitorFormat()
 
-function toneForStatus(status?: string): 'operational' | 'degraded' | 'failed' | 'unknown' {
-  switch (status) {
+function toneForStatus(status?: string): 'up' | 'degraded' | 'down' | 'unknown' {
+  switch (String(status || '').toLowerCase()) {
     case 'operational':
-      return 'operational'
+    case 'up':
+      return 'up'
     case 'degraded':
       return 'degraded'
     case 'failed':
     case 'error':
-      return 'failed'
+    case 'down':
+      return 'down'
     default:
       return 'unknown'
   }
+}
+
+function legacyTone(tone: 'up' | 'degraded' | 'down' | 'unknown') {
+  if (tone === 'up') return 'operational'
+  if (tone === 'down') return 'failed'
+  return tone
 }
 
 function timelineLabel(point?: MonitorTimelinePoint): string {
@@ -98,24 +85,35 @@ function timelineLabel(point?: MonitorTimelinePoint): string {
 }
 
 const statusTone = computed(() => toneForStatus(props.item.primary_status))
-const latency = computed(() => {
-  const value = formatLatency(props.item.primary_latency_ms)
-  return props.item.primary_latency_ms == null ? value : `${value} ms`
-})
 const availability = computed(() => formatAvailability(props.item))
+const meta = computed(() => {
+  const parts = [providerLabel(props.item.provider), props.item.primary_model]
+  if (props.item.primary_latency_ms != null) {
+    parts.push(`${Math.round(props.item.primary_latency_ms)}ms`)
+  }
+  return parts.filter(Boolean).join(' · ')
+})
+
 const timelineBars = computed(() => {
-  const points = props.item.timeline.slice(0, TIMELINE_BAR_COUNT).reverse()
-  const missingCount = TIMELINE_BAR_COUNT - points.length
+  const points = props.item.timeline.slice(0, API_HISTORY_COUNT).reverse()
+  const missingCount = VISUAL_BAR_COUNT - points.length
   const missing = Array.from({ length: missingCount }, (_, index) => ({
     key: `missing-${index}`,
     tone: 'unknown' as const,
+    legacyTone: 'unknown',
     label: timelineLabel(),
+    testId: points.length === 0 ? 'status-timeline-bar' : undefined,
   }))
-  const history = points.map((point, index) => ({
-    key: `${point.checked_at}-${index}`,
-    tone: toneForStatus(point.status),
-    label: timelineLabel(point),
-  }))
+  const history = points.map((point, index) => {
+    const tone = toneForStatus(point.status)
+    return {
+      key: `${point.checked_at}-${index}`,
+      tone,
+      legacyTone: legacyTone(tone),
+      label: timelineLabel(point),
+      testId: 'status-timeline-bar',
+    }
+  })
   return [...missing, ...history]
 })
 </script>

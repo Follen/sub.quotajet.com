@@ -1,5 +1,5 @@
 <template>
-  <div class="qj-landing qj-pricing min-h-[100dvh] overflow-x-hidden">
+  <div class="qj-status-root">
     <AppHeader public-page :public-doc-url="safeDocUrl" />
     <PublicStatusPage
       :snapshot="snapshot"
@@ -19,8 +19,6 @@ import { getPublicStatus, type PublicStatusSnapshot } from '@/api/channelMonitor
 import AppHeader from '@/components/layout/AppHeader.vue'
 import PublicStatusPage from '@/components/status/PublicStatusPage.vue'
 import { useAppStore } from '@/stores'
-import '@/styles/home.css'
-import '@/styles/pricing.css'
 import '@/styles/status.css'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { sanitizeUrl } from '@/utils/url'
@@ -72,6 +70,7 @@ async function reload(silent = false) {
 }
 
 onMounted(() => {
+  document.body.classList.add('qj-status-body')
   void reload(false)
   refreshInterval = window.setInterval(() => {
     if (countdown.value > 1) {
@@ -84,6 +83,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  document.body.classList.remove('qj-status-body')
   abortController?.abort()
   if (refreshInterval !== null) window.clearInterval(refreshInterval)
 })

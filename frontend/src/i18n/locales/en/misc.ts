@@ -725,7 +725,7 @@ export default {
     error: 'Check failed',
     noHistory: 'No check',
     history: 'Recent checks',
-    recent: 'Earlier',
+    recent: '5h ago',
     now: 'Now'
   },
 
