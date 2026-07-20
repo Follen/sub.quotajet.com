@@ -1,7 +1,7 @@
 .public-status-page {
   width: min(100%, 1280px);
   margin: 0 auto;
-  padding: 8.5rem 1.5rem 4rem;
+  padding: 4rem 1.5rem 4rem;
   color: var(--pricing-fg);
 }
 
@@ -419,7 +419,7 @@
 
 @media (max-width: 45rem) {
   .public-status-page {
-    padding: 6.5rem 1rem 3rem;
+    padding: 2rem 1rem 3rem;
   }
 
   .public-status-hero {

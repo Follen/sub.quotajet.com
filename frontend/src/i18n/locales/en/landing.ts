@@ -135,7 +135,9 @@ export default {
       about: 'About',
       status: 'Status',
       login: 'Sign in',
-      dashboard: 'Console'
+      dashboard: 'Console',
+      publicNavigation: 'Public navigation',
+      openNavigation: 'Open public navigation'
     },
     footer: {
       agreement: 'User Agreement',
