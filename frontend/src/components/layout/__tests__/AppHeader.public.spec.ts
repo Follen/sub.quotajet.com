@@ -82,6 +82,7 @@ describe('AppHeader public mode', () => {
     expect(wrapper.get('a[href="/home#privacy"]').text()).toContain('About')
     expect(wrapper.get('a[href="https://docs.example.com/"]').text()).toContain('nav.docs')
     expect(wrapper.get('a[href="/login"]').text()).toContain('landing.nav.login')
+    expect(wrapper.get('a[href="/login"]').classes()).toContain('hidden')
     expect(wrapper.get('nav[aria-label="Public navigation"]').exists()).toBe(true)
     expect(wrapper.find('button[aria-label="Toggle Menu"]').exists()).toBe(false)
 

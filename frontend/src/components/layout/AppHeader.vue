@@ -21,7 +21,7 @@
           <Icon name="menu" size="md" />
         </button>
 
-        <div :class="publicPage ? '' : 'hidden lg:block'">
+        <div :class="publicPage ? 'hidden sm:block' : 'hidden lg:block'">
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ pageTitle }}
           </h1>
@@ -57,7 +57,7 @@
         <router-link
           v-if="publicPage && !user"
           to="/login"
-          class="header-public-login"
+          class="header-public-login hidden sm:inline-flex"
         >
           {{ t('landing.nav.login') }}
         </router-link>
