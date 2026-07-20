@@ -75,7 +75,8 @@ describe('AppHeader public mode', () => {
       }
     })
 
-    expect(wrapper.get('a[href="/home"]').text()).toContain('Home')
+    expect(wrapper.get('nav[aria-label="Public navigation"] a[href="/home"]').text()).toContain('Home')
+    expect(wrapper.get('[data-public-brand]').text()).toContain('QuotaJet')
     expect(wrapper.get('a[href="/dashboard"]').text()).toContain('Console')
     expect(wrapper.get('a[href="/pricing"]').text()).toContain('Models')
     expect(wrapper.get('a[href="/status"]').text()).toContain('Status check')
@@ -91,11 +92,27 @@ describe('AppHeader public mode', () => {
       '/home',
       '/dashboard',
       '/pricing',
+      'https://docs.example.com/',
       '/status',
       '/home#privacy',
-      'https://docs.example.com/',
       '/login',
     ])
+  })
+
+  it('keeps a local documentation entry when no external docs URL is configured', () => {
+    const wrapper = mount(AppHeader, {
+      props: { publicPage: true },
+      global: {
+        stubs: {
+          'router-link': {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>'
+          }
+        }
+      }
+    })
+
+    expect(wrapper.get('a[href="/home#docs"]').text()).toContain('landing.nav.docs')
   })
 
   it('keeps authenticated account controls while exposing the public catalog', () => {
@@ -119,7 +136,7 @@ describe('AppHeader public mode', () => {
     })
 
     expect(wrapper.get('button[aria-label="User Menu"]').text()).toContain('Ada')
-    expect(wrapper.get('a[href="/home"]').exists()).toBe(true)
+    expect(wrapper.get('nav[aria-label="Public navigation"] a[href="/home"]').exists()).toBe(true)
     expect(wrapper.find('a[href="/login"]').exists()).toBe(false)
 
     authStoreState.user = null

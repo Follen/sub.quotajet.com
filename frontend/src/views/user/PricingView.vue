@@ -1,6 +1,6 @@
 <template>
   <div class="qj-landing qj-pricing min-h-[100dvh] overflow-x-hidden">
-    <HomeHeader :is-authenticated="authStore.isAuthenticated" :doc-url="safeDocUrl" public-catalog />
+    <AppHeader public-page :public-doc-url="safeDocUrl" />
     <PricingShell
       :marketplace="catalogue"
       :loading="loading"
@@ -14,16 +14,15 @@
 <script setup lang="ts">
 import '@fontsource-variable/public-sans'
 import { computed } from 'vue'
-import { HomeHeader } from '@/components/home'
+import AppHeader from '@/components/layout/AppHeader.vue'
 import PricingShell from '@/components/pricing/PricingShell.vue'
 import { usePricingCatalogue } from '@/composables/usePricingCatalogue'
-import { useAppStore, useAuthStore } from '@/stores'
+import { useAppStore } from '@/stores'
 import '@/styles/home.css'
 import '@/styles/pricing.css'
 import { sanitizeUrl } from '@/utils/url'
 
 const appStore = useAppStore()
-const authStore = useAuthStore()
 const { catalogue, loading, errorMessage, reload } = usePricingCatalogue()
 const apiOrigin = computed(() => appStore.apiBaseUrl || window.location.origin)
 const safeDocUrl = computed(() =>

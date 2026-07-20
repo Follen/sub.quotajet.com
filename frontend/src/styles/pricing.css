@@ -318,6 +318,6 @@
 .pricing-mobile-drawer { color: var(--pricing-fg); background: var(--pricing-bg); }
 
 @media (max-width: 639px) {
-  .pricing-page-shell { padding-top: 5rem; }
+  .pricing-page-shell { padding-top: 2rem; }
   .pricing-select-control select { max-width: 7rem; }
 }

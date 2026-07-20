@@ -21,7 +21,17 @@
           <Icon name="menu" size="md" />
         </button>
 
-        <div :class="publicPage ? 'hidden sm:block' : 'hidden lg:block'">
+        <router-link
+          v-if="publicPage"
+          to="/home"
+          data-public-brand
+          class="flex shrink-0 items-center gap-2"
+        >
+          <img src="/logo.png" alt="QuotaJet" class="h-7 w-7 rounded-lg object-contain" />
+          <span class="text-sm font-semibold text-gray-900 dark:text-white">QuotaJet</span>
+        </router-link>
+
+        <div v-else class="hidden lg:block">
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ pageTitle }}
           </h1>
@@ -34,17 +44,28 @@
       <!-- Right: Announcements + Docs + Language + Subscriptions + Balance + User Dropdown -->
       <div class="flex items-center gap-3">
         <nav v-if="publicPage" class="hidden items-center gap-1 md:flex" :aria-label="t('landing.nav.publicNavigation')">
-          <router-link v-for="link in publicNavigation" :key="link.href" :to="link.href" class="header-public-link">
-            {{ t(link.labelKey) }}
-          </router-link>
+          <template v-for="link in publicNavigation" :key="link.href">
+            <a
+              v-if="link.external"
+              :href="link.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="header-public-link"
+            >
+              {{ t(link.labelKey) }}
+            </a>
+            <router-link v-else :to="link.href" class="header-public-link">
+              {{ t(link.labelKey) }}
+            </router-link>
+          </template>
         </nav>
 
         <!-- Announcement Bell -->
         <AnnouncementBell v-if="user" />
 
-        <!-- Docs Link -->
+        <!-- Docs Link for authenticated/private pages -->
         <a
-          v-if="configuredDocUrl"
+          v-if="configuredDocUrl && !publicPage"
           :href="configuredDocUrl"
           target="_blank"
           rel="noopener noreferrer"
@@ -265,19 +286,21 @@
       v-if="publicPage && publicMenuOpen"
       class="absolute inset-x-4 top-14 z-40 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-dark-700 dark:bg-dark-800 md:hidden"
     >
-      <router-link v-for="link in publicNavigation" :key="link.href" :to="link.href" class="header-public-menu-link" @click="closePublicMenu">
-        {{ t(link.labelKey) }}
-      </router-link>
-      <a
-        v-if="configuredDocUrl"
-        :href="configuredDocUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="header-public-menu-link"
-        @click="closePublicMenu"
-      >
-        {{ t('nav.docs') }}
-      </a>
+      <template v-for="link in publicNavigation" :key="link.href">
+        <a
+          v-if="link.external"
+          :href="link.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="header-public-menu-link"
+          @click="closePublicMenu"
+        >
+          {{ t(link.labelKey) }}
+        </a>
+        <router-link v-else :to="link.href" class="header-public-menu-link" @click="closePublicMenu">
+          {{ t(link.labelKey) }}
+        </router-link>
+      </template>
       <router-link
         v-if="!user"
         to="/login"
@@ -326,13 +349,18 @@ const publicMenuOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
 const configuredDocUrl = computed(() => sanitizeUrl(props.publicDocUrl || appStore.docUrl))
-const publicNavigation = [
-  { labelKey: 'Home', href: '/home' },
-  { labelKey: 'Console', href: '/dashboard' },
-  { labelKey: 'Models', href: '/pricing' },
-  { labelKey: 'Status check', href: '/status' },
-  { labelKey: 'landing.nav.about', href: '/home#privacy' }
-] as const
+const publicNavigation = computed(() => [
+  { labelKey: 'Home', href: '/home', external: false },
+  { labelKey: 'Console', href: '/dashboard', external: false },
+  { labelKey: 'Models', href: '/pricing', external: false },
+  {
+    labelKey: 'landing.nav.docs',
+    href: configuredDocUrl.value || '/home#docs',
+    external: Boolean(configuredDocUrl.value),
+  },
+  { labelKey: 'Status check', href: '/status', external: false },
+  { labelKey: 'landing.nav.about', href: '/home#privacy', external: false },
+] as const)
 const publicMenuLabel = computed(() =>
   publicMenuOpen.value ? t('common.close') : t('landing.nav.openNavigation'),
 )
