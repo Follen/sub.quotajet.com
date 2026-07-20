@@ -6,10 +6,15 @@
         <div class="overflow-hidden rounded-xl border border-pricing">
           <div class="flex items-baseline justify-between gap-3 border-b border-pricing px-4 py-3">
             <span class="text-sm font-medium">{{ baseEntry.price?.billing_mode === 'token' ? t('Text tokens') : t('Request') }}</span>
-            <span class="text-xs text-pricing-muted">{{ priceUnitLabel }}</span>
+            <span data-testid="pricing-detail-base-unit" class="text-xs text-pricing-muted">{{ basePriceUnitLabel }}</span>
           </div>
           <div class="divide-y divide-pricing">
-            <div v-for="row in basePriceRows" :key="row.label" class="flex items-baseline justify-between gap-4 px-4 py-3">
+            <div
+              v-for="row in basePriceRows"
+              :key="row.label"
+              :data-testid="row.testId"
+              class="flex items-baseline justify-between gap-4 px-4 py-3"
+            >
               <span class="text-sm text-pricing-muted">{{ row.label }}</span>
               <span class="text-sm font-medium tabular-nums">{{ row.value }}</span>
             </div>
@@ -21,13 +26,14 @@
         <h2 class="pricing-section-title">{{ t('Pricing by Group') }}</h2>
         <div v-if="publicGroups.length" class="overflow-hidden rounded-xl border border-pricing">
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[700px] text-left text-sm">
+            <table class="w-full min-w-[820px] text-left text-sm">
               <thead>
                 <tr class="border-b border-pricing">
                   <th class="pricing-detail-th">{{ t('Provider') }}</th>
                   <th class="pricing-detail-th">{{ t('Group') }}</th>
                   <th class="pricing-detail-th">{{ t('Ratio') }}</th>
                   <th class="pricing-detail-th text-right">{{ t('Input') }}</th>
+                  <th class="pricing-detail-th text-right">{{ t('availableChannels.pricing.imageInputPrice') }}</th>
                   <th class="pricing-detail-th text-right">{{ t('Output') }}</th>
                   <th class="pricing-detail-th text-right">{{ t('Cached input') }}</th>
                 </tr>
@@ -39,11 +45,12 @@
                     <td class="px-4 py-3"><span class="pricing-group-badge">{{ entry.group.name }}</span></td>
                     <td class="px-4 py-3 font-mono text-pricing-muted">x{{ entry.group.rate_multiplier }}</td>
                     <td class="px-4 py-3 text-right font-mono">{{ effectivePrice(entry, 'input_price') }}</td>
+                    <td data-price="image-input" class="px-4 py-3 text-right font-mono">{{ effectivePrice(entry, 'image_input_price') }}</td>
                     <td class="px-4 py-3 text-right font-mono">{{ effectivePrice(entry, 'output_price') }}</td>
                     <td class="px-4 py-3 text-right font-mono">{{ effectivePrice(entry, 'cache_read_price') }}</td>
                   </tr>
                   <tr v-if="entry.price?.intervals.length" class="border-b border-pricing last:border-b-0">
-                    <td colspan="6" class="p-3">
+                    <td colspan="7" class="p-3">
                       <PricingTierTable
                         :intervals="entry.price.intervals"
                         :rate-multiplier="entry.group.rate_multiplier"
@@ -55,7 +62,7 @@
               </tbody>
             </table>
           </div>
-          <p class="border-t border-pricing px-4 py-2 text-xs text-pricing-muted">{{ priceUnitLabel }}</p>
+          <p data-testid="pricing-detail-group-unit" class="border-t border-pricing px-4 py-2 text-xs text-pricing-muted">{{ groupPriceUnitLabel }}</p>
         </div>
         <p v-else class="text-sm text-pricing-muted">{{ t('This model is not available in any public group.') }}</p>
       </section>
@@ -136,27 +143,54 @@ const publicGroups = computed(() => groupPriceEntries(props.model)
   .filter((entry) => entry.price)
   .sort((left, right) => `${left.group.name}:${left.providerName}`.localeCompare(`${right.group.name}:${right.providerName}`)))
 
-const priceUnitLabel = computed(() =>
-  modelBillingMode(props.model) === 'token'
-    ? `${t('Prices shown per')} ${props.unit === 'M' ? '1M' : '1K'} ${t('tokens')}`
-    : t('Prices shown per request'),
-)
+const tokenPriceUnitLabel = computed(() => `${t('Prices shown per')} ${props.unit === 'M' ? '1M' : '1K'} ${t('tokens')}`)
+const mixedPriceUnitLabel = computed(() => `${t('Prices shown per request')} · ${props.unit === 'M' ? '1M' : '1K'} ${t('tokens')}`)
+const basePriceUnitLabel = computed(() => {
+  if ((baseEntry.value?.price?.billing_mode || 'token') === 'token') return tokenPriceUnitLabel.value
+  if (typeof baseEntry.value?.price?.image_input_price === 'number') {
+    return mixedPriceUnitLabel.value
+  }
+  return t('Prices shown per request')
+})
+const groupPriceUnitLabel = computed(() => {
+  const hasRequestPrice = publicGroups.value.some((entry) => (entry.price?.billing_mode || 'token') !== 'token')
+  const hasTokenPrice = publicGroups.value.some((entry) =>
+    (entry.price?.billing_mode || 'token') === 'token' || typeof entry.price?.image_input_price === 'number',
+  )
+  if (hasRequestPrice && hasTokenPrice) return mixedPriceUnitLabel.value
+  return hasTokenPrice ? tokenPriceUnitLabel.value : t('Prices shown per request')
+})
 
 const basePriceRows = computed(() => {
   const price = baseEntry.value?.price
   if (!price) return []
   if ((price.billing_mode || 'token') !== 'token') {
-    return [{ label: t('Price'), value: formatModelFixedPrice(props.model) }]
+    const rows: Array<{ label: string; value: string; testId?: string }> = [
+      { label: t('Price'), value: formatModelFixedPrice(props.model) },
+    ]
+    if (typeof price.image_input_price === 'number') {
+      rows.push({
+        label: t('availableChannels.pricing.imageInputPrice'),
+        value: formatCurrency(price.image_input_price * scale.value),
+        testId: 'pricing-detail-base-image-input',
+      })
+    }
+    return rows
   }
   const fields: Array<{ label: string; field: PriceField }> = [
     { label: t('Input'), field: 'input_price' },
+    { label: t('availableChannels.pricing.imageInputPrice'), field: 'image_input_price' },
     { label: t('Output'), field: 'output_price' },
     { label: t('Cached input'), field: 'cache_read_price' },
     { label: t('Cache write'), field: 'cache_write_price' },
   ]
   return fields
     .filter(({ field }) => typeof price[field] === 'number')
-    .map(({ label, field }) => ({ label, value: formatCurrency((price[field] as number) * scale.value) }))
+    .map(({ label, field }) => ({
+      label,
+      value: formatCurrency((price[field] as number) * scale.value),
+      testId: field === 'image_input_price' ? 'pricing-detail-base-image-input' : undefined,
+    }))
 })
 
 const capabilityLabels = computed(() => {
@@ -196,6 +230,11 @@ const mediaPriceRows = computed(() => {
 })
 
 function effectivePrice(entry: PublicGroupPriceEntry, field: PriceField): string {
+  if (field === 'image_input_price') {
+    const imageInputPrice = entry.price?.image_input_price
+    if (typeof imageInputPrice !== 'number') return '—'
+    return formatCurrency(imageInputPrice * entry.group.rate_multiplier * scale.value)
+  }
   if ((entry.price?.billing_mode || 'token') !== 'token') {
     return field === 'input_price' ? formatModelFixedPrice(props.model, entry.group.name) : '—'
   }

@@ -264,6 +264,7 @@ func TestPricingNeedsFallback(t *testing.T) {
 			Intervals:   []PricingInterval{{TierLabel: "1K"}, {TierLabel: "2K"}},
 		}, true},
 		{"flat input set", &ChannelModelPricing{InputPrice: testPtrFloat64(3e-6)}, false},
+		{"flat image input explicitly zero", &ChannelModelPricing{ImageInputPrice: testPtrFloat64(0)}, false},
 		{"flat per_request set", &ChannelModelPricing{PerRequestPrice: testPtrFloat64(0.04)}, false},
 		{"interval with price", &ChannelModelPricing{
 			Intervals: []PricingInterval{{TierLabel: "1K", PerRequestPrice: testPtrFloat64(0.04)}},
@@ -280,6 +281,7 @@ func TestSynthesizePricingFromLiteLLM_TokenMode(t *testing.T) {
 	lp := &LiteLLMModelPricing{
 		Mode:                        "chat",
 		InputCostPerToken:           3e-6,
+		InputCostPerImageToken:      2.5e-7,
 		OutputCostPerToken:          1.5e-5,
 		CacheCreationInputTokenCost: 3.75e-6,
 		CacheReadInputTokenCost:     3e-7,
@@ -290,11 +292,14 @@ func TestSynthesizePricingFromLiteLLM_TokenMode(t *testing.T) {
 	require.NotNil(t, got.InputPrice)
 	require.InDelta(t, 3e-6, *got.InputPrice, 1e-12)
 	require.NotNil(t, got.CacheReadPrice)
+	require.NotNil(t, got.ImageInputPrice)
+	require.InDelta(t, 2.5e-7, *got.ImageInputPrice, 1e-12)
 }
 
 func TestSynthesizePricingFromLiteLLM_ImageGenerationMode(t *testing.T) {
 	// LiteLLM mode=image_generation 且渠道未声明模式时，按 image 合成。
 	lp := &LiteLLMModelPricing{
+		InputCostPerImageToken:  2.5e-7,
 		Mode:                    "image_generation",
 		OutputCostPerImageToken: 4e-5,
 	}
@@ -302,6 +307,8 @@ func TestSynthesizePricingFromLiteLLM_ImageGenerationMode(t *testing.T) {
 	require.NotNil(t, got)
 	require.Equal(t, BillingModeImage, got.BillingMode)
 	require.Nil(t, got.PerRequestPrice)
+	require.NotNil(t, got.ImageInputPrice)
+	require.InDelta(t, 2.5e-7, *got.ImageInputPrice, 1e-12)
 	require.NotNil(t, got.ImageOutputPrice)
 }
 

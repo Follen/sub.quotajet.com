@@ -11,6 +11,7 @@ export type PriceField =
   | 'output_price'
   | 'cache_read_price'
   | 'cache_write_price'
+  | 'image_input_price'
 
 export interface PricingCatalogueModel extends PublicMarketplaceModel {
   platform: string

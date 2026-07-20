@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -181,6 +182,46 @@ func TestBuildPublicModelMarketplacePreservesEmptyBillingModeAndZeroPrice(t *tes
 	require.NotNil(t, price.InputPrice)
 	require.Zero(t, *price.InputPrice)
 	require.Nil(t, price.OutputPrice)
+
+	encoded, err := json.Marshal(price)
+	require.NoError(t, err)
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(encoded, &payload))
+	value, ok := payload["image_input_price"]
+	require.True(t, ok)
+	require.Nil(t, value)
+}
+
+func TestBuildPublicModelMarketplacePublishesImageInputPrice(t *testing.T) {
+	imageInputPrice := 2.5e-7
+	marketplace := NewPublicModelMarketplaceService(stubAvailableChannelLister{channels: []AvailableChannel{{
+		Name:   "image-provider",
+		Status: StatusActive,
+		Groups: []AvailableGroupRef{{Name: "public", Platform: PlatformOpenAI, RateMultiplier: 1, AllowImageGeneration: true}},
+		SupportedModels: []SupportedModel{{
+			Name:     "gpt-image-2",
+			Platform: PlatformOpenAI,
+			Pricing: &ChannelModelPricing{
+				BillingMode:     BillingModeToken,
+				ImageInputPrice: &imageInputPrice,
+			},
+		}},
+	}}})
+
+	result, err := marketplace.Build(context.Background())
+	require.NoError(t, err)
+	price := result.Platforms[0].Models[0].Providers[0].GroupPrices[0].Price
+	require.NotNil(t, price)
+
+	encoded, err := json.Marshal(price)
+	require.NoError(t, err)
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(encoded, &payload))
+	value, ok := payload["image_input_price"]
+	require.True(t, ok)
+	require.InDelta(t, imageInputPrice, value, 1e-12)
+	require.False(t, result.Platforms[0].Models[0].Capabilities.ImageGeneration)
+	require.NotContains(t, result.Platforms[0].Models[0].PlatformDefaultInboundEndpoints, "/v1/images/generations")
 }
 
 func TestBuildPublicModelMarketplaceExposesIndependentImageDefaultWithoutUserRate(t *testing.T) {

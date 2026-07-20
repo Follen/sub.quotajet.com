@@ -140,6 +140,7 @@ function tokenEntries(configuredPrice: PublicMarketplacePrice | null): PriceEntr
   if (!configuredPrice) return []
   const entries: PriceEntry[] = []
   if (configuredPrice.input_price !== null) entries.push({ label: t('modelMarketplace.prices.input'), value: configuredPrice.input_price })
+  if (configuredPrice.image_input_price !== null) entries.push({ label: t('availableChannels.pricing.imageInputPrice'), value: configuredPrice.image_input_price })
   if (configuredPrice.output_price !== null) entries.push({ label: t('modelMarketplace.prices.output'), value: configuredPrice.output_price })
   if (configuredPrice.cache_write_price !== null) entries.push({ label: t('modelMarketplace.prices.cacheWrite'), value: configuredPrice.cache_write_price })
   if (configuredPrice.cache_read_price !== null) entries.push({ label: t('modelMarketplace.prices.cacheRead'), value: configuredPrice.cache_read_price })

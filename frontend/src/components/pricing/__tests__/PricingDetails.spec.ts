@@ -56,6 +56,7 @@ const marketplace: PublicPricingCatalogue = {
                     output_price: 0.000002,
                     cache_write_price: null,
                     cache_read_price: 0.000000125,
+                    image_input_price: 0.00000025,
                     image_output_price: null,
                     per_request_price: null,
                     fallback: false,
@@ -136,11 +137,56 @@ describe('main-site model detail adaptation', () => {
     const wrapper = mountDetail()
     const group = wrapper.get('[data-testid="pricing-detail-group-standard"]')
 
+    expect(wrapper.get('[data-testid="pricing-detail-base-image-input"]').text()).toContain('$0.25')
     expect(group.text()).toContain('x1.5')
     expect(group.text()).toContain('$0.75')
     expect(group.text()).toContain('$3')
+    expect(group.get('[data-price="image-input"]').text()).toContain('$0.375')
     expect(wrapper.text()).toContain('(0, 128000]')
     expect(wrapper.text()).toContain('(128000, ∞)')
+  })
+
+  it('shows image input token pricing for image billing models', () => {
+    const imageMarketplace = structuredClone(marketplace)
+    const imageModel = imageMarketplace.platforms[0].models[0]
+    imageModel.name = 'gpt-image-2'
+    const imagePrice = imageModel.providers[0].group_prices[0].price
+    if (!imagePrice) throw new Error('expected image model price fixture')
+    imagePrice.billing_mode = 'image'
+    imagePrice.per_request_price = 0.04
+
+    const wrapper = mount(PricingDetailPage, {
+      props: { marketplace: imageMarketplace, modelId: 'gpt-image-2', apiOrigin: 'https://api.example.com' },
+      global: { plugins: [router] },
+    })
+    const group = wrapper.get('[data-testid="pricing-detail-group-standard"]')
+
+    expect(wrapper.get('[data-testid="pricing-detail-base-image-input"]').text()).toContain('$0.25')
+    expect(group.get('[data-price="image-input"]').text()).toContain('$0.375')
+  })
+
+  it('shows token units when a later image provider publishes image input pricing', () => {
+    const mixedMarketplace = structuredClone(marketplace)
+    const mixedModel = mixedMarketplace.platforms[0].models[0]
+    const firstPrice = mixedModel.providers[0].group_prices[0].price
+    if (!firstPrice) throw new Error('expected mixed model price fixture')
+    firstPrice.billing_mode = 'image'
+    firstPrice.image_input_price = null
+    firstPrice.per_request_price = 0.04
+
+    const imageTokenGroup = structuredClone(mixedModel.providers[0].group_prices[0])
+    imageTokenGroup.name = 'image-token'
+    if (!imageTokenGroup.price) throw new Error('expected image token group price fixture')
+    imageTokenGroup.price.image_input_price = 0.00000025
+    mixedModel.providers.push({ name: 'Image Token Provider', group_prices: [imageTokenGroup] })
+
+    const wrapper = mount(PricingDetailPage, {
+      props: { marketplace: mixedMarketplace, modelId: 'gpt-4.1', apiOrigin: 'https://api.example.com' },
+      global: { plugins: [router] },
+    })
+
+    expect(wrapper.get('[data-testid="pricing-detail-base-unit"]').text()).toBe('Prices shown per request')
+    expect(wrapper.get('[data-testid="pricing-detail-group-unit"]').text()).toContain('1M tokens')
   })
 
   it('does not advertise unavailable performance data', () => {
@@ -188,6 +234,7 @@ describe('Sub2API pricing modes', () => {
             output_price: 0.000002,
             cache_write_price: null,
             cache_read_price: null,
+            image_input_price: 0.00000025,
             image_output_price: null,
             per_request_price: 0.03,
             fallback: false,
@@ -199,6 +246,7 @@ describe('Sub2API pricing modes', () => {
     })
 
     expect(wrapper.get('[data-testid="marketplace-pricing-token"]').text()).toContain('$1 / modelMarketplace.prices.perMillionTokens')
+    expect(wrapper.get('[data-testid="marketplace-pricing-token"]').text()).toContain('availableChannels.pricing.imageInputPrice $0.25')
     expect(wrapper.get('[data-testid="marketplace-pricing-per_request"]').text()).toContain('$0.03')
     expect(wrapper.get('[data-testid="marketplace-pricing-image"]').text()).toContain('$0.11')
     expect(wrapper.get('[data-testid="marketplace-pricing-video"]').text()).toContain('$0.04 /s')
@@ -220,6 +268,7 @@ describe('Sub2API pricing modes', () => {
             output_price: null,
             cache_write_price: null,
             cache_read_price: null,
+            image_input_price: null,
             image_output_price: null,
             per_request_price: null,
             fallback: false,

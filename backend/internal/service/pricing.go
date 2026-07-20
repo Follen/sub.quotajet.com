@@ -126,6 +126,7 @@ type PublicMarketplacePrice struct {
 	OutputPrice      *float64                        `json:"output_price"`
 	CacheWritePrice  *float64                        `json:"cache_write_price"`
 	CacheReadPrice   *float64                        `json:"cache_read_price"`
+	ImageInputPrice  *float64                        `json:"image_input_price"`
 	ImageOutputPrice *float64                        `json:"image_output_price"`
 	PerRequestPrice  *float64                        `json:"per_request_price"`
 	Intervals        []PublicMarketplaceTierInterval `json:"intervals"`
@@ -469,6 +470,7 @@ func publicMarketplacePrice(model SupportedModel) *PublicMarketplacePrice {
 		OutputPrice:      pricing.OutputPrice,
 		CacheWritePrice:  pricing.CacheWritePrice,
 		CacheReadPrice:   pricing.CacheReadPrice,
+		ImageInputPrice:  pricing.ImageInputPrice,
 		ImageOutputPrice: pricing.ImageOutputPrice,
 		PerRequestPrice:  pricing.PerRequestPrice,
 		Intervals:        make([]PublicMarketplaceTierInterval, 0, len(pricing.Intervals)),
