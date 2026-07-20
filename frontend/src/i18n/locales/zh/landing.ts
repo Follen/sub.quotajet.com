@@ -135,7 +135,9 @@ export default {
       about: '关于',
       status: '状态',
       login: '登录',
-      dashboard: '控制台'
+      dashboard: '控制台',
+      publicNavigation: '公开导航',
+      openNavigation: '打开公开导航'
     },
     footer: {
       agreement: '用户协议',

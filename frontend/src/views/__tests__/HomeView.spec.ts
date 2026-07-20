@@ -262,6 +262,8 @@ describe('HomeView', () => {
       status: 'Status',
       login: 'Sign in',
       dashboard: 'Console',
+      publicNavigation: 'Public navigation',
+      openNavigation: 'Open public navigation',
     })
     expect(enLocale.landing.footer).toEqual({
       agreement: 'User Agreement',
@@ -275,6 +277,8 @@ describe('HomeView', () => {
       status: '状态',
       login: '登录',
       dashboard: '控制台',
+      publicNavigation: '公开导航',
+      openNavigation: '打开公开导航',
     })
     expect(zhLocale.landing.footer).toEqual({
       agreement: '用户协议',

@@ -15,7 +15,7 @@
           v-else
           @click="togglePublicMenu"
           class="btn-ghost btn-icon md:hidden"
-          aria-label="Toggle Public Navigation"
+          :aria-label="publicMenuLabel"
           :aria-expanded="publicMenuOpen"
         >
           <Icon name="menu" size="md" />
@@ -33,12 +33,9 @@
 
       <!-- Right: Announcements + Docs + Language + Subscriptions + Balance + User Dropdown -->
       <div class="flex items-center gap-3">
-        <nav v-if="publicPage" class="hidden items-center gap-1 md:flex" aria-label="Public navigation">
-          <router-link to="/pricing" class="header-public-link">
-            {{ t('Models & pricing') }}
-          </router-link>
-          <router-link to="/status" class="header-public-link">
-            {{ t('Status check') }}
+        <nav v-if="publicPage" class="hidden items-center gap-1 md:flex" :aria-label="t('landing.nav.publicNavigation')">
+          <router-link v-for="link in publicNavigation" :key="link.href" :to="link.href" class="header-public-link">
+            {{ t(link.labelKey) }}
           </router-link>
         </nav>
 
@@ -56,6 +53,14 @@
           <Icon name="book" size="sm" />
           <span class="hidden sm:inline">{{ t('nav.docs') }}</span>
         </a>
+
+        <router-link
+          v-if="publicPage && !user"
+          to="/login"
+          class="header-public-login"
+        >
+          {{ t('landing.nav.login') }}
+        </router-link>
 
         <!-- Language Switcher -->
         <LocaleSwitcher />
@@ -260,11 +265,8 @@
       v-if="publicPage && publicMenuOpen"
       class="absolute inset-x-4 top-14 z-40 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-dark-700 dark:bg-dark-800 md:hidden"
     >
-      <router-link to="/pricing" class="header-public-menu-link" @click="closePublicMenu">
-        {{ t('Models & pricing') }}
-      </router-link>
-      <router-link to="/status" class="header-public-menu-link" @click="closePublicMenu">
-        {{ t('Status check') }}
+      <router-link v-for="link in publicNavigation" :key="link.href" :to="link.href" class="header-public-menu-link" @click="closePublicMenu">
+        {{ t(link.labelKey) }}
       </router-link>
       <a
         v-if="configuredDocUrl"
@@ -276,6 +278,14 @@
       >
         {{ t('nav.docs') }}
       </a>
+      <router-link
+        v-if="!user"
+        to="/login"
+        class="header-public-menu-link"
+        @click="closePublicMenu"
+      >
+        {{ t('landing.nav.login') }}
+      </router-link>
     </div>
   </header>
 </template>
@@ -316,6 +326,16 @@ const publicMenuOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
 const configuredDocUrl = computed(() => sanitizeUrl(props.publicDocUrl || appStore.docUrl))
+const publicNavigation = [
+  { labelKey: 'Home', href: '/home' },
+  { labelKey: 'Console', href: '/dashboard' },
+  { labelKey: 'Models', href: '/pricing' },
+  { labelKey: 'Status check', href: '/status' },
+  { labelKey: 'landing.nav.about', href: '/home#privacy' }
+] as const
+const publicMenuLabel = computed(() =>
+  publicMenuOpen.value ? t('common.close') : t('landing.nav.openNavigation'),
+)
 const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
 const availableBalance = computed(() => Number(user.value?.balance || 0))
 const frozenBalance = computed(() => Number(user.value?.frozen_balance || 0))
