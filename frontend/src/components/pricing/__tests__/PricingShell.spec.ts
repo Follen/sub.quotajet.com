@@ -101,6 +101,7 @@ describe('PricingShell', () => {
     })
 
     expect(wrapper.get('[data-testid="pricing-shell"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="pricing-shell"]').classes()).toContain('pt-24')
     expect(wrapper.get('[data-testid="pricing-sidebar"]').exists()).toBe(true)
     expect(wrapper.get('[data-testid="pricing-toolbar"]').exists()).toBe(true)
     expect(wrapper.get('[data-testid="pricing-table"]').exists()).toBe(true)

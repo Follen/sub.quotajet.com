@@ -9,6 +9,7 @@
       :class="scrolled ? 'max-w-[52rem] px-3 pt-3' : 'max-w-7xl px-4 pt-0 md:px-6'"
     >
       <nav
+        aria-label="Public navigation"
         class="flex items-center justify-between transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
         :class="
           scrolled
@@ -30,7 +31,9 @@
           <span data-home-brand class="text-sm font-semibold">QuotaJet</span>
         </RouterLink>
 
-        <div class="hidden items-center gap-0.5 lg:flex">
+        <div
+          class="hidden items-center gap-0.5 lg:flex"
+        >
           <a
             v-for="link in navigation"
             :key="link.labelKey"
@@ -64,14 +67,8 @@
           >
             <Icon :name="isDark ? 'sun' : 'moon'" size="sm" />
           </button>
-          <AnnouncementBell v-if="isAuthenticated" />
           <div class="mx-1 h-4 w-px bg-[var(--landing-border)]" />
-          <RouterLink
-            :to="isAuthenticated ? '/dashboard' : '/login'"
-            class="inline-flex h-8 items-center justify-center rounded-lg bg-[var(--landing-accent)] px-3 text-[13px] font-medium text-[var(--landing-accent-contrast)] transition-opacity hover:opacity-85"
-          >
-            {{ t(isAuthenticated ? 'landing.nav.dashboard' : 'landing.nav.login') }}
-          </RouterLink>
+          <PublicHeaderAccountControls :is-authenticated="isAuthenticated" />
         </div>
 
         <div class="flex items-center gap-1.5 lg:hidden">
@@ -86,16 +83,7 @@
           >
             <Icon :name="isDark ? 'sun' : 'moon'" size="sm" />
           </button>
-          <RouterLink
-            v-if="isAuthenticated"
-            to="/dashboard"
-            class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium text-[var(--landing-fg)] transition-colors hover:bg-[var(--landing-surface)]"
-            :title="t('landing.nav.dashboard')"
-            @click="closeMobileMenu"
-          >
-            <Icon name="home" size="sm" />
-            <span class="hidden sm:inline">{{ t('landing.nav.dashboard') }}</span>
-          </RouterLink>
+          <PublicHeaderAccountControls mobile :is-authenticated="isAuthenticated" />
           <button
             data-mobile-menu-button
             type="button"
@@ -176,9 +164,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
+import PublicHeaderAccountControls from './PublicHeaderAccountControls.vue'
 import { sanitizeUrl } from '@/utils/url'
 
 const props = defineProps<{

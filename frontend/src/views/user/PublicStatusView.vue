@@ -1,6 +1,6 @@
 <template>
   <div class="qj-status-root">
-    <AppHeader public-page :public-doc-url="safeDocUrl" />
+    <HomeHeader :is-authenticated="authStore.isAuthenticated" :doc-url="safeDocUrl" public-catalog />
     <PublicStatusPage
       :snapshot="snapshot"
       :loading="loading"
@@ -16,9 +16,9 @@ import '@fontsource-variable/public-sans'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getPublicStatus, type PublicStatusSnapshot } from '@/api/channelMonitor'
-import AppHeader from '@/components/layout/AppHeader.vue'
+import { HomeHeader } from '@/components/home'
 import PublicStatusPage from '@/components/status/PublicStatusPage.vue'
-import { useAppStore } from '@/stores'
+import { useAppStore, useAuthStore } from '@/stores'
 import '@/styles/status.css'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { sanitizeUrl } from '@/utils/url'
@@ -27,6 +27,7 @@ const REFRESH_SECONDS = 60
 
 const { t } = useI18n()
 const appStore = useAppStore()
+const authStore = useAuthStore()
 const snapshot = ref<PublicStatusSnapshot | null>(null)
 const loading = ref(true)
 const errorMessage = ref('')

@@ -6,8 +6,8 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('@/components/layout/AppHeader.vue', () => ({
-  default: { name: 'AppHeader', template: '<header data-app-header />' },
+vi.mock('@/components/home', () => ({
+  HomeHeader: { name: 'HomeHeader', template: '<header data-home-header />' },
 }))
 
 vi.mock('@/api/pricing', () => ({
@@ -37,12 +37,12 @@ describe('PricingView', () => {
     const wrapper = mount(PricingView, {
       global: {
         plugins: [router],
-        stubs: { AppHeader: true, PricingShell: true },
+        stubs: { HomeHeader: true, PricingShell: true },
       },
     })
 
     expect(wrapper.get('.qj-landing').exists()).toBe(true)
-    expect(wrapper.findComponent({ name: 'AppHeader' }).exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'HomeHeader' }).exists()).toBe(true)
     expect(wrapper.find('.sidebar').exists()).toBe(false)
   })
 })

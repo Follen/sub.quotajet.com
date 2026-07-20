@@ -1,12 +1,19 @@
 body.qj-status-body {
   --landing-ink: #171717;
+  --landing-fg: var(--landing-ink);
   --landing-bg: #f4f3ee;
   --landing-muted: #6c6860;
+  --landing-fg-soft: var(--landing-muted);
+  --landing-fg-muted: var(--landing-faint);
   --landing-faint: #958f83;
   --landing-border: rgb(23 23 23 / 0.12);
   --landing-border-strong: rgb(23 23 23 / 0.2);
   --landing-surface: rgb(255 255 255 / 0.5);
   --landing-surface-strong: rgb(255 255 255 / 0.74);
+  --landing-surface-soft: var(--landing-surface);
+  --landing-border-faint: rgb(23 23 23 / 0.08);
+  --landing-accent: var(--landing-ink);
+  --landing-accent-contrast: var(--landing-bg);
   --green: #38b66b;
   --green-soft: rgb(56 182 107 / 0.16);
   --red: #db3d55;
@@ -28,12 +35,19 @@ body.qj-status-body {
 .dark body.qj-status-body {
   --landing-bg: #111;
   --landing-ink: #f2f0eb;
+  --landing-fg: var(--landing-ink);
   --landing-muted: #a6a198;
+  --landing-fg-soft: var(--landing-muted);
+  --landing-fg-muted: var(--landing-faint);
   --landing-faint: #777169;
   --landing-border: rgb(255 255 255 / 0.12);
   --landing-border-strong: rgb(255 255 255 / 0.18);
   --landing-surface: rgb(255 255 255 / 0.045);
   --landing-surface-strong: rgb(255 255 255 / 0.075);
+  --landing-surface-soft: var(--landing-surface);
+  --landing-border-faint: rgb(255 255 255 / 0.08);
+  --landing-accent: var(--landing-ink);
+  --landing-accent-contrast: var(--landing-bg);
   --green: #5be08d;
   --green-soft: rgb(91 224 141 / 0.16);
   --red: #ff5871;

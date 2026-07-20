@@ -13,11 +13,11 @@ vi.mock('@/stores', () => ({
   useAppStore: () => ({ cachedPublicSettings: {}, docUrl: '' }),
   useAuthStore: () => ({ isAuthenticated: false }),
 }))
-vi.mock('@/components/layout/AppHeader.vue', () => ({
-  default: {
-    name: 'AppHeader',
-    props: ['publicPage', 'publicDocUrl'],
-    template: '<header data-app-header :data-public-page="publicPage" :data-public-doc-url="publicDocUrl" />'
+vi.mock('@/components/home', () => ({
+  HomeHeader: {
+    name: 'HomeHeader',
+    props: ['isAuthenticated', 'docUrl', 'publicCatalog'],
+    template: '<header data-home-header :data-public-catalog="publicCatalog" :data-doc-url="docUrl" />'
   },
 }))
 vi.mock('@/components/status/PublicStatusPage.vue', () => ({
@@ -59,9 +59,9 @@ describe('PublicStatusView', () => {
 
     expect(getPublicStatus).toHaveBeenCalledTimes(1)
     expect(getPublicStatus.mock.calls[0]?.[0]?.signal).toBeInstanceOf(AbortSignal)
-    expect(wrapper.get('.qj-landing.qj-pricing').exists()).toBe(true)
-    expect(wrapper.find('[data-app-header]').exists()).toBe(true)
-    expect(wrapper.find('[data-app-header]').attributes('data-public-page')).toBe('')
+    expect(wrapper.get('.qj-status-root').exists()).toBe(true)
+    expect(wrapper.find('[data-home-header]').exists()).toBe(true)
+    expect(wrapper.find('[data-home-header]').attributes('data-public-catalog')).toBe('')
     expect(wrapper.find('.sidebar').exists()).toBe(false)
 
     await vi.advanceTimersByTimeAsync(59_000)

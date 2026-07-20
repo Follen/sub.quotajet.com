@@ -31,7 +31,13 @@ const { appStore, authStore } = vi.hoisted(() => ({
   authStore: {
     isAuthenticated: false,
     isAdmin: false,
-    user: null as { email?: string } | null,
+    user: null as {
+      username?: string
+      email?: string
+      avatar_url?: string
+      balance?: number
+      frozen_balance?: number
+    } | null,
     checkAuth: vi.fn(),
   },
 }))
@@ -71,6 +77,7 @@ function mountHome() {
         },
         LocaleSwitcher: true,
         AnnouncementBell: true,
+        SubscriptionProgressMini: true,
         RelayMachineVisual: { template: '<canvas class="landing-metal-canvas" />' },
       },
     },
@@ -181,6 +188,22 @@ describe('HomeView', () => {
     authStore.isAuthenticated = true
     expect(mountHome().find('announcement-bell-stub').exists()).toBe(true)
     expect(mountHome().find('a[href="/dashboard"]').exists()).toBe(true)
+  })
+
+  it('keeps Sub2API account and balance controls in the shared public header', () => {
+    authStore.isAuthenticated = true
+    authStore.user = {
+      username: 'Ada',
+      email: 'ada@example.com',
+      balance: 12,
+      frozen_balance: 3,
+    }
+
+    const wrapper = mountHome()
+
+    expect(wrapper.findAll('button[aria-label="User Menu"]')).toHaveLength(2)
+    expect(wrapper.text()).toContain('$12.00')
+    expect(wrapper.find('announcement-bell-stub').exists()).toBe(true)
   })
 
   it('keeps Status external and emits safe Docs links only', () => {

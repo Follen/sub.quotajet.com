@@ -1,5 +1,5 @@
 <template>
-  <section data-testid="pricing-shell" class="pricing-page-shell mx-auto w-full max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
+  <section data-testid="pricing-shell" class="pricing-page-shell mx-auto w-full max-w-7xl px-4 pb-12 pt-24 sm:px-6 lg:px-8">
     <header class="mb-8 space-y-6">
       <div class="max-w-3xl">
         <h1 class="text-lg font-semibold tracking-tight">{{ t('Models & pricing') }}</h1>

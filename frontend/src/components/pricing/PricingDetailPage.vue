@@ -1,5 +1,5 @@
 <template>
-  <section data-testid="pricing-detail-page" class="mx-auto w-full max-w-5xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+  <section data-testid="pricing-detail-page" class="mx-auto w-full max-w-5xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
     <div v-if="loading" class="space-y-4">
       <div class="h-5 w-16 animate-pulse rounded bg-pricing-muted" />
       <div class="h-12 w-80 animate-pulse rounded-[10px] bg-pricing-muted" />
