@@ -24,6 +24,30 @@ validation_step="$(awk '
 ' "$workflow_file")"
 test -n "$validation_step" || fail "Validate release and image step was not found"
 
+upload_step="$(awk '
+  /^      - name: Upload deployment artifacts$/ { in_step = 1; next }
+  in_step && /^      - name:/ { exit }
+  in_step && /^        run: \|$/ { in_run = 1; next }
+  in_run {
+    if ($0 == "") next
+    if (substr($0, 1, 10) != "          ") exit 1
+    print substr($0, 11)
+  }
+' "$workflow_file")"
+test -n "$upload_step" || fail "Upload deployment artifacts step was not found"
+
+run_deploy_step="$(awk '
+  /^      - name: Run production deployment$/ { in_step = 1; next }
+  in_step && /^      - name:/ { exit }
+  in_step && /^        run: \|$/ { in_run = 1; next }
+  in_run {
+    if ($0 == "") next
+    if (substr($0, 1, 10) != "          ") exit
+    print substr($0, 11)
+  }
+' "$workflow_file")"
+test -n "$run_deploy_step" || fail "Run production deployment step was not found"
+
 checkout_line="$(grep -n -m1 '^      - name: Checkout release$' "$workflow_file" | cut -d: -f1)"
 validation_line="$(grep -n -m1 '^      - name: Validate release and image$' "$workflow_file" | cut -d: -f1)"
 ssh_line="$(grep -n -m1 '^      - name: Configure SSH$' "$workflow_file" | cut -d: -f1)"
@@ -119,6 +143,12 @@ test "$(grep -Fc 'deploy/docker-compose.quotajet.yml' "$workflow_file")" -ge 1 |
 test "$(grep -Fc 'deploy/quotajet.env.example' "$workflow_file")" -ge 1 || fail "env template is not uploaded"
 test "$(grep -Fc 'deploy/quotajet-brand.sql' "$workflow_file")" -ge 1 || fail "brand SQL is not uploaded"
 test "$(grep -Fc 'deploy/quotajet-deploy.sh' "$workflow_file")" -ge 1 || fail "deploy script is not uploaded"
-grep -Fq '.bootstrap.env' "$workflow_file" || fail "bootstrap artifact is not uploaded"
+if grep -Fq '.bootstrap.env' <<<"$upload_step"; then
+  fail "bootstrap credentials must not be retained on the host by the SCP step"
+fi
+grep -Fq 'QUOTAJET_BOOTSTRAP_STDIN=1' <<<"$run_deploy_step" || fail "remote deployment does not opt into bootstrap stdin"
+grep -Fq '< .bootstrap.env' <<<"$run_deploy_step" || fail "bootstrap credentials are not streamed into the deployment SSH session"
+grep -Fq 'if: ${{ always() }}' "$workflow_file" || fail "local bootstrap cleanup is not unconditional"
+grep -Fq 'rm -f .bootstrap.env' "$workflow_file" || fail "local bootstrap cleanup is missing"
 
 printf 'quotajet deployment workflow regression test passed\n'

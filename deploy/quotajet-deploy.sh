@@ -8,7 +8,9 @@ postgres_container="postgres.quotajet-next"
 redis_container="redis.quotajet-next"
 deploy_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 env_file="$deploy_dir/.env"
-bootstrap_file="$deploy_dir/.bootstrap.env"
+legacy_bootstrap_file="$deploy_dir/.bootstrap.env"
+bootstrap_file="$legacy_bootstrap_file"
+bootstrap_from_stdin="${QUOTAJET_BOOTSTRAP_STDIN:-0}"
 staging_env_file=""
 env_update_file=""
 admin_email_file=""
@@ -18,7 +20,7 @@ compose_files=(
   -f "$deploy_dir/docker-compose.quotajet.yml"
 )
 
-trap 'rm -f "$bootstrap_file" "${staging_env_file:-}" "${env_update_file:-}" "${admin_email_file:-}" "${admin_password_file:-}"' EXIT
+trap 'rm -f "$legacy_bootstrap_file" "$bootstrap_file" "${staging_env_file:-}" "${env_update_file:-}" "${admin_email_file:-}" "${admin_password_file:-}"' EXIT
 
 cd "$deploy_dir"
 umask 077
@@ -32,6 +34,10 @@ fi
 semantic_version_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*)(\.(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*))*)?$'
 if [[ ! "$SUB2API_VERSION" =~ $semantic_version_regex ]]; then
   printf 'SUB2API_VERSION must be a normalized semantic version\n' >&2
+  exit 1
+fi
+if [[ "$bootstrap_from_stdin" != 0 && "$bootstrap_from_stdin" != 1 ]]; then
+  printf 'QUOTAJET_BOOTSTRAP_STDIN must be 0 or 1\n' >&2
   exit 1
 fi
 export SUB2API_IMAGE SUB2API_VERSION
@@ -81,7 +87,7 @@ read_bootstrap_b64() {
     return 1
   fi
   [[ -n "$encoded" ]] || return 1
-  if ! printf '%s' "$encoded" | base64 --decode >"$output_file"; then
+  if ! printf '%s' "$encoded" | base64 --decode >"$output_file" 2>/dev/null; then
     return 1
   fi
   [[ -s "$output_file" ]] || return 1
@@ -98,7 +104,10 @@ wait_for_container_health() {
     sleep 2
   done
 
-  test "$(docker inspect --format '{{.State.Health.Status}}' "$container")" = "healthy"
+  if [[ "$(docker inspect --format '{{.State.Health.Status}}' "$container")" != "healthy" ]]; then
+    printf 'container %s did not become healthy\n' "$container" >&2
+    return 1
+  fi
 }
 
 wait_for_all_health() {
@@ -118,6 +127,34 @@ if [[ "$image_version" != "$SUB2API_VERSION" ]]; then
   exit 1
 fi
 
+if [[ "$bootstrap_from_stdin" == 1 ]]; then
+  bootstrap_file="$(mktemp "$deploy_dir/.bootstrap.env.stdin.XXXXXX")"
+  chmod 600 "$bootstrap_file"
+  if ! cat >"$bootstrap_file"; then
+    printf 'bootstrap stream is invalid\n' >&2
+    exit 1
+  fi
+  if [[ "$(wc -l <"$bootstrap_file")" -ne 2 ]] ||
+    [[ "$(grep -c '^ADMIN_EMAIL_B64=' "$bootstrap_file" || true)" -ne 1 ]] ||
+    [[ "$(grep -c '^ADMIN_PASSWORD_B64=' "$bootstrap_file" || true)" -ne 1 ]]; then
+    printf 'bootstrap stream is invalid\n' >&2
+    exit 1
+  fi
+  admin_email_file="$(mktemp "$deploy_dir/.admin-email.XXXXXX")"
+  admin_password_file="$(mktemp "$deploy_dir/.admin-password.XXXXXX")"
+  chmod 600 "$admin_email_file" "$admin_password_file"
+  if ! read_bootstrap_b64 ADMIN_EMAIL_B64 "$admin_email_file" ||
+    ! read_bootstrap_b64 ADMIN_PASSWORD_B64 "$admin_password_file"; then
+    printf 'bootstrap stream is invalid\n' >&2
+    exit 1
+  fi
+  if [[ -f "$env_file" ]]; then
+    rm -f "$admin_email_file" "$admin_password_file"
+    admin_email_file=""
+    admin_password_file=""
+  fi
+fi
+
 if [[ ! -f "$env_file" ]]; then
   admin_email=""
   admin_password=""
@@ -126,17 +163,25 @@ if [[ ! -f "$env_file" ]]; then
   jwt_secret=""
   totp_encryption_key=""
   test -s "$bootstrap_file"
-  admin_email_file="$(mktemp "$deploy_dir/.admin-email.XXXXXX")"
-  admin_password_file="$(mktemp "$deploy_dir/.admin-password.XXXXXX")"
-  chmod 600 "$admin_email_file" "$admin_password_file"
-  if ! read_bootstrap_b64 ADMIN_EMAIL_B64 "$admin_email_file"; then exit 1; fi
-  if ! read_bootstrap_b64 ADMIN_PASSWORD_B64 "$admin_password_file"; then exit 1; fi
+  if [[ -z "$admin_email_file" || -z "$admin_password_file" ]]; then
+    admin_email_file="$(mktemp "$deploy_dir/.admin-email.XXXXXX")"
+    admin_password_file="$(mktemp "$deploy_dir/.admin-password.XXXXXX")"
+    chmod 600 "$admin_email_file" "$admin_password_file"
+    if ! read_bootstrap_b64 ADMIN_EMAIL_B64 "$admin_email_file" ||
+      ! read_bootstrap_b64 ADMIN_PASSWORD_B64 "$admin_password_file"; then
+      printf 'bootstrap credentials are invalid\n' >&2
+      exit 1
+    fi
+  fi
   admin_email="$(<"$admin_email_file")"
   admin_password="$(<"$admin_password_file")"
-  if ! postgres_password="$(generate_secret)"; then exit 1; fi
-  if ! redis_password="$(generate_secret)"; then exit 1; fi
-  if ! jwt_secret="$(generate_secret)"; then exit 1; fi
-  if ! totp_encryption_key="$(generate_secret)"; then exit 1; fi
+  if ! postgres_password="$(generate_secret)" ||
+    ! redis_password="$(generate_secret)" ||
+    ! jwt_secret="$(generate_secret)" ||
+    ! totp_encryption_key="$(generate_secret)"; then
+    printf 'failed to generate deployment secrets\n' >&2
+    exit 1
+  fi
   for secret in "$postgres_password" "$redis_password" "$jwt_secret" "$totp_encryption_key"; do
     [[ "$secret" =~ ^[0-9A-Fa-f]{64}$ ]]
   done

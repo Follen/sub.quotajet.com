@@ -114,6 +114,24 @@ run_deploy() {
     SUB2API_IMAGE="$image" SUB2API_VERSION="$version" "${@:4}" bash "$case_dir/deploy/quotajet-deploy.sh"
 }
 
+run_deploy_stream() {
+  local case_dir="$1"
+  local image="$2"
+  local version="$3"
+  local input_file="$4"
+
+  env PATH="$case_dir/bin:$PATH" DOCKER_LOG="$case_dir/docker.log" MKDIR_LOG="$case_dir/mkdir.log" \
+    SUB2API_IMAGE="$image" SUB2API_VERSION="$version" QUOTAJET_BOOTSTRAP_STDIN=1 "${@:5}" \
+    bash "$case_dir/deploy/quotajet-deploy.sh" <"$input_file"
+}
+
+assert_failure_output() {
+  local case_dir="$1"
+  local expected="$2"
+
+  grep -Fq "$expected" "$case_dir/output" || fail "expected failure diagnostic was missing: $expected"
+}
+
 assert_no_docker_or_env() {
   local case_dir="$1"
 
@@ -128,7 +146,15 @@ assert_no_credential_temp_files() {
   if compgen -G "$case_dir/deploy/.admin-*" >/dev/null; then
     fail "credential temp file was not removed"
   fi
+  if compgen -G "$case_dir/deploy/.bootstrap.env.stdin.*" >/dev/null; then
+    fail "bootstrap stream temp file was not removed"
+  fi
 }
+
+trap_line="$(grep -n -m1 "^trap .*bootstrap_file" "$source_deploy_dir/quotajet-deploy.sh" | cut -d: -f1 || true)"
+stream_read_line="$(grep -n -m1 'cat >"\$bootstrap_file"' "$source_deploy_dir/quotajet-deploy.sh" | cut -d: -f1 || true)"
+[[ -n "$trap_line" && -n "$stream_read_line" && "$trap_line" -lt "$stream_read_line" ]] || \
+  fail "bootstrap cleanup trap must be installed before stdin is read"
 
 for image in \
   'not-a-registry/image:1.2.3' \
@@ -141,9 +167,10 @@ for image in \
   mkdir -p "$case_dir"
   prepare_deploy_dir "$case_dir"
   make_fake_bin "$case_dir"
-  if run_deploy "$case_dir" "$image" "$valid_version"; then
+  if run_deploy "$case_dir" "$image" "$valid_version" >"$case_dir/output" 2>&1; then
     fail "invalid image unexpectedly deployed: $image"
   fi
+  assert_failure_output "$case_dir" 'SUB2API_IMAGE must match ghcr.io/follen/sub2api@sha256:<64 lowercase hex>'
   assert_no_docker_or_env "$case_dir"
 done
 
@@ -152,9 +179,10 @@ for version in v1.2.3 latest 1.2 00.1.2 1.2.3-01 '1.2.3--'; do
   mkdir -p "$case_dir"
   prepare_deploy_dir "$case_dir"
   make_fake_bin "$case_dir"
-  if run_deploy "$case_dir" "$valid_image" "$version"; then
+  if run_deploy "$case_dir" "$valid_image" "$version" >"$case_dir/output" 2>&1; then
     fail "invalid expected version unexpectedly deployed: $version"
   fi
+  assert_failure_output "$case_dir" 'SUB2API_VERSION must be a normalized semantic version'
   assert_no_docker_or_env "$case_dir"
 done
 
@@ -168,9 +196,10 @@ exit 1
 EOF
 chmod +x "$case_dir/bin/failing-openssl"
 mv "$case_dir/bin/failing-openssl" "$case_dir/bin/openssl"
-if run_deploy "$case_dir" "$valid_image" "$valid_version"; then
+if run_deploy "$case_dir" "$valid_image" "$valid_version" >"$case_dir/output" 2>&1; then
   fail "openssl failure unexpectedly deployed"
 fi
+assert_failure_output "$case_dir" 'failed to generate deployment secrets'
 test ! -e "$case_dir/deploy/.env" || fail "openssl failure left a partial .env"
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
 assert_no_credential_temp_files "$case_dir"
@@ -181,9 +210,10 @@ prepare_deploy_dir "$case_dir"
 printf 'ADMIN_EMAIL_B64=not-base64\nADMIN_PASSWORD_B64=%s\n' \
   "$(printf 'bootstrap-password' | base64)" >"$case_dir/deploy/.bootstrap.env"
 make_fake_bin "$case_dir"
-if run_deploy "$case_dir" "$valid_image" "$valid_version"; then
+if run_deploy "$case_dir" "$valid_image" "$valid_version" >"$case_dir/output" 2>&1; then
   fail "invalid base64 unexpectedly deployed"
 fi
+assert_failure_output "$case_dir" 'bootstrap credentials are invalid'
 test ! -e "$case_dir/deploy/.env" || fail "invalid base64 left a partial .env"
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
 assert_no_credential_temp_files "$case_dir"
@@ -197,9 +227,10 @@ for line_break in trailing-lf trailing-cr; do
   esac
   prepare_deploy_dir "$case_dir" "$invalid_email"
   make_fake_bin "$case_dir"
-  if run_deploy "$case_dir" "$valid_image" "$valid_version"; then
+  if run_deploy "$case_dir" "$valid_image" "$valid_version" >"$case_dir/output" 2>&1; then
     fail "$line_break base64 unexpectedly deployed"
   fi
+  assert_failure_output "$case_dir" 'bootstrap credentials are invalid'
   test ! -e "$case_dir/deploy/.env" || fail "$line_break base64 left a partial .env"
   test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
   assert_no_credential_temp_files "$case_dir"
@@ -211,16 +242,35 @@ for failure in image-version-mismatch unhealthy wrong-site-name wrong-site-logo 
   prepare_deploy_dir "$case_dir"
   make_fake_bin "$case_dir"
   case "$failure" in
-    image-version-mismatch) extra_env=(FAKE_IMAGE_VERSION=9.9.9) ;;
-    unhealthy) extra_env=(FAKE_HEALTH_STATUS=unhealthy) ;;
-    wrong-site-name) extra_env=(FAKE_SITE_NAME=WrongSite) ;;
-    wrong-site-logo) extra_env=(FAKE_SITE_LOGO=/wrong-logo.png) ;;
-    image-mismatch) extra_env=(FAKE_DEPLOYED_IMAGE="ghcr.io/follen/sub2api@sha256:$(printf 'b%.0s' {1..64})") ;;
-    running-version-mismatch) extra_env=(FAKE_RUNNING_VERSION=9.9.9) ;;
+    image-version-mismatch)
+      extra_env=(FAKE_IMAGE_VERSION=9.9.9)
+      expected_message='image OCI version label does not match SUB2API_VERSION'
+      ;;
+    unhealthy)
+      extra_env=(FAKE_HEALTH_STATUS=unhealthy)
+      expected_message='container quotajet-next did not become healthy'
+      ;;
+    wrong-site-name)
+      extra_env=(FAKE_SITE_NAME=WrongSite)
+      expected_message='QuotaJet brand settings were not persisted'
+      ;;
+    wrong-site-logo)
+      extra_env=(FAKE_SITE_LOGO=/wrong-logo.png)
+      expected_message='QuotaJet brand settings were not persisted'
+      ;;
+    image-mismatch)
+      extra_env=(FAKE_DEPLOYED_IMAGE="ghcr.io/follen/sub2api@sha256:$(printf 'b%.0s' {1..64})")
+      expected_message='deployed image does not match SUB2API_IMAGE'
+      ;;
+    running-version-mismatch)
+      extra_env=(FAKE_RUNNING_VERSION=9.9.9)
+      expected_message='deployed image version does not match SUB2API_VERSION'
+      ;;
   esac
-  if run_deploy "$case_dir" "$valid_image" "$valid_version" "${extra_env[@]}"; then
+  if run_deploy "$case_dir" "$valid_image" "$valid_version" "${extra_env[@]}" >"$case_dir/output" 2>&1; then
     fail "$failure unexpectedly deployed"
   fi
+  assert_failure_output "$case_dir" "$expected_message"
   test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
 done
 
@@ -250,5 +300,60 @@ grep -Fq 'inspect --format {{.Config.Image}} quotajet-next' "$case_dir/docker.lo
 grep -Fq "SUB2API_IMAGE='$valid_image'" "$case_dir/deploy/.env" || fail "digest image was not persisted"
 grep -Fq "SUB2API_VERSION='$valid_version'" "$case_dir/deploy/.env" || fail "expected version was not persisted"
 grep -Fq 'inspect --format {{ index .Config.Labels "org.opencontainers.image.version" }} quotajet-next' "$case_dir/docker.log" || fail "running version metadata was not verified"
+
+case_dir="$work_dir/stdin-success"
+mkdir -p "$case_dir"
+prepare_deploy_dir "$case_dir" 'stream-admin@example.com' 'stream-password'
+mv "$case_dir/deploy/.bootstrap.env" "$case_dir/bootstrap.input"
+printf 'stale-bootstrap-file\n' >"$case_dir/deploy/.bootstrap.env"
+make_fake_bin "$case_dir"
+run_deploy_stream "$case_dir" "$valid_image" "$valid_version" "$case_dir/bootstrap.input"
+test ! -e "$case_dir/deploy/.bootstrap.env" || fail "stdin bootstrap created the legacy bootstrap path"
+assert_no_credential_temp_files "$case_dir"
+grep -Fq "ADMIN_EMAIL='stream-admin@example.com'" "$case_dir/deploy/.env" || fail "stdin admin email was not persisted"
+grep -Fq "ADMIN_PASSWORD='stream-password'" "$case_dir/deploy/.env" || fail "stdin admin password was not persisted"
+
+for invalid_stream in missing-password invalid-base64 truncated; do
+  case_dir="$work_dir/stdin-$invalid_stream"
+  mkdir -p "$case_dir"
+  prepare_deploy_dir "$case_dir"
+  rm "$case_dir/deploy/.bootstrap.env"
+  make_fake_bin "$case_dir"
+  case "$invalid_stream" in
+    missing-password)
+      printf 'ADMIN_EMAIL_B64=%s\n' "$(printf 'admin@example.com' | base64)" >"$case_dir/bootstrap.input"
+      ;;
+    invalid-base64)
+      printf 'ADMIN_EMAIL_B64=not-base64\nADMIN_PASSWORD_B64=%s\n' \
+        "$(printf 'stream-password' | base64)" >"$case_dir/bootstrap.input"
+      ;;
+    truncated)
+      printf 'ADMIN_EMAIL_B64=%s\nADMIN_PASSWORD_B64=' \
+        "$(printf 'admin@example.com' | base64)" >"$case_dir/bootstrap.input"
+      ;;
+  esac
+  if run_deploy_stream "$case_dir" "$valid_image" "$valid_version" "$case_dir/bootstrap.input" >"$case_dir/output" 2>&1; then
+    fail "invalid bootstrap stream unexpectedly deployed: $invalid_stream"
+  fi
+  assert_failure_output "$case_dir" 'bootstrap stream is invalid'
+  test ! -e "$case_dir/deploy/.env" || fail "invalid bootstrap stream created .env: $invalid_stream"
+  assert_no_credential_temp_files "$case_dir"
+  ! grep -Fq 'admin@example.com' "$case_dir/output" || fail "bootstrap credential leaked in diagnostics"
+  ! grep -Fq 'stream-password' "$case_dir/output" || fail "bootstrap credential leaked in diagnostics"
+done
+
+case_dir="$work_dir/stdin-invalid-existing-env"
+mkdir -p "$case_dir"
+prepare_deploy_dir "$case_dir"
+rm "$case_dir/deploy/.bootstrap.env"
+printf 'EXISTING=preserved\n' >"$case_dir/deploy/.env"
+printf 'ADMIN_EMAIL_B64=%s\n' "$(printf 'admin@example.com' | base64)" >"$case_dir/bootstrap.input"
+make_fake_bin "$case_dir"
+if run_deploy_stream "$case_dir" "$valid_image" "$valid_version" "$case_dir/bootstrap.input" >"$case_dir/output" 2>&1; then
+  fail "invalid bootstrap stream unexpectedly deployed with an existing env"
+fi
+assert_failure_output "$case_dir" 'bootstrap stream is invalid'
+test "$(<"$case_dir/deploy/.env")" = 'EXISTING=preserved' || fail "invalid bootstrap stream changed the existing env"
+assert_no_credential_temp_files "$case_dir"
 
 printf 'quotajet deploy bootstrap regression test passed\n'
