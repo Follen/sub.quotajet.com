@@ -9,12 +9,14 @@ redis_container="redis.quotajet-next"
 deploy_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 env_file="$deploy_dir/.env"
 bootstrap_file="$deploy_dir/.bootstrap.env"
+staging_env_file=""
+env_update_file=""
 compose_files=(
   -f "$deploy_dir/docker-compose.local.yml"
   -f "$deploy_dir/docker-compose.quotajet.yml"
 )
 
-trap 'rm -f "$bootstrap_file"' EXIT
+trap 'rm -f "$bootstrap_file" "${staging_env_file:-}" "${env_update_file:-}"' EXIT
 
 cd "$deploy_dir"
 umask 077
@@ -31,16 +33,26 @@ fi
 export SUB2API_IMAGE
 
 set_env() {
-  local key="$1"
-  local value="$2"
-  local escaped_value
+  local file="$1"
+  local key="$2"
+  local value="$3"
+  local found=0
 
-  escaped_value="$(printf '%s' "$value" | sed 's/[\\&|]/\\\\&/g')"
-  if grep -q "^${key}=" "$env_file"; then
-    sed -i "s|^${key}=.*|${key}=${escaped_value}|" "$env_file"
-  else
-    printf '%s=%s\n' "$key" "$value" >>"$env_file"
+  env_update_file="$(mktemp "$file.update.XXXXXX")"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" == "$key="* ]]; then
+      printf '%s=%s\n' "$key" "$value"
+      found=1
+    else
+      printf '%s\n' "$line"
+    fi
+  done <"$file" >"$env_update_file"
+  if [[ "$found" -eq 0 ]]; then
+    printf '%s=%s\n' "$key" "$value" >>"$env_update_file"
   fi
+  chmod 600 "$env_update_file"
+  mv "$env_update_file" "$file"
+  env_update_file=""
 }
 
 generate_secret() {
@@ -55,11 +67,18 @@ read_env_value() {
 
 read_bootstrap_b64() {
   local key="$1"
-  local value
+  local encoded
+  local decoded
 
-  value="$(sed -n "s/^${key}=//p" "$bootstrap_file" | tail -n 1)"
-  test -n "$value"
-  printf '%s' "$value" | base64 --decode
+  if ! encoded="$(sed -n "s/^${key}=//p" "$bootstrap_file" | tail -n 1)"; then
+    return 1
+  fi
+  [[ -n "$encoded" ]] || return 1
+  if ! decoded="$(printf '%s' "$encoded" | base64 --decode)"; then
+    return 1
+  fi
+  [[ -n "$decoded" && "$decoded" != *$'\n'* && "$decoded" != *$'\r'* ]] || return 1
+  printf '%s' "$decoded"
 }
 
 wait_for_container_health() {
@@ -87,28 +106,46 @@ command -v base64 >/dev/null
 docker compose version >/dev/null
 
 if [[ ! -f "$env_file" ]]; then
-  secret=""
+  admin_email=""
+  admin_password=""
+  postgres_password=""
+  redis_password=""
+  jwt_secret=""
+  totp_encryption_key=""
   test -s "$bootstrap_file"
-  cp "$deploy_dir/quotajet.env.example" "$env_file"
-  chmod 600 "$env_file"
-  set_env ADMIN_EMAIL "$(read_bootstrap_b64 ADMIN_EMAIL_B64)"
-  set_env ADMIN_PASSWORD "$(read_bootstrap_b64 ADMIN_PASSWORD_B64)"
-  secret="$(generate_secret)" || exit 1
-  set_env POSTGRES_PASSWORD "$secret"
-  secret="$(generate_secret)" || exit 1
-  set_env REDIS_PASSWORD "$secret"
-  secret="$(generate_secret)" || exit 1
-  set_env JWT_SECRET "$secret"
-  secret="$(generate_secret)" || exit 1
-  set_env TOTP_ENCRYPTION_KEY "$secret"
+  if ! admin_email="$(read_bootstrap_b64 ADMIN_EMAIL_B64)"; then exit 1; fi
+  if ! admin_password="$(read_bootstrap_b64 ADMIN_PASSWORD_B64)"; then exit 1; fi
+  if ! postgres_password="$(generate_secret)"; then exit 1; fi
+  if ! redis_password="$(generate_secret)"; then exit 1; fi
+  if ! jwt_secret="$(generate_secret)"; then exit 1; fi
+  if ! totp_encryption_key="$(generate_secret)"; then exit 1; fi
+  for secret in "$postgres_password" "$redis_password" "$jwt_secret" "$totp_encryption_key"; do
+    [[ "$secret" =~ ^[0-9A-Fa-f]{64}$ ]]
+  done
+
+  staging_env_file="$(mktemp "$deploy_dir/.env.staging.XXXXXX")"
+  cp "$deploy_dir/quotajet.env.example" "$staging_env_file"
+  chmod 600 "$staging_env_file"
+  set_env "$staging_env_file" ADMIN_EMAIL "$admin_email"
+  set_env "$staging_env_file" ADMIN_PASSWORD "$admin_password"
+  set_env "$staging_env_file" POSTGRES_PASSWORD "$postgres_password"
+  set_env "$staging_env_file" REDIS_PASSWORD "$redis_password"
+  set_env "$staging_env_file" JWT_SECRET "$jwt_secret"
+  set_env "$staging_env_file" TOTP_ENCRYPTION_KEY "$totp_encryption_key"
+else
+  staging_env_file="$(mktemp "$deploy_dir/.env.staging.XXXXXX")"
+  cp "$env_file" "$staging_env_file"
+  chmod 600 "$staging_env_file"
 fi
 
-set_env SUB2API_IMAGE "$SUB2API_IMAGE"
-set_env BIND_HOST 127.0.0.1
-set_env SERVER_PORT 8081
-set_env SERVER_MODE release
-set_env TZ Asia/Shanghai
-chmod 600 "$env_file"
+set_env "$staging_env_file" SUB2API_IMAGE "$SUB2API_IMAGE"
+set_env "$staging_env_file" BIND_HOST 127.0.0.1
+set_env "$staging_env_file" SERVER_PORT 8081
+set_env "$staging_env_file" SERVER_MODE release
+set_env "$staging_env_file" TZ Asia/Shanghai
+chmod 600 "$staging_env_file"
+mv "$staging_env_file" "$env_file"
+staging_env_file=""
 
 mkdir -p \
   /www/data/sub2api/quotajet-next \
