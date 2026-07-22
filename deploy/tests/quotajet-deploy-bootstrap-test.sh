@@ -17,18 +17,14 @@ decode_compose_single_quoted_value() {
   local encoded
   local decoded=""
   local character
-  local escaped_character
   local index=0
 
   [[ ${#value} -ge 2 && "${value:0:1}" == "'" && "${value: -1}" == "'" ]] || return 1
   encoded="${value:1:${#value}-2}"
   while [[ $index -lt ${#encoded} ]]; do
     character="${encoded:index:1}"
-    if [[ "$character" == "\\" ]]; then
-      [[ $((index + 1)) -lt ${#encoded} ]] || return 1
-      escaped_character="${encoded:index+1:1}"
-      [[ "$escaped_character" == "\\" || "$escaped_character" == "'" ]] || return 1
-      decoded+="$escaped_character"
+    if [[ "$character" == "\\" && $((index + 1)) -lt ${#encoded} && "${encoded:index+1:1}" == "'" ]]; then
+      decoded+="'"
       index=$((index + 2))
     else
       decoded+="$character"
@@ -112,6 +108,14 @@ assert_no_docker_or_env() {
   test ! -e "$case_dir/docker.log" || fail "docker was invoked"
 }
 
+assert_no_credential_temp_files() {
+  local case_dir="$1"
+
+  if compgen -G "$case_dir/deploy/.admin-*" >/dev/null; then
+    fail "credential temp file was not removed"
+  fi
+}
+
 for image in 'not-a-registry/image:1.2.3' 'ghcr.io/follen/sub2api:latest'; do
   case_dir="$work_dir/invalid-${image//[^A-Za-z0-9]/-}"
   mkdir -p "$case_dir"
@@ -138,6 +142,7 @@ if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'; then
 fi
 test ! -e "$case_dir/deploy/.env" || fail "openssl failure left a partial .env"
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
+assert_no_credential_temp_files "$case_dir"
 
 case_dir="$work_dir/invalid-base64"
 mkdir -p "$case_dir"
@@ -150,6 +155,24 @@ if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'; then
 fi
 test ! -e "$case_dir/deploy/.env" || fail "invalid base64 left a partial .env"
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
+assert_no_credential_temp_files "$case_dir"
+
+for line_break in trailing-lf trailing-cr; do
+  case_dir="$work_dir/$line_break"
+  mkdir -p "$case_dir"
+  case "$line_break" in
+    trailing-lf) invalid_email=$'admin@example.com\n' ;;
+    trailing-cr) invalid_email=$'admin@example.com\r' ;;
+  esac
+  prepare_deploy_dir "$case_dir" "$invalid_email"
+  make_fake_bin "$case_dir"
+  if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'; then
+    fail "$line_break base64 unexpectedly deployed"
+  fi
+  test ! -e "$case_dir/deploy/.env" || fail "$line_break base64 left a partial .env"
+  test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
+  assert_no_credential_temp_files "$case_dir"
+done
 
 for failure in unhealthy wrong-site-name wrong-site-logo image-mismatch; do
   case_dir="$work_dir/$failure"
@@ -170,19 +193,20 @@ done
 
 case_dir="$work_dir/success"
 mkdir -p "$case_dir"
-special_email='admin$WORD${WORD}'"'"'\&|path@example.com'
-special_password='pass$WORD${WORD}'"'"'\&|with-slashes'
+special_email='admin$WORD${WORD}\path\'"'"'quoted&|@example.com'
+special_password='pass$WORD${WORD}\plain\'"'"'quoted&|value'
 prepare_deploy_dir "$case_dir" "$special_email" "$special_password"
 make_fake_bin "$case_dir"
 run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
+assert_no_credential_temp_files "$case_dir"
 test "$(stat -c '%a' "$case_dir/deploy/.env")" = 600 || fail ".env mode is not 600"
 stored_email="$(sed -n 's/^ADMIN_EMAIL=//p' "$case_dir/deploy/.env")"
 stored_password="$(sed -n 's/^ADMIN_PASSWORD=//p' "$case_dir/deploy/.env")"
 [[ "$stored_email" == "'"*"'" ]] || fail "admin email dotenv value is not single-quoted"
 [[ "$stored_password" == "'"*"'" ]] || fail "admin password dotenv value is not single-quoted"
 printf '%s\n' "$stored_email" | grep -Fq "\\'" || fail "admin email single quote was not escaped"
-printf '%s\n' "$stored_email" | grep -Fq '\\' || fail "admin email backslash was not escaped"
+printf '%s\n' "$stored_email" | grep -Fq '\path' || fail "admin email ordinary backslash was not preserved"
 test "$(decode_compose_single_quoted_value "$stored_email")" = "$special_email" || fail "admin email special characters did not round-trip"
 test "$(decode_compose_single_quoted_value "$stored_password")" = "$special_password" || fail "admin password special characters did not round-trip"
 test "$(grep -Fc 'inspect --format {{.State.Health.Status}} quotajet-next' "$case_dir/docker.log")" = 2 || fail "app health was not checked twice"

@@ -11,12 +11,14 @@ env_file="$deploy_dir/.env"
 bootstrap_file="$deploy_dir/.bootstrap.env"
 staging_env_file=""
 env_update_file=""
+admin_email_file=""
+admin_password_file=""
 compose_files=(
   -f "$deploy_dir/docker-compose.local.yml"
   -f "$deploy_dir/docker-compose.quotajet.yml"
 )
 
-trap 'rm -f "$bootstrap_file" "${staging_env_file:-}" "${env_update_file:-}"' EXIT
+trap 'rm -f "$bootstrap_file" "${staging_env_file:-}" "${env_update_file:-}" "${admin_email_file:-}" "${admin_password_file:-}"' EXIT
 
 cd "$deploy_dir"
 umask 077
@@ -40,8 +42,7 @@ set_env() {
   local found=0
 
   [[ "$value" != *$'\n'* && "$value" != *$'\r'* ]] || return 1
-  escaped_value="${value//\\/\\\\}"
-  escaped_value="${escaped_value//\'/\\\'}"
+  escaped_value="${value//\'/\\\'}"
   env_update_file="$(mktemp "$file.update.XXXXXX")"
   while IFS= read -r line || [[ -n "$line" ]]; do
     if [[ "$line" == "$key="* ]]; then
@@ -71,18 +72,18 @@ read_env_value() {
 
 read_bootstrap_b64() {
   local key="$1"
+  local output_file="$2"
   local encoded
-  local decoded
 
   if ! encoded="$(sed -n "s/^${key}=//p" "$bootstrap_file" | tail -n 1)"; then
     return 1
   fi
   [[ -n "$encoded" ]] || return 1
-  if ! decoded="$(printf '%s' "$encoded" | base64 --decode)"; then
+  if ! printf '%s' "$encoded" | base64 --decode >"$output_file"; then
     return 1
   fi
-  [[ -n "$decoded" && "$decoded" != *$'\n'* && "$decoded" != *$'\r'* ]] || return 1
-  printf '%s' "$decoded"
+  [[ -s "$output_file" ]] || return 1
+  LC_ALL=C tr -d '\r\n' <"$output_file" | cmp -s "$output_file" - || return 1
 }
 
 wait_for_container_health() {
@@ -117,8 +118,13 @@ if [[ ! -f "$env_file" ]]; then
   jwt_secret=""
   totp_encryption_key=""
   test -s "$bootstrap_file"
-  if ! admin_email="$(read_bootstrap_b64 ADMIN_EMAIL_B64)"; then exit 1; fi
-  if ! admin_password="$(read_bootstrap_b64 ADMIN_PASSWORD_B64)"; then exit 1; fi
+  admin_email_file="$(mktemp "$deploy_dir/.admin-email.XXXXXX")"
+  admin_password_file="$(mktemp "$deploy_dir/.admin-password.XXXXXX")"
+  chmod 600 "$admin_email_file" "$admin_password_file"
+  if ! read_bootstrap_b64 ADMIN_EMAIL_B64 "$admin_email_file"; then exit 1; fi
+  if ! read_bootstrap_b64 ADMIN_PASSWORD_B64 "$admin_password_file"; then exit 1; fi
+  admin_email="$(<"$admin_email_file")"
+  admin_password="$(<"$admin_password_file")"
   if ! postgres_password="$(generate_secret)"; then exit 1; fi
   if ! redis_password="$(generate_secret)"; then exit 1; fi
   if ! jwt_secret="$(generate_secret)"; then exit 1; fi
