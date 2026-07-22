@@ -33,6 +33,7 @@ grep -Fq '127.0.0.1' "$env_template"
 grep -Fq 'SERVER_PORT=8081' "$env_template"
 
 bash "$repo_root/deploy/tests/quotajet-deploy-bootstrap-test.sh"
+bash "$repo_root/deploy/tests/quotajet-workflow-normalize-test.sh"
 
 grep -Fq 'workflow_call:' "$workflow_file"
 grep -Fq 'workflow_dispatch:' "$workflow_file"
