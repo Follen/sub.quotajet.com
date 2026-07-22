@@ -24,15 +24,17 @@ cd "$deploy_dir"
 umask 077
 
 : "${SUB2API_IMAGE:?SUB2API_IMAGE is required}"
-if [[ "$SUB2API_IMAGE" == "ghcr.io/follen/sub2api:latest" ]]; then
-  printf 'SUB2API_IMAGE must not use the latest tag\n' >&2
+: "${SUB2API_VERSION:?SUB2API_VERSION is required}"
+if [[ ! "$SUB2API_IMAGE" =~ ^ghcr\.io/follen/sub2api@sha256:[0-9a-f]{64}$ ]]; then
+  printf 'SUB2API_IMAGE must match ghcr.io/follen/sub2api@sha256:<64 lowercase hex>\n' >&2
   exit 1
 fi
-if [[ ! "$SUB2API_IMAGE" =~ ^ghcr\.io/follen/sub2api:v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*)(\.(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*))*)?$ ]]; then
-  printf 'SUB2API_IMAGE must match ghcr.io/follen/sub2api:<version-tag>\n' >&2
+semantic_version_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*)(\.(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*))*)?$'
+if [[ ! "$SUB2API_VERSION" =~ $semantic_version_regex ]]; then
+  printf 'SUB2API_VERSION must be a normalized semantic version\n' >&2
   exit 1
 fi
-export SUB2API_IMAGE
+export SUB2API_IMAGE SUB2API_VERSION
 
 set_env() {
   local file="$1"
@@ -109,6 +111,12 @@ command -v docker >/dev/null
 command -v openssl >/dev/null
 command -v base64 >/dev/null
 docker compose version >/dev/null
+docker pull "$SUB2API_IMAGE"
+image_version="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$SUB2API_IMAGE")"
+if [[ "$image_version" != "$SUB2API_VERSION" ]]; then
+  printf 'image OCI version label does not match SUB2API_VERSION\n' >&2
+  exit 1
+fi
 
 if [[ ! -f "$env_file" ]]; then
   admin_email=""
@@ -149,6 +157,7 @@ else
 fi
 
 set_env "$staging_env_file" SUB2API_IMAGE "$SUB2API_IMAGE"
+set_env "$staging_env_file" SUB2API_VERSION "$SUB2API_VERSION"
 set_env "$staging_env_file" BIND_HOST 127.0.0.1
 set_env "$staging_env_file" SERVER_PORT 8081
 set_env "$staging_env_file" SERVER_MODE release
@@ -186,6 +195,11 @@ wait_for_all_health
 deployed_image="$(docker inspect --format '{{.Config.Image}}' "$app_container")"
 if [[ "$deployed_image" != "$SUB2API_IMAGE" ]]; then
   printf 'deployed image does not match SUB2API_IMAGE\n' >&2
+  exit 1
+fi
+deployed_version="$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$app_container")"
+if [[ "$deployed_version" != "$SUB2API_VERSION" ]]; then
+  printf 'deployed image version does not match SUB2API_VERSION\n' >&2
   exit 1
 fi
 

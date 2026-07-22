@@ -6,6 +6,9 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source_deploy_dir="$repo_root/deploy"
 work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
+valid_digest="sha256:$(printf 'a%.0s' {1..64})"
+valid_image="ghcr.io/follen/sub2api@$valid_digest"
+valid_version="1.2.3"
 
 fail() {
   printf '%s\n' "$*" >&2
@@ -59,11 +62,21 @@ if [[ "$1" == "compose" ]]; then
 fi
 
 case "$1" in
+  pull) exit 0 ;;
+  image)
+    [[ "$2" == "inspect" && "$3" == "--format" ]] || exit 1
+    case "$4" in
+      *version*) printf '%s\n' "${FAKE_IMAGE_VERSION:-$SUB2API_VERSION}" ;;
+      *) exit 1 ;;
+    esac
+    ;;
   inspect)
     if [[ "$3" == "{{.State.Health.Status}}" ]]; then
       printf '%s\n' "${FAKE_HEALTH_STATUS:-healthy}"
     elif [[ "$3" == "{{.Config.Image}}" ]]; then
       printf '%s\n' "${FAKE_DEPLOYED_IMAGE:-$SUB2API_IMAGE}"
+    elif [[ "$3" == *org.opencontainers.image.version* ]]; then
+      printf '%s\n' "${FAKE_RUNNING_VERSION:-$SUB2API_VERSION}"
     else
       exit 1
     fi
@@ -95,9 +108,10 @@ EOF
 run_deploy() {
   local case_dir="$1"
   local image="$2"
+  local version="$3"
 
   env PATH="$case_dir/bin:$PATH" DOCKER_LOG="$case_dir/docker.log" MKDIR_LOG="$case_dir/mkdir.log" \
-    SUB2API_IMAGE="$image" "${@:3}" bash "$case_dir/deploy/quotajet-deploy.sh"
+    SUB2API_IMAGE="$image" SUB2API_VERSION="$version" "${@:4}" bash "$case_dir/deploy/quotajet-deploy.sh"
 }
 
 assert_no_docker_or_env() {
@@ -119,18 +133,27 @@ assert_no_credential_temp_files() {
 for image in \
   'not-a-registry/image:1.2.3' \
   'ghcr.io/follen/sub2api:latest' \
-  'ghcr.io/follen/sub2api:dev' \
-  'ghcr.io/follen/sub2api:stable' \
-  'ghcr.io/follen/sub2api:build' \
-  'ghcr.io/follen/sub2api:00.1.162' \
-  'ghcr.io/follen/sub2api:0.1.162-01' \
-  'ghcr.io/follen/sub2api:0.1.162--'; do
+  'ghcr.io/follen/sub2api:1.2.3' \
+  'ghcr.io/follen/sub2api@sha256:ABCDEF' \
+  'ghcr.io/follen/sub2api@sha256:not-a-digest' \
+  "ghcr.io/other/sub2api@$valid_digest"; do
   case_dir="$work_dir/invalid-${image//[^A-Za-z0-9]/-}"
   mkdir -p "$case_dir"
   prepare_deploy_dir "$case_dir"
   make_fake_bin "$case_dir"
-  if run_deploy "$case_dir" "$image"; then
+  if run_deploy "$case_dir" "$image" "$valid_version"; then
     fail "invalid image unexpectedly deployed: $image"
+  fi
+  assert_no_docker_or_env "$case_dir"
+done
+
+for version in v1.2.3 latest 1.2 00.1.2 1.2.3-01 '1.2.3--'; do
+  case_dir="$work_dir/invalid-version-${version//[^A-Za-z0-9]/-}"
+  mkdir -p "$case_dir"
+  prepare_deploy_dir "$case_dir"
+  make_fake_bin "$case_dir"
+  if run_deploy "$case_dir" "$valid_image" "$version"; then
+    fail "invalid expected version unexpectedly deployed: $version"
   fi
   assert_no_docker_or_env "$case_dir"
 done
@@ -145,7 +168,7 @@ exit 1
 EOF
 chmod +x "$case_dir/bin/failing-openssl"
 mv "$case_dir/bin/failing-openssl" "$case_dir/bin/openssl"
-if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'; then
+if run_deploy "$case_dir" "$valid_image" "$valid_version"; then
   fail "openssl failure unexpectedly deployed"
 fi
 test ! -e "$case_dir/deploy/.env" || fail "openssl failure left a partial .env"
@@ -158,7 +181,7 @@ prepare_deploy_dir "$case_dir"
 printf 'ADMIN_EMAIL_B64=not-base64\nADMIN_PASSWORD_B64=%s\n' \
   "$(printf 'bootstrap-password' | base64)" >"$case_dir/deploy/.bootstrap.env"
 make_fake_bin "$case_dir"
-if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'; then
+if run_deploy "$case_dir" "$valid_image" "$valid_version"; then
   fail "invalid base64 unexpectedly deployed"
 fi
 test ! -e "$case_dir/deploy/.env" || fail "invalid base64 left a partial .env"
@@ -174,7 +197,7 @@ for line_break in trailing-lf trailing-cr; do
   esac
   prepare_deploy_dir "$case_dir" "$invalid_email"
   make_fake_bin "$case_dir"
-  if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'; then
+  if run_deploy "$case_dir" "$valid_image" "$valid_version"; then
     fail "$line_break base64 unexpectedly deployed"
   fi
   test ! -e "$case_dir/deploy/.env" || fail "$line_break base64 left a partial .env"
@@ -182,18 +205,20 @@ for line_break in trailing-lf trailing-cr; do
   assert_no_credential_temp_files "$case_dir"
 done
 
-for failure in unhealthy wrong-site-name wrong-site-logo image-mismatch; do
+for failure in image-version-mismatch unhealthy wrong-site-name wrong-site-logo image-mismatch running-version-mismatch; do
   case_dir="$work_dir/$failure"
   mkdir -p "$case_dir"
   prepare_deploy_dir "$case_dir"
   make_fake_bin "$case_dir"
   case "$failure" in
+    image-version-mismatch) extra_env=(FAKE_IMAGE_VERSION=9.9.9) ;;
     unhealthy) extra_env=(FAKE_HEALTH_STATUS=unhealthy) ;;
     wrong-site-name) extra_env=(FAKE_SITE_NAME=WrongSite) ;;
     wrong-site-logo) extra_env=(FAKE_SITE_LOGO=/wrong-logo.png) ;;
-    image-mismatch) extra_env=(FAKE_DEPLOYED_IMAGE=ghcr.io/follen/sub2api:9.9.9) ;;
+    image-mismatch) extra_env=(FAKE_DEPLOYED_IMAGE="ghcr.io/follen/sub2api@sha256:$(printf 'b%.0s' {1..64})") ;;
+    running-version-mismatch) extra_env=(FAKE_RUNNING_VERSION=9.9.9) ;;
   esac
-  if run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3' "${extra_env[@]}"; then
+  if run_deploy "$case_dir" "$valid_image" "$valid_version" "${extra_env[@]}"; then
     fail "$failure unexpectedly deployed"
   fi
   test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
@@ -205,7 +230,7 @@ special_email='admin$WORD${WORD}\path\'"'"'quoted&|@example.com'
 special_password='pass$WORD${WORD}\plain\'"'"'quoted&|value'
 prepare_deploy_dir "$case_dir" "$special_email" "$special_password"
 make_fake_bin "$case_dir"
-run_deploy "$case_dir" 'ghcr.io/follen/sub2api:0.1.162-qj.1'
+run_deploy "$case_dir" "$valid_image" "$valid_version"
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
 assert_no_credential_temp_files "$case_dir"
 test "$(stat -c '%a' "$case_dir/deploy/.env")" = 600 || fail ".env mode is not 600"
@@ -222,12 +247,8 @@ test "$(grep -Fc 'inspect --format {{.State.Health.Status}} postgres.quotajet-ne
 test "$(grep -Fc 'inspect --format {{.State.Health.Status}} redis.quotajet-next' "$case_dir/docker.log")" = 2 || fail "redis health was not checked twice"
 grep -Fq 'exec -i postgres.quotajet-next psql' "$case_dir/docker.log" || fail "branding did not use postgres.quotajet-next"
 grep -Fq 'inspect --format {{.Config.Image}} quotajet-next' "$case_dir/docker.log" || fail "deployed image was not verified"
-
-case_dir="$work_dir/release-tag"
-mkdir -p "$case_dir"
-prepare_deploy_dir "$case_dir"
-make_fake_bin "$case_dir"
-run_deploy "$case_dir" 'ghcr.io/follen/sub2api:v0.1.162'
-grep -Fq "SUB2API_IMAGE='ghcr.io/follen/sub2api:v0.1.162'" "$case_dir/deploy/.env" || fail "release tag was not persisted"
+grep -Fq "SUB2API_IMAGE='$valid_image'" "$case_dir/deploy/.env" || fail "digest image was not persisted"
+grep -Fq "SUB2API_VERSION='$valid_version'" "$case_dir/deploy/.env" || fail "expected version was not persisted"
+grep -Fq 'inspect --format {{ index .Config.Labels "org.opencontainers.image.version" }} quotajet-next' "$case_dir/docker.log" || fail "running version metadata was not verified"
 
 printf 'quotajet deploy bootstrap regression test passed\n'

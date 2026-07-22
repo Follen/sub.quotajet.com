@@ -3,13 +3,20 @@ name: Deploy QuotaJet Production
 on:
   workflow_call:
     inputs:
-      image_tag:
+      release_tag:
+        required: true
+        type: string
+      image_digest:
         required: true
         type: string
   workflow_dispatch:
     inputs:
-      image_tag:
-        description: Image tag to deploy
+      release_tag:
+        description: Validated release tag to deploy (for example, v1.0.0)
+        required: true
+        type: string
+      image_digest:
+        description: Published GHCR image digest (sha256 plus 64 lowercase hex characters)
         required: true
         type: string
 
@@ -26,18 +33,58 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Normalize image tag
+      - name: Checkout release
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.release_tag }}
+
+      - name: Validate release and image
         id: image
         env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          normalized_tag="${IMAGE_TAG#v}"
           semantic_version_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*)(\.(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*))*)?$'
-          if [[ -z "$normalized_tag" || ! "$normalized_tag" =~ $semantic_version_regex ]]; then
-            printf 'image_tag must be a semantic version after an optional leading v\n' >&2
+          normalized_version="${RELEASE_TAG#v}"
+          if [[ "$RELEASE_TAG" != v* || ! "$normalized_version" =~ $semantic_version_regex ]]; then
+            printf 'release tag must match v<semantic-version>\n' >&2
             exit 1
           fi
-          printf 'image=ghcr.io/follen/sub2api:%s\n' "$normalized_tag" >> "$GITHUB_OUTPUT"
+          if [[ ! "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            printf 'image digest must match sha256:<64 lowercase hex>\n' >&2
+            exit 1
+          fi
+          git fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          if ! git fetch --no-tags origin "+refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"; then
+            printf 'release tag does not exist\n' >&2
+            exit 1
+          fi
+          tag_commit="$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")"
+          if ! git merge-base --is-ancestor "$tag_commit" "origin/${DEFAULT_BRANCH}"; then
+            printf 'release tag commit is not reachable from origin/%s\n' "$DEFAULT_BRANCH" >&2
+            exit 1
+          fi
+          if [[ "$(git rev-parse HEAD)" != "$tag_commit" ]]; then
+            printf 'checked out commit does not match release tag\n' >&2
+            exit 1
+          fi
+          image_reference="ghcr.io/follen/sub2api@${IMAGE_DIGEST}"
+          docker pull "$image_reference"
+          image_version="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$image_reference")"
+          if [[ "$image_version" != "$normalized_version" ]]; then
+            printf 'OCI version label does not match release version\n' >&2
+            exit 1
+          fi
+          image_revision="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$image_reference")"
+          if [[ "$image_revision" != "$tag_commit" ]]; then
+            printf 'OCI revision label does not match release commit\n' >&2
+            exit 1
+          fi
+          printf 'image=%s\n' "$image_reference" >> "$GITHUB_OUTPUT"
+          printf 'version=%s\n' "$normalized_version" >> "$GITHUB_OUTPUT"
+          printf 'tag_commit=%s\n' "$tag_commit" >> "$GITHUB_OUTPUT"
 
       - name: Configure SSH
         env:
@@ -104,10 +151,11 @@ jobs:
           PROD_DEPLOY_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
           PROD_DEPLOY_USER: ${{ secrets.PROD_DEPLOY_USER }}
           SUB2API_IMAGE: ${{ steps.image.outputs.image }}
+          SUB2API_VERSION: ${{ steps.image.outputs.version }}
         run: |
           printf -v remote_command \
-            'cd /www/apps/quotajet-next && chmod 600 .bootstrap.env && exec env SUB2API_IMAGE=%q bash ./quotajet-deploy.sh' \
-            "$SUB2API_IMAGE"
+            'cd /www/apps/quotajet-next && chmod 600 .bootstrap.env && exec env SUB2API_IMAGE=%q SUB2API_VERSION=%q bash ./quotajet-deploy.sh' \
+            "$SUB2API_IMAGE" "$SUB2API_VERSION"
           ssh -i "$HOME/.ssh/quotajet-deploy" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
