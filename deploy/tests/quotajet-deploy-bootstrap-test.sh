@@ -12,6 +12,32 @@ fail() {
   exit 1
 }
 
+decode_compose_single_quoted_value() {
+  local value="$1"
+  local encoded
+  local decoded=""
+  local character
+  local escaped_character
+  local index=0
+
+  [[ ${#value} -ge 2 && "${value:0:1}" == "'" && "${value: -1}" == "'" ]] || return 1
+  encoded="${value:1:${#value}-2}"
+  while [[ $index -lt ${#encoded} ]]; do
+    character="${encoded:index:1}"
+    if [[ "$character" == "\\" ]]; then
+      [[ $((index + 1)) -lt ${#encoded} ]] || return 1
+      escaped_character="${encoded:index+1:1}"
+      [[ "$escaped_character" == "\\" || "$escaped_character" == "'" ]] || return 1
+      decoded+="$escaped_character"
+      index=$((index + 2))
+    else
+      decoded+="$character"
+      index=$((index + 1))
+    fi
+  done
+  printf '%s' "$decoded"
+}
+
 prepare_deploy_dir() {
   local case_dir="$1"
   local admin_email="${2:-admin@example.com}"
@@ -144,15 +170,21 @@ done
 
 case_dir="$work_dir/success"
 mkdir -p "$case_dir"
-special_email='admin&ops|path\name@example.com'
-special_password='pass&word|with\slashes'
+special_email='admin$WORD${WORD}'"'"'\&|path@example.com'
+special_password='pass$WORD${WORD}'"'"'\&|with-slashes'
 prepare_deploy_dir "$case_dir" "$special_email" "$special_password"
 make_fake_bin "$case_dir"
 run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
 test "$(stat -c '%a' "$case_dir/deploy/.env")" = 600 || fail ".env mode is not 600"
-test "$(sed -n 's/^ADMIN_EMAIL=//p' "$case_dir/deploy/.env")" = "$special_email" || fail "admin email special characters did not round-trip"
-test "$(sed -n 's/^ADMIN_PASSWORD=//p' "$case_dir/deploy/.env")" = "$special_password" || fail "admin password special characters did not round-trip"
+stored_email="$(sed -n 's/^ADMIN_EMAIL=//p' "$case_dir/deploy/.env")"
+stored_password="$(sed -n 's/^ADMIN_PASSWORD=//p' "$case_dir/deploy/.env")"
+[[ "$stored_email" == "'"*"'" ]] || fail "admin email dotenv value is not single-quoted"
+[[ "$stored_password" == "'"*"'" ]] || fail "admin password dotenv value is not single-quoted"
+printf '%s\n' "$stored_email" | grep -Fq "\\'" || fail "admin email single quote was not escaped"
+printf '%s\n' "$stored_email" | grep -Fq '\\' || fail "admin email backslash was not escaped"
+test "$(decode_compose_single_quoted_value "$stored_email")" = "$special_email" || fail "admin email special characters did not round-trip"
+test "$(decode_compose_single_quoted_value "$stored_password")" = "$special_password" || fail "admin password special characters did not round-trip"
 test "$(grep -Fc 'inspect --format {{.State.Health.Status}} quotajet-next' "$case_dir/docker.log")" = 2 || fail "app health was not checked twice"
 test "$(grep -Fc 'inspect --format {{.State.Health.Status}} postgres.quotajet-next' "$case_dir/docker.log")" = 2 || fail "postgres health was not checked twice"
 test "$(grep -Fc 'inspect --format {{.State.Health.Status}} redis.quotajet-next' "$case_dir/docker.log")" = 2 || fail "redis health was not checked twice"

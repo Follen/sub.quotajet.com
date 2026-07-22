@@ -36,19 +36,23 @@ set_env() {
   local file="$1"
   local key="$2"
   local value="$3"
+  local escaped_value
   local found=0
 
+  [[ "$value" != *$'\n'* && "$value" != *$'\r'* ]] || return 1
+  escaped_value="${value//\\/\\\\}"
+  escaped_value="${escaped_value//\'/\\\'}"
   env_update_file="$(mktemp "$file.update.XXXXXX")"
   while IFS= read -r line || [[ -n "$line" ]]; do
     if [[ "$line" == "$key="* ]]; then
-      printf '%s=%s\n' "$key" "$value"
+      printf "%s='%s'\n" "$key" "$escaped_value"
       found=1
     else
       printf '%s\n' "$line"
     fi
   done <"$file" >"$env_update_file"
   if [[ "$found" -eq 0 ]]; then
-    printf '%s=%s\n' "$key" "$value" >>"$env_update_file"
+    printf "%s='%s'\n" "$key" "$escaped_value" >>"$env_update_file"
   fi
   chmod 600 "$env_update_file"
   mv "$env_update_file" "$file"
