@@ -17,6 +17,18 @@ compose_files=(
 trap 'rm -f "$bootstrap_file"' EXIT
 
 cd "$deploy_dir"
+umask 077
+
+: "${SUB2API_IMAGE:?SUB2API_IMAGE is required}"
+if [[ "$SUB2API_IMAGE" == "ghcr.io/follen/sub2api:latest" ]]; then
+  printf 'SUB2API_IMAGE must not use the latest tag\n' >&2
+  exit 1
+fi
+if [[ ! "$SUB2API_IMAGE" =~ ^ghcr\.io/follen/sub2api:[0-9A-Za-z][0-9A-Za-z._-]*$ ]]; then
+  printf 'SUB2API_IMAGE must match ghcr.io/follen/sub2api:<version-tag>\n' >&2
+  exit 1
+fi
+export SUB2API_IMAGE
 
 set_env() {
   local key="$1"
@@ -77,6 +89,7 @@ docker compose version >/dev/null
 if [[ ! -f "$env_file" ]]; then
   test -s "$bootstrap_file"
   cp "$deploy_dir/quotajet.env.example" "$env_file"
+  chmod 600 "$env_file"
   set_env ADMIN_EMAIL "$(read_bootstrap_b64 ADMIN_EMAIL_B64)"
   set_env ADMIN_PASSWORD "$(read_bootstrap_b64 ADMIN_PASSWORD_B64)"
   set_env POSTGRES_PASSWORD "$(generate_secret)"
@@ -84,12 +97,6 @@ if [[ ! -f "$env_file" ]]; then
   set_env JWT_SECRET "$(generate_secret)"
   set_env TOTP_ENCRYPTION_KEY "$(generate_secret)"
 fi
-
-if [[ -z "${SUB2API_IMAGE:-}" ]]; then
-  SUB2API_IMAGE="$(read_env_value SUB2API_IMAGE)"
-fi
-: "${SUB2API_IMAGE:?SUB2API_IMAGE is required}"
-export SUB2API_IMAGE
 
 set_env SUB2API_IMAGE "$SUB2API_IMAGE"
 set_env BIND_HOST 127.0.0.1
