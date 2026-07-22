@@ -1,8 +1,16 @@
 services:
   sub2api:
-    image: quotajet/sub2api:dev
-    build:
-      context: ..
-      dockerfile: Dockerfile
-      args:
-        COMMIT: ${DEPLOY_COMMIT:-dev}
+    image: ${SUB2API_IMAGE:?SUB2API_IMAGE is required}
+    container_name: quotajet-next
+    volumes:
+      - /www/data/sub2api/quotajet-next:/app/data:Z
+
+  postgres:
+    container_name: postgres.quotajet-next
+    volumes:
+      - /www/data/postgres/quotajet-next:/var/lib/postgresql/data:Z
+
+  redis:
+    container_name: redis.quotajet-next
+    volumes:
+      - /www/data/redis/quotajet-next:/data:Z

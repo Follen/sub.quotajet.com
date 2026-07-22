@@ -5,7 +5,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 compose_file="$repo_root/deploy/docker-compose.quotajet.yml"
 deploy_script="$repo_root/deploy/quotajet-deploy.sh"
-env_template="$repo_root/deploy/.env.example"
+env_template="$repo_root/deploy/quotajet.env.example"
 workflow_file="$repo_root/.github/workflows/deploy-quotajet.yml"
 release_workflow="$repo_root/.github/workflows/release.yml"
 
