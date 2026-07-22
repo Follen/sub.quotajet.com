@@ -116,7 +116,15 @@ assert_no_credential_temp_files() {
   fi
 }
 
-for image in 'not-a-registry/image:1.2.3' 'ghcr.io/follen/sub2api:latest'; do
+for image in \
+  'not-a-registry/image:1.2.3' \
+  'ghcr.io/follen/sub2api:latest' \
+  'ghcr.io/follen/sub2api:dev' \
+  'ghcr.io/follen/sub2api:stable' \
+  'ghcr.io/follen/sub2api:build' \
+  'ghcr.io/follen/sub2api:00.1.162' \
+  'ghcr.io/follen/sub2api:0.1.162-01' \
+  'ghcr.io/follen/sub2api:0.1.162--'; do
   case_dir="$work_dir/invalid-${image//[^A-Za-z0-9]/-}"
   mkdir -p "$case_dir"
   prepare_deploy_dir "$case_dir"
@@ -197,7 +205,7 @@ special_email='admin$WORD${WORD}\path\'"'"'quoted&|@example.com'
 special_password='pass$WORD${WORD}\plain\'"'"'quoted&|value'
 prepare_deploy_dir "$case_dir" "$special_email" "$special_password"
 make_fake_bin "$case_dir"
-run_deploy "$case_dir" 'ghcr.io/follen/sub2api:1.2.3'
+run_deploy "$case_dir" 'ghcr.io/follen/sub2api:0.1.162-qj.1'
 test ! -e "$case_dir/deploy/.bootstrap.env" || fail "bootstrap file was not removed"
 assert_no_credential_temp_files "$case_dir"
 test "$(stat -c '%a' "$case_dir/deploy/.env")" = 600 || fail ".env mode is not 600"
@@ -214,5 +222,12 @@ test "$(grep -Fc 'inspect --format {{.State.Health.Status}} postgres.quotajet-ne
 test "$(grep -Fc 'inspect --format {{.State.Health.Status}} redis.quotajet-next' "$case_dir/docker.log")" = 2 || fail "redis health was not checked twice"
 grep -Fq 'exec -i postgres.quotajet-next psql' "$case_dir/docker.log" || fail "branding did not use postgres.quotajet-next"
 grep -Fq 'inspect --format {{.Config.Image}} quotajet-next' "$case_dir/docker.log" || fail "deployed image was not verified"
+
+case_dir="$work_dir/release-tag"
+mkdir -p "$case_dir"
+prepare_deploy_dir "$case_dir"
+make_fake_bin "$case_dir"
+run_deploy "$case_dir" 'ghcr.io/follen/sub2api:v0.1.162'
+grep -Fq "SUB2API_IMAGE='ghcr.io/follen/sub2api:v0.1.162'" "$case_dir/deploy/.env" || fail "release tag was not persisted"
 
 printf 'quotajet deploy bootstrap regression test passed\n'

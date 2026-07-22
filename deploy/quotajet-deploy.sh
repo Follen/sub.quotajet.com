@@ -28,7 +28,7 @@ if [[ "$SUB2API_IMAGE" == "ghcr.io/follen/sub2api:latest" ]]; then
   printf 'SUB2API_IMAGE must not use the latest tag\n' >&2
   exit 1
 fi
-if [[ ! "$SUB2API_IMAGE" =~ ^ghcr\.io/follen/sub2api:[0-9A-Za-z][0-9A-Za-z._-]*$ ]]; then
+if [[ ! "$SUB2API_IMAGE" =~ ^ghcr\.io/follen/sub2api:v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*)(\.(([A-Za-z][0-9A-Za-z-]*|[0-9]+[A-Za-z][0-9A-Za-z-]*)|0|[1-9][0-9]*))*)?$ ]]; then
   printf 'SUB2API_IMAGE must match ghcr.io/follen/sub2api:<version-tag>\n' >&2
   exit 1
 fi
