@@ -87,15 +87,20 @@ command -v base64 >/dev/null
 docker compose version >/dev/null
 
 if [[ ! -f "$env_file" ]]; then
+  secret=""
   test -s "$bootstrap_file"
   cp "$deploy_dir/quotajet.env.example" "$env_file"
   chmod 600 "$env_file"
   set_env ADMIN_EMAIL "$(read_bootstrap_b64 ADMIN_EMAIL_B64)"
   set_env ADMIN_PASSWORD "$(read_bootstrap_b64 ADMIN_PASSWORD_B64)"
-  set_env POSTGRES_PASSWORD "$(generate_secret)"
-  set_env REDIS_PASSWORD "$(generate_secret)"
-  set_env JWT_SECRET "$(generate_secret)"
-  set_env TOTP_ENCRYPTION_KEY "$(generate_secret)"
+  secret="$(generate_secret)" || exit 1
+  set_env POSTGRES_PASSWORD "$secret"
+  secret="$(generate_secret)" || exit 1
+  set_env REDIS_PASSWORD "$secret"
+  secret="$(generate_secret)" || exit 1
+  set_env JWT_SECRET "$secret"
+  secret="$(generate_secret)" || exit 1
+  set_env TOTP_ENCRYPTION_KEY "$secret"
 fi
 
 set_env SUB2API_IMAGE "$SUB2API_IMAGE"
