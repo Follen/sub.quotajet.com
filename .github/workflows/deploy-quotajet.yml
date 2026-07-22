@@ -1,56 +1,116 @@
-name: Deploy QuotaJet Test
+name: Deploy QuotaJet Production
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-quotajet-test
-  cancel-in-progress: true
+  group: deploy-quotajet-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.conclusion == 'success')
+    environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Normalize image tag
+        id: image
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          normalized_tag="${IMAGE_TAG#v}"
+          if [[ -z "$normalized_tag" || ! "$normalized_tag" =~ ^[0-9A-Za-z._-]+$ ]]; then
+            printf 'image_tag must contain only [0-9A-Za-z._-] after an optional leading v\n' >&2
+            exit 1
+          fi
+          printf 'image=ghcr.io/follen/sub2api:%s\n' "$normalized_tag" >> "$GITHUB_OUTPUT"
+
       - name: Configure SSH
         env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          PROD_DEPLOY_SSH_KEY: ${{ secrets.PROD_DEPLOY_SSH_KEY }}
+          PROD_DEPLOY_KNOWN_HOSTS: ${{ secrets.PROD_DEPLOY_KNOWN_HOSTS }}
         run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/quotajet-deploy
-          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/quotajet-deploy ~/.ssh/known_hosts
-          test -s ~/.ssh/quotajet-deploy
-          test -s ~/.ssh/known_hosts
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$PROD_DEPLOY_SSH_KEY" > "$HOME/.ssh/quotajet-deploy"
+          printf '%s\n' "$PROD_DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/quotajet-deploy" "$HOME/.ssh/known_hosts"
+          test -s "$HOME/.ssh/quotajet-deploy"
+          test -s "$HOME/.ssh/known_hosts"
 
-      - name: Deploy main to test server
+      - name: Create bootstrap values
         env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          PROD_ADMIN_EMAIL: ${{ secrets.PROD_ADMIN_EMAIL }}
+          PROD_ADMIN_PASSWORD: ${{ secrets.PROD_ADMIN_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/quotajet-deploy \
+          umask 077
+          test -n "$PROD_ADMIN_EMAIL"
+          test -n "$PROD_ADMIN_PASSWORD"
+          {
+            printf 'ADMIN_EMAIL_B64='
+            printf '%s' "$PROD_ADMIN_EMAIL" | base64 | tr -d '\n'
+            printf '\nADMIN_PASSWORD_B64='
+            printf '%s' "$PROD_ADMIN_PASSWORD" | base64 | tr -d '\n'
+            printf '\n'
+          } > .bootstrap.env
+          chmod 600 .bootstrap.env
+
+      - name: Create production application directory
+        env:
+          PROD_DEPLOY_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
+          PROD_DEPLOY_USER: ${{ secrets.PROD_DEPLOY_USER }}
+        run: |
+          ssh -i "$HOME/.ssh/quotajet-deploy" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            'set -e
-            repo_dir=/opt/sub.quotajet.com
-            if [ ! -d "$repo_dir/.git" ]; then
-              git clone https://github.com/Follen/sub.quotajet.com.git "$repo_dir"
-            fi
-            cd "$repo_dir"
-            git fetch origin main
-            git checkout main
-            git reset --hard origin/main
-            bash deploy/quotajet-deploy.sh'
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "${PROD_DEPLOY_USER}@${PROD_DEPLOY_HOST}" \
+            'install -d -m 700 /www/apps/quotajet-next'
+
+      - name: Upload deployment artifacts
+        env:
+          PROD_DEPLOY_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
+          PROD_DEPLOY_USER: ${{ secrets.PROD_DEPLOY_USER }}
+        run: |
+          scp -i "$HOME/.ssh/quotajet-deploy" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            deploy/docker-compose.local.yml \
+            deploy/docker-compose.quotajet.yml \
+            deploy/quotajet.env.example \
+            deploy/quotajet-brand.sql \
+            deploy/quotajet-deploy.sh \
+            .bootstrap.env \
+            "${PROD_DEPLOY_USER}@${PROD_DEPLOY_HOST}:/www/apps/quotajet-next/"
+
+      - name: Run production deployment
+        env:
+          PROD_DEPLOY_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
+          PROD_DEPLOY_USER: ${{ secrets.PROD_DEPLOY_USER }}
+          SUB2API_IMAGE: ${{ steps.image.outputs.image }}
+        run: |
+          printf -v remote_command \
+            'cd /www/apps/quotajet-next && chmod 600 .bootstrap.env && exec env SUB2API_IMAGE=%q bash ./quotajet-deploy.sh' \
+            "$SUB2API_IMAGE"
+          ssh -i "$HOME/.ssh/quotajet-deploy" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "${PROD_DEPLOY_USER}@${PROD_DEPLOY_HOST}" \
+            "$remote_command"

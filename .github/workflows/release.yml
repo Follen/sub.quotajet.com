@@ -304,3 +304,11 @@ jobs:
           git add backend/cmd/server/VERSION
           git commit -m "chore: sync VERSION to ${VERSION} [skip ci]"
           git push origin HEAD:${{ github.event.repository.default_branch }}
+
+  deploy-production:
+    needs: release
+    if: ${{ needs.release.result == 'success' }}
+    uses: ./.github/workflows/deploy-quotajet.yml
+    with:
+      image_tag: ${{ github.event.inputs.tag || github.ref_name }}
+    secrets: inherit
